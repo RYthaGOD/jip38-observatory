@@ -90,6 +90,58 @@ raise an alarm rather than sit quietly in a table:
 - the burn destination changing
 - the Rev Splitter address changing
 
+## 3a. The Dune dashboard, and what it is actually for
+
+Jito publishes JTX metrics on Dune:
+[dune.com/jito/jtx-metrics-ee62](https://dune.com/jito/jtx-metrics-ee62). As
+fetched 2026-09-09 it showed trading volume $123.45M, platform fees $197,498.13,
+263,336 fills, and daily active wallets, each broken down by source (dflow,
+limit, titan).
+
+**Do not use it as a data source.** Sourcing figures from the operator's own
+dashboard would rebuild inside this project the exact dependency it exists to
+remove, and would leave `recompute.mjs` with nothing to recompute from — the
+"evidence" would reduce to "Dune said so".
+
+**Use it as the claim.** It is the *claimed* side of claimed-versus-verified, and
+that is the whole product:
+
+| | Source | Nature |
+|---|---|---|
+| Claimed | Jito's Dune dashboard, and the per-epoch reporting JIP-38 commits to | Mutable |
+| Verified | Derived from chain by this project | Immutable |
+
+**And this is where BAMservatory's capture model does transfer — correctly.**
+Chain data needs no archive: it is immutable and queryable on demand, so the
+chain is its own archive. A Dune query is the opposite. It can be edited, its
+results can change retroactively, and it can be deleted. So the operator's
+published numbers must be **captured and archived on a schedule**, exactly as
+BAMservatory captures the BAM API, so that what was claimed on a given date
+cannot be revised without record.
+
+That inverts the naive design in a useful way. The thing worth polling is not the
+chain. It is the claim.
+
+Secondary uses worth having:
+
+- **Fee provenance.** The source split (dflow / limit / titan) indicates where
+  fees originate, which should help locate the fee accounts on chain.
+- **Plausibility bounds.** Volume, fills and active wallets give independent
+  context for whether a chain-derived fee figure is the right order of magnitude.
+
+Two things to establish before relying on any of it:
+
+- **Coverage gap.** The dashboard showed data from **2026-07-24**, but JIP-38
+  activated 2026-07-13 and JTX launched 07-14. That is roughly ten days at the
+  start of the commitment with no operator-published figures. Confirm whether
+  that is a display window or genuinely absent data — either way, the
+  verification record should run from activation, not from where the operator's
+  chart begins.
+- **Access.** Programmatic Dune access generally needs an API key, and the free
+  tier may not permit it. If results cannot be pulled reliably, capture what is
+  publicly rendered and archive that instead — the point is an immutable record
+  of the claim, not a convenient one.
+
 ## 4. Discovery strategy: start at the burn
 
 Burns are the most identifiable event available — an SPL burn against the JTO

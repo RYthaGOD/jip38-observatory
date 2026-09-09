@@ -43,6 +43,23 @@ That gap is the whole product. The single number this exists to publish is the
 **execution ratio**: value burned against JTX fee revenue, measured against the
 promised 80%. Everything else is supporting evidence.
 
+## Two sources, playing different roles
+
+Jito publishes JTX figures on its own
+[Dune dashboard](https://dune.com/jito/jtx-metrics-ee62) — volume, platform fees,
+fills, active wallets. This project derives its figures from chain.
+
+The operator's numbers are the **claim**, not the evidence. Using them as a data
+source would rebuild the very dependency this exists to remove, and would leave
+the recompute step with nothing to recompute from: "Dune said so" is not
+evidence. They are captured and archived on a schedule instead — because a Dune
+query is mutable, can be edited retroactively and can be deleted, while chain
+data cannot. What was claimed on a given date should not be revisable without
+record.
+
+Which inverts the obvious design. The thing worth polling is not the chain, which
+is its own archive. It is the claim.
+
 ## The immediate obstacle, stated up front
 
 **JIP-38 names no program IDs, no wallet addresses and no contract identifiers.**
