@@ -29,3 +29,4 @@
 # evidence     — how it was identified, specifically enough to be re-run
 #
 role	address	confidence	since	evidence
+jto-mint	jtojtomepa8beP8AuQc6eXt5FriJwfFMwQx2v2f9mCL	strong	2026-09-09	The SPL mint for JTO, and the root of every figure this project will publish. Supplied by the project operator 2026-09-09; format checked here (43 chars, valid base58, vanity prefix "jto"). Held at strong rather than confirmed because format is not identity and nothing has yet asked the chain. discover.mjs calls getTokenSupply against it before doing anything else, so the first run either promotes this to confirmed or fails loudly — which is the correct order for the one address that, if wrong, makes every downstream number wrong.

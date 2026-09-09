@@ -7,20 +7,23 @@
 // fees can accrue across many accounts by many routes, and picking one to follow
 // would be assuming the answer.
 //
-//   SOLANA_RPC_URL=... node discover.mjs --mint <JTO_MINT> [--since 2026-07-13]
+//   SOLANA_RPC_URL=... node discover.mjs [--mint <addr>] [--since 2026-07-13]
 //
 // Writes nothing. Prints candidates and the evidence for each, for a human to
 // judge before anything reaches REGISTRY.tsv. Nothing here decides on its own
 // that an address is the Rev Splitter — the point is to narrow the search, not
 // to conclude it.
 //
-// The JTO mint is a required argument rather than a constant. Hardcoding a mint
-// address I had not verified would put an unchecked assumption at the root of
-// every figure this project ever publishes, which is precisely the failure this
-// repo exists to avoid. Confirm it against a block explorer and pass it in.
+// The JTO mint is recorded in REGISTRY.tsv at confidence "strong", not
+// "confirmed": its format has been checked but nothing has yet asked the chain,
+// and format is not identity. getTokenSupply runs before anything else precisely
+// so a wrong mint fails loudly on the first call rather than quietly seeding
+// every figure that follows. Override with --mint to test an alternative.
+
+const JTO_MINT = "jtojtomepa8beP8AuQc6eXt5FriJwfFMwQx2v2f9mCL";
 
 const RPC = process.env.SOLANA_RPC_URL || arg("--rpc", "");
-const MINT = arg("--mint", "");
+const MINT = arg("--mint", JTO_MINT);
 const SINCE = arg("--since", "2026-07-13"); // JIP-38 activation
 
 function arg(flag, dflt) {
@@ -30,7 +33,7 @@ function arg(flag, dflt) {
 function die(msg) { console.error("discover: " + msg); process.exit(1); }
 
 if (!RPC) die("no RPC endpoint. Set SOLANA_RPC_URL or pass --rpc.");
-if (!MINT) die("no JTO mint. Pass --mint <address>, confirmed against an explorer.");
+if (!MINT) die("no mint. Pass --mint <address>.");
 
 async function rpc(method, params) {
   const r = await fetch(RPC, {
