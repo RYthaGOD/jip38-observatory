@@ -1,0 +1,31 @@
+# Addresses this project depends on, and the evidence for each.
+#
+# JIP-38 names no addresses. Every entry below is therefore an INFERENCE drawn
+# from chain activity, not a fact published by Jito. If an inference is wrong,
+# every figure derived from it is wrong — so each one is recorded here with the
+# evidence that supports it, and the confidence it deserves.
+#
+# This file is the reason a reader can disagree with a published number. Take an
+# address out of here, look at it yourself, and reach your own conclusion.
+#
+# A registry entry is not permission to stop checking. `verify.mjs` re-tests every
+# stated role on each run: an address that stops behaving the way this file says
+# it behaves raises an alarm rather than quietly continuing to feed a figure.
+#
+# confidence:
+#   confirmed  — Jito has published this address, or it is unambiguous on chain
+#                (e.g. the SPL mint itself).
+#   strong     — repeated, consistent behaviour matching the stated role, with no
+#                competing explanation observed.
+#   tentative  — fits the role but the sample is thin or an alternative reading
+#                survives. Figures derived from a tentative address must say so.
+#   rejected   — considered and ruled out. Kept, so the same candidate is not
+#                rediscovered and re-adopted later.
+#
+# role         — what this project believes the address does
+# address      — base58, verbatim
+# confidence   — as above
+# since        — first observation supporting the entry (UTC date)
+# evidence     — how it was identified, specifically enough to be re-run
+#
+role	address	confidence	since	evidence
