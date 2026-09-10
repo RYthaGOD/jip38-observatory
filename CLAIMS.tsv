@@ -1,0 +1,25 @@
+# Every capture of the operator's claim, and the chain state it was made against.
+#
+# Raw bodies live under data/ and are NOT committed — they are bulky and grow
+# without bound. The sha256 here is what makes the archive tamper-evident: anyone
+# holding the bytes can re-hash them and check them against this file's git history.
+#
+# status:
+#   ok       captured, and the body contains what was wanted
+#   shell    fetched successfully but the figures were not in it (client-rendered page)
+#   blocked  could not be attempted — a credential is missing
+#   fail     the fetch itself failed
+#
+# A run of 'shell' or 'blocked' rows is a finding, not a malfunction: it dates the
+# point at which the operator's published figures were not archivable by this project.
+#
+captured	source	url	status	bytes	sha256	path	note
+2026-09-09T03-29-22-050Z	chain-anchor	https://mainnet.helius-rpc.com/?api-key=***	ok	285	21b0d42eec655ed4362b55245a44f859aba644069fb20062a18a7c97c9d5f330	data\claims\2026-09-09T03-29-22-050Z\chain-anchor.json	supply 986522868.826778955 @ slot 445508751
+2026-09-09T03-29-22-050Z	jito-token-metadata	https://metadata.jito.network/token/jto	ok	269	7c7de392756146fce99b4f4742cf09b5e2cc382383997566368cbb7fec4cec85	data\claims\2026-09-09T03-29-22-050Z\jito-token-metadata.json	http 200
+2026-09-09T03-29-22-050Z	dune-dashboard-html	https://dune.com/jito/jtx-metrics-ee62	shell	79280	34d4cbb92915b1ccddf021d59697c382e2447b408fabe2034dfc47594be64d76	data\claims\2026-09-09T03-29-22-050Z\dune-dashboard-html.txt	http 200 — client-rendered shell, NO FIGURES CAPTURED
+2026-09-09T03-29-22-050Z	dune-query	https://api.dune.com/api/v1/query/<id>/results	blocked	0			no DUNE_API_KEY; dashboard is client-rendered so the public URL yields no figures
+2026-09-09T15-18-33-547Z	chain-anchor	https://mainnet.helius-rpc.com/?api-key=***	ok	285	e7e0e2fc5dbc72558d14a94a4c9779c290a50c62ca20bfd7a1a4ea563c22d0c0	data\claims\2026-09-09T15-18-33-547Z\chain-anchor.json	supply 986522827.360143932 @ slot 445643196
+2026-09-09T15-18-33-547Z	jito-token-metadata	https://metadata.jito.network/token/jto	ok	269	7c7de392756146fce99b4f4742cf09b5e2cc382383997566368cbb7fec4cec85	data\claims\2026-09-09T15-18-33-547Z\jito-token-metadata.json	http 200
+2026-09-09T15-18-33-547Z	dune-dashboard-html	https://dune.com/jito/jtx-metrics-ee62	shell	79280	f38774a6c0a8c8a98747505aff123bf75db392a7e376a43e5e420165407afa5e	data\claims\2026-09-09T15-18-33-547Z\dune-dashboard-html.txt	http 200 — client-rendered shell, NO FIGURES CAPTURED
+2026-09-09T15-18-33-547Z	dune-query	https://api.dune.com/api/v1/query/<id>/results	blocked	0			no DUNE_API_KEY; dashboard is client-rendered so the public URL yields no figures
+2026-09-09T23-40-00Z	dune-jtx-metrics	https://dune.com/jito/jtx-metrics-ee62	ok	513	b7e2eccc97ae4fe90e679a496912d642fdf24dd749e2e6ce1132ca313202b48c	data/claims/manual-2026-09-09/dune-jtx-metrics.json	figures obtained via rendering fetch; raw HTTP yields a shell. volume $124,236,023.65 fees $198,908.37 fills 266,827; data begins 2026-07-24

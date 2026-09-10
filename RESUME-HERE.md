@@ -163,6 +163,33 @@ assumption.
 SPL burns against this mint, or the mint is wrong, or they have not happened.
 Establish which before assuming the third.
 
+> ### Correction, 2026-09-09 — step 2 above is wrong
+>
+> Written before anything had been run, and falsified by the first hour against
+> mainnet. Both halves of the strategy failed, and the section is kept as
+> written so the error is legible rather than tidied away.
+>
+> **The authority that signed a burn is usually nobody.** Most JTO burns are
+> wallets sweeping dust to reclaim rent. The first burn found on chain destroyed
+> 0.63 JTO alongside two unrelated mints inside a transaction carrying seven
+> `closeAccount` instructions; the next two were 0.0006 JTO each. JTO's supply
+> falls all day long in fractions of a token for this reason, and none of it is
+> a buyback. Ranking burn authorities by volume therefore ranks noise. They have
+> to be **classified** first, and only a programme-scale burn is worth tracing.
+>
+> **And the scan could not have covered its own window.** The mint carries
+> ~1,000 signatures every four minutes at the chain head. The 200-page cap in
+> the original `discover.mjs` reached back about fourteen hours, against a
+> 58-day window — it would have printed "none found in window" having examined
+> roughly 1% of it. That is exactly the silent truncation §3a of this document
+> warns about, and it was sitting in the code that document shipped with.
+> Coverage is now measured from the cursor's own timestamps and printed beside
+> every count.
+>
+> What survives is the *ordering* — burns really are more identifiable than
+> fees, so starting at the burn is still right. What does not survive is the
+> assumption that any burn will do.
+
 ## 5. Decisions, and why
 
 **Why not a fork of BAMservatory.** Its core is a 60-second API poller with a raw
@@ -217,23 +244,74 @@ for them*, and that is the outcome to hope for.
 
 ## 7. Status
 
-**Pre-discovery.** Nothing published, no addresses confirmed, no figures exist.
+**Pre-discovery**, but no longer pre-chain. First contact was 2026-09-09 and is
+recorded in [`FINDINGS.md`](FINDINGS.md). In short:
 
-Recorded so far: the JTO mint,
-`jtojtomepa8beP8AuQc6eXt5FriJwfFMwQx2v2f9mCL`, at confidence **strong** — 43
-characters, valid base58, vanity prefix matching the token. Format is not
-identity, so `getTokenSupply` on the first run is what promotes it to confirmed,
-or fails loudly.
+- The JTO mint is **confirmed**, by its derived Metaplex metadata (name `JITO`,
+  symbol `JTO`, URI under `metadata.jito.network`) rather than by its format.
+- `mintAuthority` is **null**, and genesis supply is **verified on chain** —
+  one `mintToChecked` of exactly 1,000,000,000 JTO on 2023-11-27, found by
+  binary search. So supply can fall only by burning, and **13,477,142 JTO** has
+  been destroyed: a *ceiling* on JIP-38 burns, not a measurement.
+- **The burn-filtered index the discovery tooling rests on is unsound.** Those
+  13.48M JTO of burns provably exist, and sampling the index across JTO's whole
+  history returns a largest-ever burn of 0.96 JTO. It sees rent-reclaim dust and
+  nothing else. Read `FINDINGS.md` §2a before writing any more code against it.
+- **Three premises in this document were falsified by running them.** See §4 and
+  §8 below, which have been rewritten accordingly.
+- The Rev Splitter is **still not identified**, by any route tried.
+- The claim side is **blocked**: the Dune dashboard is client-rendered, so its
+  figures are not in the HTML, and archiving them needs a Dune API key.
 
 ## 8. Next steps
 
-1. Set `SOLANA_RPC_URL` in the new workspace.
-2. `node discover.mjs` — walks the mint's history back to JIP-38 activation and
-   ranks burn authorities by volume. Writes nothing; concludes nothing.
-3. Judge the candidates. Record outcomes in `REGISTRY.tsv` with evidence and an
-   honest confidence, including **rejected** candidates so a ruled-out address is
-   not rediscovered and adopted later.
-4. Only then decide the architecture. Whether the trail is traceable end to end
+The original plan here — run `discover.mjs`, rank burn authorities by volume,
+pick the Rev Splitter out of the list — does not work, for the reason in §4. It
+is replaced by:
+
+1. `.env` holds `SOLANA_RPC_URL` (a Helius key; the burn-filtered index used for
+   discovery needs one). It is gitignored and must stay that way.
+2. `node verify.mjs` before anything else — it re-tests every `REGISTRY.tsv`
+   role against chain and exits non-zero if one no longer holds.
+3. **Look for ~200,000-300,000 JTO of burns in the window — NOT the 13.48M.**
+   This changed late on 2026-09-09 and it is the most important correction in
+   this document. Jito's own dashboard puts cumulative JTX platform fees at
+   **$198,908.37**, so JIP-38's 80% share commits about **$159,127** to buying
+   and burning JTO — a few hundred thousand tokens, and roughly **1,700 JTO a
+   day** at the current fee rate.
+
+   The 13,477,143 JTO destroyed since genesis is **~55x larger than the entire
+   programme could have produced**. It is almost certainly pre-activation, and
+   hours were spent chasing it. It is still worth dating eventually, but it is
+   not the JIP-38 question.
+
+   The burns that matter are four orders of magnitude above rent-reclaim dust,
+   so they remain easy to distinguish — the search is just far smaller than it
+   looked. See `FINDINGS.md` §3c.
+
+   Two routes, and the second is the promising one:
+
+   - **Raw enumeration** (`rawscan.mjs`) is sound but was measured at ~220
+     tx/min against this key, with 77% of requests throttled: about 150 hours
+     for the JIP-38 window. It needs a paid RPC tier, and with one it is the
+     definitive answer. It resumes with `--resume`.
+   - **Walk the distribution tree**, which is far cheaper and already started —
+     see `FINDINGS.md` §2c and the `distribution-hub` entries in
+     `REGISTRY.tsv`. Every account on it has few enough transactions to resolve
+     in full. Continue breadth-first from `7T6SXnG1…`'s outflows, resolving each
+     recipient's history and recording the ones with no burns as `rejected` so
+     the frontier shrinks. The burns left from somewhere in this tree.
+
+   Once found, the burns are datable, and dating them splits genesis-era burns
+   from JIP-38-era ones without needing historical supply at all.
+4. **Then, and only then, ask whether any of them are JIP-38's.** Trace a
+   programme-scale burn's inbound JTO to a swap, and the swap's funding to JTX
+   fee revenue.
+5. **Get historical supply at 2026-07-13** if a source can be found — it would
+   convert the 13.48M ceiling into an in-window figure directly. Public RPC
+   serves current state only.
+6. Get a **Dune API key** so the claim side can be archived at all.
+7. Only then decide the architecture. Whether the trail is traceable end to end
    determines whether this is an indexing job or a research project — and that
    answer changes what can honestly be published.
 
