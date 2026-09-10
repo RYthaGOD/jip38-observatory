@@ -1,437 +1,426 @@
 <title>JIP-38 Observatory</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;450;500;600&display=swap">
-
-<style>
-  /* Light palette is the base; every token is declared here so no colour
-     exists only inside a media query. */
-  :root {
-    --paper:      #F2F5F4;
-    --surface:    #FBFCFC;
-    --surface-2:  #E9EEED;
-    --line:       #D2DBD9;
-    --line-soft:  #E2E9E7;
-    --ink-1:      #0E1A19;
-    --ink-2:      #3B4A48;
-    --ink-3:      #6C7A78;
-    --chain:      #0C6D63;
-    --chain-bg:   #DDEDEA;
-    --claim:      #8A5710;
-    --claim-bg:   #F4E9D6;
-    --absent:     #9E2F35;
-    --absent-bg:  #F6E1E2;
-    --shadow:     0 1px 2px rgba(14,26,25,.06), 0 8px 24px -16px rgba(14,26,25,.28);
-  }
-  @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) {
-      --paper:     #0C1314;
-      --surface:   #121C1D;
-      --surface-2: #182425;
-      --line:      #263536;
-      --line-soft: #1D2A2B;
-      --ink-1:     #E8EFEE;
-      --ink-2:     #A8B8B6;
-      --ink-3:     #748886;
-      --chain:     #45B9AA;
-      --chain-bg:  #10312E;
-      --claim:     #D8A455;
-      --claim-bg:  #33270F;
-      --absent:    #E4737A;
-      --absent-bg: #37181B;
-      --shadow:    0 1px 2px rgba(0,0,0,.4), 0 8px 24px -16px rgba(0,0,0,.7);
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script id="tailwind-config">
+tailwind.config = {
+  darkMode: "class",
+  theme: { extend: {
+    colors: {
+      "surface-bright": "#353943", "on-primary": "#00382f", "background": "#0f131c",
+      "surface-variant": "#31353f", "surface-dim": "#0f131c", "primary": "#d7fff3",
+      "surface-container-highest": "#31353f", "inverse-on-surface": "#2c303a",
+      "primary-container": "#00f5d4", "surface-container-high": "#262a34",
+      "on-background": "#dfe2ef", "secondary-container": "#ee9800",
+      "surface-container-low": "#181b25", "tertiary": "#fff4f3",
+      "surface-container": "#1c1f29", "surface-container-lowest": "#0a0e17",
+      "error-container": "#93000a", "inverse-surface": "#dfe2ef",
+      "error": "#ffb4ab", "surface": "#0f131c", "primary-fixed": "#26fedc",
+      "on-surface": "#dfe2ef", "secondary-fixed-dim": "#ffb95f",
+      "primary-fixed-dim": "#00dfc1", "secondary": "#ffb95f",
+      "inverse-primary": "#006b5b", "outline-variant": "#3a4a46", "outline": "#83948f",
+      "surface-tint": "#00dfc1", "on-error": "#690005", "on-surface-variant": "#b9cac4",
+      "on-primary-container": "#006c5c"
+    },
+    borderRadius: { DEFAULT: "0.125rem", lg: "0.25rem", xl: "0.5rem", full: "0.75rem" },
+    spacing: {
+      "space-xl": "2rem", "space-base": "1rem", "space-sm": "0.5rem", "space-3xl": "4rem",
+      "space-md": "0.75rem", "space-lg": "1.5rem", "space-2xs": "0.125rem",
+      "space-2xl": "3rem", "space-xs": "0.25rem"
+    },
+    fontFamily: {
+      "display-lg": ["Plus Jakarta Sans"], "headline-lg": ["Plus Jakarta Sans"],
+      "headline-md": ["Plus Jakarta Sans"], "headline-sm": ["Plus Jakarta Sans"],
+      "label-sm": ["JetBrains Mono"], "label-md": ["JetBrains Mono"], "label-lg": ["JetBrains Mono"],
+      "body-lg": ["Inter"], "body-md": ["Inter"], "body-sm": ["Inter"]
+    },
+    fontSize: {
+      "display-lg": ["48px", { lineHeight: "56px", letterSpacing: "-0.03em", fontWeight: "800" }],
+      "headline-lg": ["32px", { lineHeight: "40px", letterSpacing: "-0.02em", fontWeight: "700" }],
+      "headline-md": ["22px", { lineHeight: "28px", letterSpacing: "-0.01em", fontWeight: "600" }],
+      "headline-sm": ["18px", { lineHeight: "24px", letterSpacing: "-0.005em", fontWeight: "600" }],
+      "label-sm": ["10px", { lineHeight: "14px", letterSpacing: "0.05em", fontWeight: "500" }],
+      "label-md": ["12px", { lineHeight: "16px", letterSpacing: "0.03em", fontWeight: "500" }],
+      "label-lg": ["14px", { lineHeight: "18px", letterSpacing: "0.02em", fontWeight: "500" }],
+      "body-lg": ["16px", { lineHeight: "24px", fontWeight: "400" }],
+      "body-md": ["14px", { lineHeight: "20px", fontWeight: "400" }],
+      "body-sm": ["12px", { lineHeight: "16px", letterSpacing: "0.01em", fontWeight: "400" }]
     }
-  }
-  :root[data-theme="dark"] {
-    --paper:     #0C1314;
-    --surface:   #121C1D;
-    --surface-2: #182425;
-    --line:      #263536;
-    --line-soft: #1D2A2B;
-    --ink-1:     #E8EFEE;
-    --ink-2:     #A8B8B6;
-    --ink-3:     #748886;
-    --chain:     #45B9AA;
-    --chain-bg:  #10312E;
-    --claim:     #D8A455;
-    --claim-bg:  #33270F;
-    --absent:    #E4737A;
-    --absent-bg: #37181B;
-    --shadow:    0 1px 2px rgba(0,0,0,.4), 0 8px 24px -16px rgba(0,0,0,.7);
-  }
-
-  * { box-sizing: border-box; }
-  body {
-    background: var(--paper);
-    color: var(--ink-1);
-    font-family: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
-    font-size: 15px;
-    line-height: 1.55;
-    -webkit-font-smoothing: antialiased;
-  }
-  .wrap { max-width: 1000px; margin: 0 auto; padding: 40px 24px 80px; }
-
-  h1, h2, h3 { font-family: Newsreader, Georgia, serif; font-weight: 500; text-wrap: balance; margin: 0; }
-  h1 { font-size: 40px; line-height: 1.1; letter-spacing: -.015em; }
-  h2 { font-size: 23px; line-height: 1.2; }
-  h3 { font-size: 16px; font-family: "IBM Plex Sans", sans-serif; font-weight: 600; }
-  p { margin: 0; }
-  a { color: var(--chain); text-decoration-thickness: 1px; text-underline-offset: 2px; }
-  a:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--chain); outline-offset: 2px; border-radius: 3px; }
-
-  .eyebrow {
-    font-family: "IBM Plex Mono", monospace; font-size: 11px; font-weight: 500;
-    letter-spacing: .13em; text-transform: uppercase; color: var(--ink-3);
-  }
-  .mono { font-family: "IBM Plex Mono", monospace; font-variant-numeric: tabular-nums; }
-  .num  { font-family: "IBM Plex Mono", monospace; font-variant-numeric: tabular-nums; letter-spacing: -.01em; }
-
-  header.top { display: flex; flex-direction: column; gap: 10px; margin-bottom: 34px; }
-  .stamp { display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: baseline; }
-  .lede { color: var(--ink-2); max-width: 66ch; font-size: 16px; }
-
-  section { margin-top: 30px; display: flex; flex-direction: column; gap: 14px; }
-  .sec-head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
-  .sec-head p { color: var(--ink-3); font-size: 13.5px; max-width: 62ch; }
-
-  /* Verdict — the one place that gets weight. */
-  .verdict {
-    background: var(--surface); border: 1px solid var(--line);
-    border-radius: 4px; padding: 26px 26px 22px; box-shadow: var(--shadow);
-    display: flex; flex-direction: column; gap: 20px;
-  }
-  .verdict-top { display: flex; flex-wrap: wrap; gap: 26px 40px; align-items: flex-end; }
-  .ratio { display: flex; flex-direction: column; gap: 2px; }
-  .ratio .v { font-family: "IBM Plex Mono", monospace; font-size: 68px; line-height: .95; font-weight: 500; color: var(--absent); letter-spacing: -.03em; }
-  .ratio .k { color: var(--ink-3); font-size: 13px; }
-  .against { display: flex; flex-direction: column; gap: 2px; padding-bottom: 6px; }
-  .against .v { font-family: "IBM Plex Mono", monospace; font-size: 26px; font-weight: 500; color: var(--ink-2); }
-
-  /* meter: value against a promised target */
-  .meter { display: flex; flex-direction: column; gap: 7px; }
-  .meter-track {
-    position: relative; height: 30px; background: var(--surface-2);
-    border: 1px solid var(--line-soft); border-radius: 3px; overflow: hidden;
-  }
-  .meter-fill { position: absolute; inset: 0 auto 0 0; background: var(--chain); border-radius: 2px 0 0 2px; }
-  .meter-target { position: absolute; top: -4px; bottom: -4px; width: 2px; background: var(--ink-1); }
-  .meter-scale { display: flex; justify-content: space-between; font-size: 11.5px; color: var(--ink-3); }
-  .meter-note { font-size: 12.5px; color: var(--ink-3); }
-
-  .caveat {
-    border-left: 2px solid var(--claim); background: var(--claim-bg);
-    padding: 12px 16px; border-radius: 0 3px 3px 0; color: var(--ink-2); font-size: 14px;
-  }
-  .caveat strong { color: var(--ink-1); font-weight: 600; }
-
-  /* generic panels */
-  .panel { background: var(--surface); border: 1px solid var(--line); border-radius: 4px; }
-  .grid { display: grid; gap: 12px; }
-  .g3 { grid-template-columns: repeat(auto-fit, minmax(215px, 1fr)); }
-  .g2 { grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); }
-
-  .tile { background: var(--surface); border: 1px solid var(--line); border-radius: 4px; padding: 15px 17px; display: flex; flex-direction: column; gap: 5px; }
-  .tile .k { font-size: 12.5px; color: var(--ink-3); }
-  .tile .v { font-family: "IBM Plex Mono", monospace; font-variant-numeric: tabular-nums; font-size: 22px; font-weight: 500; letter-spacing: -.015em; }
-  .tile .sub { font-size: 12px; color: var(--ink-3); }
-
-  /* provenance chips — the distinction the whole project rests on */
-  .chip {
-    display: inline-flex; align-items: center; gap: 5px; font-family: "IBM Plex Mono", monospace;
-    font-size: 10.5px; font-weight: 500; letter-spacing: .06em; text-transform: uppercase;
-    padding: 2px 7px; border-radius: 2px; white-space: nowrap;
-  }
-  .chip.chain  { background: var(--chain-bg);  color: var(--chain); }
-  .chip.claim  { background: var(--claim-bg);  color: var(--claim); }
-  .chip.absent { background: var(--absent-bg); color: var(--absent); }
-  .chip::before { content: ""; width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
-
-  /* proof chain — a sequence, because it genuinely is one */
-  .chain-steps { display: flex; flex-direction: column; }
-  .step { display: grid; grid-template-columns: 26px 1fr; gap: 14px; padding: 13px 0; border-bottom: 1px solid var(--line-soft); }
-  .step:last-child { border-bottom: 0; }
-  .step .n { font-family: "IBM Plex Mono", monospace; font-size: 11px; color: var(--ink-3); padding-top: 3px; }
-  .step .b { display: flex; flex-direction: column; gap: 3px; }
-  .step .t { font-weight: 500; }
-  .step .d { color: var(--ink-2); font-size: 13.5px; }
-  .step .x { color: var(--ink-3); font-size: 12px; word-break: break-all; }
-
-  table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
-  .scroll { overflow-x: auto; }
-  th { text-align: left; font-weight: 500; font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); padding: 0 12px 8px 0; border-bottom: 1px solid var(--line); white-space: nowrap; }
-  td { padding: 9px 12px 9px 0; border-bottom: 1px solid var(--line-soft); vertical-align: top; }
-  tr:last-child td { border-bottom: 0; }
-  td.r, th.r { text-align: right; }
-  .addr { font-family: "IBM Plex Mono", monospace; font-size: 12px; word-break: break-all; color: var(--ink-2); }
-
-  ul.limits { margin: 0; padding-left: 0; list-style: none; display: flex; flex-direction: column; gap: 9px; }
-  ul.limits li { display: grid; grid-template-columns: 14px 1fr; gap: 10px; color: var(--ink-2); font-size: 14px; }
-  ul.limits li::before { content: "—"; color: var(--ink-3); }
-
-  footer { margin-top: 44px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--ink-3); font-size: 12.5px; display: flex; flex-direction: column; gap: 7px; }
-
-  @media (max-width: 620px) {
-    h1 { font-size: 31px; }
-    .ratio .v { font-size: 52px; }
-    .wrap { padding: 28px 16px 60px; }
-  }
+  } }
+};
+</script>
+<style>
+  /* This design commits to a single dark world, so every surface is painted
+     explicitly rather than inheriting the host's ground. */
+  :root { color-scheme: dark; }
+  ::-webkit-scrollbar { display: none; }
+  .tnum { font-variant-numeric: tabular-nums; }
+  .material-symbols-outlined { font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24; }
+  [id]:focus-visible { outline: 2px solid #00f5d4; outline-offset: 2px; }
+  @media (prefers-reduced-motion: reduce) { .animate-ping, .animate-pulse { animation: none !important; } }
 </style>
 
-<div class="wrap">
-  <header class="top">
-    <div class="stamp">
-      <span class="eyebrow">Independent verification · JIP-38</span>
-      <span class="eyebrow" id="stamp-slot"></span>
+<div class="bg-background text-on-surface antialiased min-h-screen font-body-md text-body-md">
+
+  <!-- Chrome: what instrument this is, and against what ledger -->
+  <header class="w-full bg-surface/85 backdrop-blur-xl shadow-[0_4px_24px_rgba(0,0,0,0.45)]">
+    <div class="max-w-[1280px] mx-auto px-space-lg h-16 flex items-center justify-between gap-space-base">
+      <div class="flex items-center gap-space-md min-w-0">
+        <span class="material-symbols-outlined text-primary-container text-[26px] flex-shrink-0">radar</span>
+        <div class="flex flex-col min-w-0">
+          <span class="font-headline-sm text-headline-sm text-on-surface leading-none truncate">JIP-38 Observatory</span>
+          <span class="font-label-sm text-label-sm text-primary-fixed-dim uppercase tracking-wider mt-space-2xs">Independent verification · Jito Network</span>
+        </div>
+      </div>
+      <div class="hidden md:flex items-center gap-space-sm px-space-md py-space-xs rounded-lg bg-surface-container-lowest shadow-[inset_0_0_0_1px_rgba(255,255,255,0.06)]">
+        <span class="relative flex h-2 w-2">
+          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary-container opacity-75"></span>
+          <span class="relative inline-flex rounded-full h-2 w-2 bg-primary-container"></span>
+        </span>
+        <span class="font-label-sm text-label-sm text-on-surface-variant">Solana Mainnet-Beta</span>
+        <span class="text-outline-variant font-label-sm text-label-sm">•</span>
+        <span class="font-label-sm text-label-sm text-primary font-medium tnum" id="hdr-slot">slot —</span>
+      </div>
     </div>
-    <h1>Has Jito burned the JTO it promised to burn?</h1>
-    <p class="lede">
-      JIP-38 commits 80% of JTX platform fees to the DAO, and 100% of that share to
-      open-market JTO buybacks and <em>permanent burns</em>, through Q4&nbsp;2027.
-      Every step settles on chain, so it can be checked rather than taken on trust.
-      This page is that check, derived from Solana directly.
-    </p>
   </header>
 
-  <div class="verdict">
-    <div class="verdict-top">
-      <div class="ratio">
-        <span class="v" id="ratio-value">0%</span>
-        <span class="k">execution ratio — value burned ÷ JTX fee revenue</span>
+  <main class="relative w-full max-w-[1280px] mx-auto px-space-lg py-space-xl overflow-hidden">
+    <div class="absolute top-12 left-1/4 w-96 h-96 bg-primary-container/5 rounded-full blur-3xl pointer-events-none -z-10"></div>
+    <div class="absolute top-[28rem] right-10 w-[28rem] h-[28rem] bg-secondary/5 rounded-full blur-[100px] pointer-events-none -z-10"></div>
+
+    <!-- Overline -->
+    <div class="flex flex-wrap items-center justify-between gap-space-sm mb-space-base">
+      <div class="flex flex-wrap items-center gap-space-xs font-label-sm text-label-sm uppercase tracking-widest text-on-surface-variant">
+        <span class="text-primary-fixed-dim">Jito Network</span>
+        <span class="text-outline-variant">/</span>
+        <span>Proposals</span>
+        <span class="text-outline-variant">/</span>
+        <span class="text-primary font-medium">JIP-38</span>
+        <span class="mx-space-xs inline-block h-1 w-1 rounded-full bg-outline-variant"></span>
+        <span class="text-outline tnum" id="ov-snapshot">snapshot —</span>
       </div>
-      <div class="against">
-        <span class="v" id="committed">—</span>
-        <span class="k">committed to buyback and burn, to date</span>
-      </div>
-      <div class="against">
-        <span class="v" id="burned">0 JTO</span>
-        <span class="k">actually burned under JIP-38</span>
+      <div class="flex items-center gap-space-xs">
+        <span class="inline-flex items-center gap-1.5 px-space-md py-1 rounded-lg bg-surface-container-high shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)] font-label-sm text-label-sm text-on-surface-variant">
+          <span class="material-symbols-outlined text-[14px] text-primary">link</span>
+          Derived from chain
+        </span>
+        <span class="inline-flex items-center gap-1.5 px-space-md py-1 rounded-lg bg-secondary/10 shadow-[inset_0_0_0_1px_rgba(255,185,95,0.3)] font-label-sm text-label-sm text-secondary font-medium">
+          <span class="relative flex h-2 w-2">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-secondary opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-2 w-2 bg-secondary"></span>
+          </span>
+          AWAITING FIRST BURN
+        </span>
       </div>
     </div>
 
-    <div class="meter">
-      <div class="meter-track" role="img" aria-label="Execution ratio 0 percent against a promised 80 percent">
-        <div class="meter-fill" id="meter-fill" style="width:0%"></div>
-        <div class="meter-target" id="meter-target" style="left:80%"></div>
+    <!-- Hero: the question, and the answer -->
+    <div class="relative bg-surface-container-low rounded-xl p-space-xl shadow-[0_12px_32px_rgba(0,0,0,0.5)] mb-space-xl overflow-hidden">
+      <div class="absolute inset-0 bg-gradient-to-r from-primary-container/[0.04] via-transparent to-transparent pointer-events-none"></div>
+      <div class="relative z-10 flex flex-col gap-space-md max-w-4xl">
+        <div class="flex flex-wrap items-center gap-space-sm">
+          <span class="px-2.5 py-0.5 rounded font-label-md text-label-md font-bold bg-primary-container text-on-primary">JIP-38</span>
+          <span class="px-2.5 py-0.5 rounded font-label-md text-label-md bg-surface-container-highest text-on-surface-variant">Buyback &amp; Burn</span>
+          <span class="px-2.5 py-0.5 rounded font-label-md text-label-md bg-surface-container-highest text-on-surface-variant">Active through Q4 2027</span>
+        </div>
+        <h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight">Has Jito burned the JTO it promised to burn?</h1>
+        <p class="font-body-lg text-body-lg text-on-surface-variant max-w-3xl">
+          JIP-38 commits 80% of JTX platform fees to the DAO, and 100% of that share to open-market
+          JTO buybacks and <em class="text-on-surface not-italic font-medium">permanent burns</em>.
+          Every step settles on chain, so it can be checked rather than taken on trust. This is that check.
+        </p>
       </div>
-      <div class="meter-scale"><span>0%</span><span>promised 80%</span><span>100%</span></div>
-      <p class="meter-note">The bar is the measured ratio. The vertical rule is what JIP-38 promises.</p>
     </div>
 
-    <div class="caveat">
-      <strong>This is not evidence of a breach.</strong> JIP-38 runs for at least a year,
-      through Q4 2027, and a programme that batches its burns has broken no promise two
-      months in. What can be said is narrower: with roughly $159,000 of fee revenue
-      committed to buying and burning JTO, none has yet been burned — and against a public
-      position that holders can follow “fee collection, purchases, and burns in real time”,
-      there is as yet nothing to follow on the burn side.
-    </div>
-  </div>
-
-  <section>
-    <div class="sec-head">
-      <h2>Why the burn total is checkable at all</h2>
-      <p>Four facts from chain. Together they make the burned quantity an exact figure rather than an estimate.</p>
-    </div>
-    <div class="panel" style="padding: 4px 20px;">
-      <div class="chain-steps">
-        <div class="step">
-          <span class="n">01</span>
-          <div class="b">
-            <span class="t">Exactly 1,000,000,000 JTO was ever minted <span class="chip chain">chain</span></span>
-            <span class="d">A single <span class="mono">mintToChecked</span> on 2023-11-27, five minutes after the mint was created.</span>
-            <span class="x" id="genesis-tx"></span>
-          </div>
+    <!-- Telemetry: the four figures that answer it -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-space-base mb-space-xl">
+      <div class="bg-surface-container rounded-xl p-space-lg shadow-[0_4px_16px_rgba(0,0,0,0.3)]">
+        <div class="flex items-center justify-between text-on-surface-variant mb-space-sm">
+          <span class="font-label-sm text-label-sm uppercase tracking-wider">Execution Ratio</span>
+          <span class="material-symbols-outlined text-error text-[20px]">speed</span>
         </div>
-        <div class="step">
-          <span class="n">02</span>
-          <div class="b">
-            <span class="t">Minting was closed permanently on 2023-12-04 <span class="chip chain">chain</span></span>
-            <span class="d">The authority set <span class="mono">mintTokens</span> to null. Across all 239 of its transactions that is its only supply-changing act. No JTO can ever be created again.</span>
-          </div>
+        <div class="font-headline-lg text-headline-lg font-bold text-error tracking-tight mb-1 tnum" id="k-ratio">—</div>
+        <div class="flex items-center justify-between font-label-sm text-label-sm">
+          <span class="text-on-surface-variant">Promised</span>
+          <span class="text-secondary font-medium">80%</span>
         </div>
-        <div class="step">
-          <span class="n">03</span>
-          <div class="b">
-            <span class="t">So supply can fall by burning, and by nothing else <span class="chip chain">chain</span></span>
-            <span class="d">Which makes genesis minus current supply an exact quantity destroyed — no enumeration required, and no index to trust.</span>
-          </div>
-        </div>
-        <div class="step">
-          <span class="n">04</span>
-          <div class="b">
-            <span class="t"><span class="num" id="destroyed-inline"></span> JTO has been destroyed since the token existed <span class="chip chain">chain</span></span>
-            <span class="d">But that is roughly <strong>55&times; more</strong> than JIP-38 could have produced from the fee revenue reported so far, so it predates activation and is outside this commitment.</span>
-          </div>
+        <div class="relative w-full bg-surface-container-lowest h-1.5 rounded-full mt-3">
+          <div class="bg-primary-container h-full rounded-full" id="k-ratio-bar" style="width:0%"></div>
+          <div class="absolute -top-1 h-3.5 w-0.5 bg-secondary" id="k-ratio-target" style="left:80%" title="Promised 80%"></div>
         </div>
       </div>
-    </div>
-    <div class="grid g3">
-      <div class="tile"><span class="k">Minted, ever</span><span class="v" id="t-minted"></span><span class="sub">fixed — minting closed</span></div>
-      <div class="tile"><span class="k">Current supply</span><span class="v" id="t-supply"></span><span class="sub">read from chain</span></div>
-      <div class="tile"><span class="k">Destroyed since genesis</span><span class="v" id="t-destroyed"></span><span class="sub">pre-JIP-38, out of scope</span></div>
-    </div>
-  </section>
 
-  <section>
-    <div class="sec-head">
-      <h2>Claimed, and verified</h2>
-      <p>The operator's figures are the claim. The chain is the evidence. Keeping them apart is the point.</p>
-    </div>
-    <div class="scroll panel" style="padding: 16px 20px;">
-      <table>
-        <thead>
-          <tr><th>Quantity</th><th class="r">Value</th><th>Source</th><th>Standing</th></tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>JTX platform fees</td>
-            <td class="r num" id="c-fees"></td>
-            <td><span class="chip claim">claim</span></td>
-            <td>Jito's own dashboard, captured and hashed</td>
-          </tr>
-          <tr>
-            <td>Committed to buyback + burn (80%)</td>
-            <td class="r num" id="c-committed"></td>
-            <td><span class="chip claim">claim</span></td>
-            <td>JIP-38's arithmetic on the figure above</td>
-          </tr>
-          <tr>
-            <td>JTO burned under JIP-38</td>
-            <td class="r num" style="color:var(--absent)">0</td>
-            <td><span class="chip chain">chain</span></td>
-            <td>No programme burn found by any method; Jito confirms none</td>
-          </tr>
-          <tr>
-            <td>DAO treasury JTO balance</td>
-            <td class="r num" id="c-treasury"></td>
-            <td><span class="chip chain">chain</span></td>
-            <td>Rising — fees in, nothing burned out</td>
-          </tr>
-          <tr>
-            <td>Fees swept into JTO</td>
-            <td class="r">not measured</td>
-            <td><span class="chip claim">claim</span></td>
-            <td>The buyback step — described by Jito, not yet traced on chain</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </section>
-
-  <section>
-    <div class="sec-head">
-      <h2>The number to watch</h2>
-      <p>If the mechanism works as described, the treasury's JTO climbs until the first burn, then falls. That fall is unambiguous.</p>
-    </div>
-    <div class="grid g2">
-      <div class="tile">
-        <span class="k">DAO treasury JTO <span class="chip chain">chain</span></span>
-        <span class="v" id="t-treasury"></span>
-        <span class="sub mono" id="t-treasury-acc"></span>
+      <div class="bg-surface-container rounded-xl p-space-lg shadow-[0_4px_16px_rgba(0,0,0,0.3)]">
+        <div class="flex items-center justify-between text-on-surface-variant mb-space-sm">
+          <span class="font-label-sm text-label-sm uppercase tracking-wider">Committed to Burn</span>
+          <span class="material-symbols-outlined text-secondary-fixed-dim text-[20px]">savings</span>
+        </div>
+        <div class="font-headline-lg text-headline-lg font-bold text-on-surface tracking-tight mb-1 tnum" id="k-committed">—</div>
+        <div class="flex items-center justify-between font-label-sm text-label-sm">
+          <span class="text-on-surface-variant">80% of JTX fees</span>
+          <span class="text-secondary">claim</span>
+        </div>
       </div>
-      <div class="tile">
-        <span class="k">JTX fee program <span class="chip chain">chain</span></span>
-        <span class="v" style="font-size:15px" id="t-feeprog"></span>
-        <span class="sub">executable, verified on chain — supplied by Jito</span>
+
+      <div class="bg-surface-container rounded-xl p-space-lg shadow-[0_4px_16px_rgba(0,0,0,0.3)]">
+        <div class="flex items-center justify-between text-on-surface-variant mb-space-sm">
+          <span class="font-label-sm text-label-sm uppercase tracking-wider">JTO Actually Burned</span>
+          <span class="material-symbols-outlined text-error text-[20px]">local_fire_department</span>
+        </div>
+        <div class="font-headline-lg text-headline-lg font-bold text-error tracking-tight mb-1 tnum" id="k-burned">—</div>
+        <div class="flex items-center justify-between font-label-sm text-label-sm">
+          <span class="text-on-surface-variant">Under JIP-38</span>
+          <span class="text-primary">chain</span>
+        </div>
+      </div>
+
+      <div class="bg-surface-container rounded-xl p-space-lg shadow-[0_4px_16px_rgba(0,0,0,0.3)]">
+        <div class="flex items-center justify-between text-on-surface-variant mb-space-sm">
+          <span class="font-label-sm text-label-sm uppercase tracking-wider">DAO Treasury JTO</span>
+          <span class="material-symbols-outlined text-primary-fixed-dim text-[20px]">account_balance</span>
+        </div>
+        <div class="font-headline-md text-headline-md font-bold text-on-surface tracking-tight mb-1 tnum" id="k-treasury">—</div>
+        <div class="flex items-center justify-between font-label-sm text-label-sm">
+          <span class="text-on-surface-variant">Rising — the number to watch</span>
+          <span class="text-primary">chain</span>
+        </div>
       </div>
     </div>
-  </section>
 
-  <section>
-    <div class="sec-head">
-      <h2>Addresses this depends on</h2>
-      <p>Every figure rests on these. Each is re-tested against chain on every run; an address that stops behaving as recorded raises an alarm rather than quietly feeding a number.</p>
-    </div>
-    <div class="scroll panel" style="padding: 16px 20px;">
-      <table>
-        <thead><tr><th>Role</th><th>Address</th><th>Confidence</th></tr></thead>
-        <tbody id="registry-rows"></tbody>
-      </table>
-    </div>
-  </section>
+    <!-- The verdict, with its caveat in the same frame -->
+    <div class="bg-surface-container rounded-xl p-space-xl shadow-[0_8px_24px_rgba(0,0,0,0.4)] mb-space-xl">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-space-sm mb-space-lg">
+        <div>
+          <h2 class="font-headline-sm text-headline-sm text-on-surface">Value Burned Against Value Committed</h2>
+          <p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">The bar is measured. The amber rule is what JIP-38 promises.</p>
+        </div>
+        <span class="px-2 py-1 rounded bg-surface-container-high font-label-sm text-label-sm text-primary flex items-center gap-1 self-start">
+          <span class="inline-block w-1.5 h-1.5 rounded-full bg-primary-container"></span> Verified on chain
+        </span>
+      </div>
 
-  <section>
-    <div class="sec-head">
-      <h2>What this does not establish</h2>
-      <p>Written before the findings, so it cannot be tuned to them.</p>
-    </div>
-    <ul class="limits" id="limits"></ul>
-  </section>
+      <div class="relative w-full h-8 bg-surface-container-lowest rounded-lg p-1 shadow-[inset_0_2px_4px_rgba(0,0,0,0.6)] mb-space-sm">
+        <div class="h-full bg-primary-container rounded shadow-[0_0_12px_rgba(0,245,212,0.3)] transition-all duration-500" id="v-fill" style="width:0%"></div>
+        <div class="absolute -top-1 -bottom-1 w-0.5 bg-secondary" id="v-target" style="left:80%"></div>
+      </div>
+      <div class="flex justify-between font-label-sm text-label-sm text-on-surface-variant mb-space-lg">
+        <span>0%</span><span class="text-secondary font-medium">promised 80%</span><span>100%</span>
+      </div>
 
-  <footer>
-    <span>Derived from Solana mainnet. Figures marked <span class="chip chain">chain</span> were read from the ledger; figures marked <span class="chip claim">claim</span> are the operator's, captured with a date and a hash so they cannot be revised without record.</span>
-    <span id="foot-stamp"></span>
-  </footer>
+      <div class="p-space-md rounded-lg bg-secondary/[0.07] shadow-[inset_0_0_0_1px_rgba(255,185,95,0.25)] flex gap-space-md">
+        <span class="material-symbols-outlined text-secondary text-[20px] flex-shrink-0">info</span>
+        <p class="font-body-md text-body-md text-on-surface-variant">
+          <strong class="text-on-surface font-semibold">This is not evidence of a breach.</strong>
+          JIP-38 runs for at least a year, through Q4 2027, and a programme that batches its burns has
+          broken no promise two months in. What can be said is narrower: with roughly $159,000 of fee
+          revenue committed to buying and burning JTO, none has yet been burned — and against a public
+          position that holders can follow “fee collection, purchases, and burns in real time”, there
+          is as yet nothing to follow on the burn side.
+        </p>
+      </div>
+    </div>
+
+    <!-- Why the figure is exact -->
+    <div class="bg-surface-container rounded-xl p-space-xl shadow-[0_8px_24px_rgba(0,0,0,0.4)] mb-space-xl">
+      <div class="mb-space-lg">
+        <h2 class="font-headline-sm text-headline-sm text-on-surface">Why the Burn Total Is Checkable At All</h2>
+        <p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">Four facts from chain. Each depends on the one above it.</p>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-space-base" id="proof-steps"></div>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-space-sm mt-space-lg pt-space-lg border-t border-surface-variant/40">
+        <div class="p-space-md rounded-lg bg-surface-container-low">
+          <div class="font-label-sm text-label-sm text-outline uppercase tracking-wider mb-1">Minted, ever</div>
+          <div class="font-headline-sm text-headline-sm font-bold text-on-surface tnum" id="s-minted">—</div>
+          <div class="font-label-sm text-label-sm text-primary mt-1">fixed — minting closed</div>
+        </div>
+        <div class="p-space-md rounded-lg bg-surface-container-low">
+          <div class="font-label-sm text-label-sm text-outline uppercase tracking-wider mb-1">Current supply</div>
+          <div class="font-headline-sm text-headline-sm font-bold text-on-surface tnum" id="s-supply">—</div>
+          <div class="font-label-sm text-label-sm text-on-surface-variant mt-1">read from chain</div>
+        </div>
+        <div class="p-space-md rounded-lg bg-surface-container-low">
+          <div class="font-label-sm text-label-sm text-outline uppercase tracking-wider mb-1">Destroyed since genesis</div>
+          <div class="font-headline-sm text-headline-sm font-bold text-on-surface tnum" id="s-destroyed">—</div>
+          <div class="font-label-sm text-label-sm text-secondary mt-1">pre-JIP-38, out of scope</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Claimed vs verified -->
+    <div class="bg-surface-container rounded-xl p-space-xl shadow-[0_8px_24px_rgba(0,0,0,0.4)] mb-space-xl">
+      <div class="mb-space-lg">
+        <h2 class="font-headline-sm text-headline-sm text-on-surface">Claimed, and Verified</h2>
+        <p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">The operator's figures are the claim. The chain is the evidence. Keeping them apart is the point.</p>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-left font-body-sm text-body-sm">
+          <thead>
+            <tr class="font-label-sm text-label-sm uppercase tracking-wider text-outline bg-surface-container-low">
+              <th class="py-space-sm px-space-md rounded-l">Quantity</th>
+              <th class="py-space-sm px-space-md text-right">Value</th>
+              <th class="py-space-sm px-space-md">Source</th>
+              <th class="py-space-sm px-space-md rounded-r">Standing</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-surface-container-highest/25" id="cv-rows"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Registry -->
+    <div class="bg-surface-container rounded-xl p-space-xl shadow-[0_8px_24px_rgba(0,0,0,0.4)] mb-space-xl">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-space-sm mb-space-lg">
+        <div>
+          <h2 class="font-headline-sm text-headline-sm text-on-surface">Addresses This Depends On</h2>
+          <p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">Re-tested against chain on every run. An address that stops behaving as recorded raises an alarm rather than quietly feeding a number.</p>
+        </div>
+        <span class="px-space-md py-1.5 rounded bg-surface-container-high font-label-sm text-label-sm text-primary self-start tnum" id="reg-count">—</span>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-left font-body-sm text-body-sm">
+          <thead>
+            <tr class="font-label-sm text-label-sm uppercase tracking-wider text-outline bg-surface-container-low">
+              <th class="py-space-sm px-space-md rounded-l">Role</th>
+              <th class="py-space-sm px-space-md">Address</th>
+              <th class="py-space-sm px-space-md rounded-r">Confidence</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-surface-container-highest/25 font-mono" id="registry-rows"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Limits -->
+    <div class="bg-surface-container rounded-xl p-space-xl shadow-[0_8px_24px_rgba(0,0,0,0.4)] mb-space-xl">
+      <div class="mb-space-base">
+        <h2 class="font-headline-sm text-headline-sm text-on-surface">What This Does Not Establish</h2>
+        <p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">Written before the findings, so it cannot be tuned to them.</p>
+      </div>
+      <ul class="flex flex-col gap-space-sm" id="limits"></ul>
+    </div>
+
+    <footer class="pt-space-lg border-t border-surface-variant/40 flex flex-col gap-space-xs font-label-sm text-label-sm text-outline">
+      <span>
+        Derived from Solana mainnet. Figures marked
+        <span class="text-primary">chain</span> were read from the ledger; figures marked
+        <span class="text-secondary">claim</span> are the operator's, captured with a date and a hash
+        so they cannot be revised without record.
+      </span>
+      <span class="tnum" id="foot-stamp"></span>
+    </footer>
+  </main>
 </div>
 
 <script id="snapshot" type="application/json">__SNAPSHOT_JSON__</script>
 <script>
-  (function () {
-    var snap;
-    try { snap = JSON.parse(document.getElementById("snapshot").textContent); }
-    catch (e) { return; }
+(function () {
+  var snap;
+  try { snap = JSON.parse(document.getElementById("snapshot").textContent); } catch (e) { return; }
 
-    var n0 = function (x) { return Number(x).toLocaleString(undefined, { maximumFractionDigits: 0 }); };
-    var n3 = function (x) { return Number(x).toLocaleString(undefined, { maximumFractionDigits: 3 }); };
-    var usd = function (x) { return "$" + Number(x).toLocaleString(undefined, { maximumFractionDigits: 0 }); };
-    var set = function (id, txt) { var el = document.getElementById(id); if (el) el.textContent = txt; };
+  var n0 = function (x) { return Number(x).toLocaleString(undefined, { maximumFractionDigits: 0 }); };
+  var n3 = function (x) { return Number(x).toLocaleString(undefined, { maximumFractionDigits: 3 }); };
+  var usd = function (x) { return "$" + Number(x).toLocaleString(undefined, { maximumFractionDigits: 0 }); };
+  var set = function (id, t) { var e = document.getElementById(id); if (e) e.textContent = t; };
+  var el = function (tag, cls, txt) { var e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; };
 
-    var ex = snap.execution || {};
-    var pct = (ex.ratio || 0) * 100;
-    set("ratio-value", (pct === 0 ? "0" : pct.toFixed(1)) + "%");
-    set("committed", usd(ex.committedUsd || 0));
-    set("burned", n0(ex.burnedJto || 0) + " JTO");
-    var fill = document.getElementById("meter-fill");
-    if (fill) fill.style.width = Math.max(0, Math.min(100, pct)) + "%";
-    var tgt = document.getElementById("meter-target");
-    if (tgt) tgt.style.left = ((ex.promisedRatio || 0.8) * 100) + "%";
+  var ex = snap.execution || {}, s = snap.supply || {}, c = snap.claimed || {}, t = snap.treasury || {};
+  var pct = (ex.ratio || 0) * 100;
+  var target = (ex.promisedRatio || 0.8) * 100;
 
-    var s = snap.supply || {};
-    set("t-minted", n0(s.mintedEver));
-    set("t-supply", n3(s.current));
-    set("t-destroyed", n3(s.destroyed));
-    set("destroyed-inline", n0(s.destroyed));
-    set("genesis-tx", s.genesisMintTx || "");
+  set("k-ratio", (pct === 0 ? "0" : pct.toFixed(1)) + "%");
+  set("k-committed", usd(ex.committedUsd || 0));
+  set("k-burned", n0(ex.burnedJto || 0) + " JTO");
+  set("k-treasury", n3(t.jto));
+  set("s-minted", n0(s.mintedEver));
+  set("s-supply", n3(s.current));
+  set("s-destroyed", n3(s.destroyed));
 
-    var c = snap.claimed || {};
-    set("c-fees", usd(c.platformFeesUsd));
-    set("c-committed", usd(ex.committedUsd || 0));
+  ["k-ratio-bar", "v-fill"].forEach(function (id) {
+    var e = document.getElementById(id); if (e) e.style.width = Math.max(0, Math.min(100, pct)) + "%";
+  });
+  ["k-ratio-target", "v-target"].forEach(function (id) {
+    var e = document.getElementById(id); if (e) e.style.left = target + "%";
+  });
 
-    var t = snap.treasury || {};
-    set("t-treasury", n3(t.jto));
-    set("c-treasury", n3(t.jto));
-    set("t-treasury-acc", t.tokenAccount || "");
+  set("hdr-slot", "slot " + (snap.slot || "—"));
+  var when = snap.blockTimeIso || snap.generatedAt || "";
+  set("ov-snapshot", "snapshot " + String(when).replace("T", " ").slice(0, 19) + "Z");
+  set("foot-stamp", "Snapshot generated " + String(snap.generatedAt || "").replace("T", " ").slice(0, 19) +
+    "Z · JIP-38 activated " + (snap.activation || ""));
 
-    var f = snap.feeProgram || {};
-    set("t-feeprog", f.address || "");
+  // The proof chain — a real dependency sequence, so it is numbered.
+  var steps = [
+    ["01", "Exactly 1,000,000,000 JTO was ever minted",
+      "A single mintToChecked on 2023-11-27, five minutes after the mint was created.", s.genesisMintTx || ""],
+    ["02", "Minting was closed permanently on 2023-12-04",
+      "The authority set mintTokens to null. Across all 239 of its transactions that is its only supply-changing act. No JTO can ever be created again.", ""],
+    ["03", "So supply can fall by burning, and by nothing else",
+      "Which makes genesis minus current supply an exact quantity destroyed — no enumeration required, and no index to trust.", ""],
+    ["04", n0(s.destroyed) + " JTO has been destroyed since the token existed",
+      "But that is roughly 55x more than JIP-38 could have produced from the fee revenue reported so far, so it predates activation and sits outside this commitment.", ""]
+  ];
+  var ps = document.getElementById("proof-steps");
+  steps.forEach(function (row) {
+    var card = el("div", "p-space-md rounded-lg bg-surface-container-low flex gap-space-md");
+    card.appendChild(el("span", "font-label-sm text-label-sm text-primary-fixed-dim pt-0.5 flex-shrink-0", row[0]));
+    var body = el("div", "flex flex-col gap-1 min-w-0");
+    body.appendChild(el("span", "font-body-md text-body-md text-on-surface font-medium", row[1]));
+    body.appendChild(el("span", "font-body-sm text-body-sm text-on-surface-variant", row[2]));
+    if (row[3]) body.appendChild(el("span", "font-label-sm text-label-sm text-outline break-all font-mono", row[3]));
+    card.appendChild(body);
+    ps.appendChild(card);
+  });
 
-    var reg = document.getElementById("registry-rows");
-    if (reg && Array.isArray(snap.registry)) {
-      snap.registry.forEach(function (r) {
-        var tr = document.createElement("tr");
-        var a = document.createElement("td"); a.textContent = r.role;
-        var b = document.createElement("td"); b.className = "addr"; b.textContent = r.address;
-        var d = document.createElement("td");
-        var chip = document.createElement("span");
-        chip.className = "chip " + (r.confidence === "rejected" ? "absent" : "chain");
-        chip.textContent = r.confidence;
-        d.appendChild(chip);
-        tr.appendChild(a); tr.appendChild(b); tr.appendChild(d);
-        reg.appendChild(tr);
-      });
-    }
+  // Claimed vs verified
+  var chip = function (kind) {
+    var cls = kind === "chain"
+      ? "inline-flex items-center gap-1 px-2 py-0.5 rounded bg-primary/10 text-primary font-bold text-[10px] uppercase tracking-wider"
+      : "inline-flex items-center gap-1 px-2 py-0.5 rounded bg-secondary/10 text-secondary font-bold text-[10px] uppercase tracking-wider";
+    return el("span", cls, kind);
+  };
+  var rows = [
+    ["JTX platform fees", usd(c.platformFeesUsd), "claim", "Jito's own dashboard, captured and hashed", "text-on-surface"],
+    ["Committed to buyback + burn (80%)", usd(ex.committedUsd || 0), "claim", "JIP-38's arithmetic on the figure above", "text-on-surface"],
+    ["JTO burned under JIP-38", n0(ex.burnedJto || 0), "chain", "No programme burn found by any method; Jito confirms none", "text-error font-bold"],
+    ["DAO treasury JTO balance", n3(t.jto), "chain", "Rising — fees in, nothing burned out", "text-on-surface"],
+    ["Fees swept into JTO", "not measured", "claim", "The buyback step — described by Jito, not yet traced on chain", "text-outline"]
+  ];
+  var cv = document.getElementById("cv-rows");
+  rows.forEach(function (r) {
+    var tr = el("tr", "hover:bg-surface-container-high/40 transition-colors");
+    tr.appendChild(el("td", "py-3 px-space-md text-on-surface-variant", r[0]));
+    tr.appendChild(el("td", "py-3 px-space-md text-right font-mono tnum " + r[4], r[1]));
+    var td = el("td", "py-3 px-space-md"); td.appendChild(chip(r[2])); tr.appendChild(td);
+    tr.appendChild(el("td", "py-3 px-space-md text-on-surface-variant", r[3]));
+    cv.appendChild(tr);
+  });
 
-    var lim = document.getElementById("limits");
-    if (lim && Array.isArray(snap.unverified)) {
-      snap.unverified.forEach(function (x) {
-        var li = document.createElement("li");
-        var sp = document.createElement("span"); sp.textContent = x;
-        li.appendChild(sp); lim.appendChild(li);
-      });
-    }
+  // Registry
+  var reg = document.getElementById("registry-rows");
+  (snap.registry || []).forEach(function (r) {
+    var tr = el("tr", "hover:bg-surface-container-high/40 transition-colors");
+    tr.appendChild(el("td", "py-3 px-space-md text-on-surface font-body-sm", r.role));
+    tr.appendChild(el("td", "py-3 px-space-md text-on-surface-variant text-[11px] break-all", r.address));
+    var td = el("td", "py-3 px-space-md");
+    var rejected = r.confidence === "rejected";
+    td.appendChild(el("span",
+      "inline-flex items-center px-2 py-0.5 rounded font-bold text-[10px] uppercase tracking-wider " +
+      (rejected ? "bg-error/10 text-error" : "bg-primary/10 text-primary"), r.confidence));
+    tr.appendChild(td);
+    reg.appendChild(tr);
+  });
+  var counts = (snap.registry || []).reduce(function (a, r) { a[r.confidence] = (a[r.confidence] || 0) + 1; return a; }, {});
+  set("reg-count", (snap.registry || []).length + " entries · " + (counts.confirmed || 0) + " confirmed · " + (counts.rejected || 0) + " ruled out");
 
-    var when = snap.blockTimeIso || snap.generatedAt || "";
-    set("stamp-slot", "slot " + (snap.slot || "—") + " · " + String(when).replace("T", " ").slice(0, 19) + "Z");
-    set("foot-stamp", "Snapshot generated " + String(snap.generatedAt || "").replace("T", " ").slice(0, 19) + "Z · activation " + (snap.activation || ""));
-  })();
+  // Limits
+  var lim = document.getElementById("limits");
+  (snap.unverified || []).forEach(function (x) {
+    var li = el("li", "flex gap-space-md items-start");
+    li.appendChild(el("span", "material-symbols-outlined text-outline text-[18px] flex-shrink-0", "remove"));
+    li.appendChild(el("span", "font-body-md text-body-md text-on-surface-variant", x));
+    lim.appendChild(li);
+  });
+})();
 </script>
