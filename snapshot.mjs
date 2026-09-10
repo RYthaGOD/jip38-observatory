@@ -14,7 +14,7 @@
 // apart in the data, rather than only in the prose, is the whole point of the
 // project — a reader should never have to guess which they are looking at.
 
-import { mkdirSync, writeFileSync, readFileSync, existsSync } from "node:fs";
+import { mkdirSync, writeFileSync, readFileSync, existsSync, appendFileSync } from "node:fs";
 import { dirname } from "node:path";
 import { createRpc } from "./rpc.mjs";
 import { parseRegistry } from "./lib.mjs";
@@ -124,7 +124,47 @@ const snap = {
   registry,
 };
 
+// --- change detection -------------------------------------------------------
+//
+// The dashboard is the visible product, but this is the useful one. The event
+// worth catching is the FIRST BURN: the treasury's JTO climbs while fees are
+// swept in, and falls when a burn finally happens. Because supply is
+// monotonically non-increasing, a fall is unambiguous.
+//
+// Comparing against the previous snapshot costs nothing and runs on every
+// scheduled refresh, so the moment JIP-38 actually executes, it is recorded
+// with a timestamp rather than noticed later.
+const HIST = "data/history.jsonl";
+let alerts = [];
+let prev = null;
+if (existsSync(OUT)) { try { prev = JSON.parse(readFileSync(OUT, "utf8")); } catch {} }
+
+if (prev) {
+  const dTreasury = treasuryJto - prev.treasury.jto;
+  const dSupply = currentSupply - prev.supply.current;
+
+  if (dTreasury < -0.000001) {
+    alerts.push(`TREASURY FELL by ${Math.abs(dTreasury).toLocaleString(undefined, { maximumFractionDigits: 9 })} JTO ` +
+      `(${prev.treasury.jto} -> ${treasuryJto}). This is the event to check: a burn, or a transfer out.`);
+  }
+  // Supply always drifts down from rent-reclaim dust; only a step change matters.
+  if (dSupply < -1000) {
+    alerts.push(`SUPPLY FELL by ${Math.abs(dSupply).toLocaleString(undefined, { maximumFractionDigits: 6 })} JTO ` +
+      `since the last snapshot — far beyond dust. A programme-scale burn may have occurred.`);
+  }
+  if (prev.claimed && claimed.platformFeesUsd !== prev.claimed.platformFeesUsd) {
+    alerts.push(`claimed platform fees changed: $${prev.claimed.platformFeesUsd} -> $${claimed.platformFeesUsd}`);
+  }
+}
+
+snap.alerts = alerts;
+
 mkdirSync(dirname(OUT), { recursive: true });
+appendFileSync(HIST, JSON.stringify({
+  t: snap.generatedAt, slot, supply: currentSupply, destroyed,
+  treasury: treasuryJto, burnedJto: snap.execution.burnedJto, alerts,
+}) + "\n");
+
 writeFileSync(OUT, JSON.stringify(snap, null, 2));
 console.log(`wrote ${OUT}`);
 console.log(`  supply      ${currentSupply.toLocaleString()} JTO  (destroyed ${destroyed.toLocaleString()})`);
@@ -133,3 +173,12 @@ console.log(`  committed   $${committedUsd.toLocaleString(undefined, { maximumFr
 console.log(`  burned      0 JTO  -> execution ratio 0% against a promised 80%`);
 console.log(`  registry    ${registry.length} entries`);
 console.log(`  rpc         ${c.status()}`);
+
+if (alerts.length) {
+  console.log("");
+  console.log("!".repeat(72));
+  for (const a of alerts) console.log("!! " + a);
+  console.log("!".repeat(72));
+} else {
+  console.log("  no change worth flagging since the last snapshot");
+}
