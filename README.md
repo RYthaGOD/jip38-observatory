@@ -302,6 +302,54 @@ could not publish, and then exited 0 — so the wrapper logged "done" and the
 scheduled task recorded success while the public page stayed three days stale.
 An exit code from a publisher is not evidence of publication.
 
+### Hosting it yourself
+
+```
+npm start           # serves on :8080, or $PORT
+node refresh.mjs    # check, verify, read chain, rebuild — cross-platform
+```
+
+[`server.mjs`](server.mjs) has no dependencies and serves an **allowlist**, not
+a directory. Four URLs exist:
+
+| | |
+|---|---|
+| `/` | the dashboard |
+| `/snapshot.json` | the snapshot it was built from — the evidence, fetchable directly |
+| `/release.json` | what was last verified as published |
+| `/healthz` | whether there is actually a page to serve |
+
+Anything else is a 404 before any disk access happens. That is deliberate:
+`dist/` also holds `dashboard.html.prev`, the rollback payload written before
+every build, and pointing a static file server at that directory would publish
+it. With no filesystem routing there is no path to traverse.
+
+The page is served under a content policy that denies everything by default and
+then names only what the page needs — including `connect-src 'none'`, because a
+static snapshot must never make a network request. Its inline script and style
+are allowed by **sha256 hash**, computed from the bytes being served at the
+moment they are served, so there is no `unsafe-inline` and no policy that can
+drift from the page it protects. [`test-server.mjs`](test-server.mjs) checks all
+of it, including that the hash in the header matches the script on the page.
+
+### On Railway
+
+[`railway.toml`](railway.toml) configures the web service; the cron service is
+created alongside it with `node refresh.mjs` and a schedule. `SOLANA_RPC_URL` is
+the only secret.
+
+There is no publish step there, which is the point: the page that was built is
+the page that is served, off the same disk, and the server re-reads it when its
+mtime changes. Nothing has to be pushed anywhere, so nothing can silently fail
+to be.
+
+One thing to get right before running the cron in anger — Railway's filesystem
+is ephemeral, and a redeploy resets it to whatever was committed.
+`data/history.jsonl` is the treasury series: it is evidence, it is never
+back-filled, and losing a reading cannot be undone. Attach a volume at
+`/app/data`, or the chart silently restarts from the committed readings on every
+deploy.
+
 ## Licence
 
 MIT.

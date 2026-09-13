@@ -1,26 +1,26 @@
 {
   "schemaVersion": 3,
-  "generatedAt": "2026-09-13T00:00:03.849Z",
+  "generatedAt": "2026-09-13T04:03:30.839Z",
   "activation": "2026-07-13",
   "daysSinceActivation": 62,
   "chain": {
     "source": "chain",
-    "observedAt": "2026-09-13T00:00:03.849Z",
+    "observedAt": "2026-09-13T04:03:30.839Z",
     "commitment": "finalized",
     "endpoint": "https://mainnet.helius-rpc.com",
     "slotRange": {
-      "from": 446560485,
-      "to": 446560487
+      "from": 446606759,
+      "to": 446606762
     },
-    "slotRangeNote": "reads span slots 446560485–446560487; measurements are not simultaneous",
-    "blockTimeIso": "2026-09-12T23:59:53.000Z",
+    "slotRangeNote": "reads span slots 446606759–446606762; measurements are not simultaneous",
+    "blockTimeIso": "2026-09-13T04:03:21.000Z",
     "supply": {
       "mintedEverRaw": "1000000000000000000",
-      "currentRaw": "986522686278609132",
-      "destroyedRaw": "13477313721390868",
+      "currentRaw": "986522685886393958",
+      "destroyedRaw": "13477314113606042",
       "mintedEver": "1000000000.000000000",
-      "current": "986522686.278609132",
-      "destroyed": "13477313.721390868",
+      "current": "986522685.886393958",
+      "destroyed": "13477314.113606042",
       "decimals": 9,
       "mintAuthority": null,
       "freezeAuthority": null,
@@ -30,8 +30,8 @@
     "treasury": {
       "owner": "5eosrve6LktMZgVNszYzebgmmC7BjLK8NoWyRQtcmGTF",
       "tokenAccount": "2Ch9AWnbAaummLkWTTtNgTAvrFq8YMATUaaN77TB2Y6C",
-      "jtoRaw": "209755049535180132",
-      "jto": "209755049.535180132",
+      "jtoRaw": "209755126513272425",
+      "jto": "209755126.513272425",
       "accounts": 2
     },
     "feeProgram": {
@@ -84,7 +84,7 @@
       "slot": 445756117,
       "observedAt": "2026-09-10T01:15:56.529Z"
     },
-    "ageDays": 2,
+    "ageDays": 3,
     "validForDays": 14
   },
   "execution": {
@@ -100,7 +100,7 @@
     "That JTX fees are being swept into JTO — the buyback step is an operator claim, not yet traced on chain.",
     "The 80/20 split.",
     "The $198,908.37 fee total, and the ~10 days of activity missing from the dashboard's start.",
-    "The dates of the 13477313.721390868 JTO destroyed before activation."
+    "The dates of the 13477314.113606042 JTO destroyed before activation."
   ],
   "registry": [
     {
@@ -257,6 +257,11 @@
       "t": "2026-09-13T00:00:03.849Z",
       "treasury": 209755049.53518012,
       "supply": 986522686.2786092
+    },
+    {
+      "t": "2026-09-13T04:03:30.839Z",
+      "treasury": 209755126.51327243,
+      "supply": 986522685.8863939
     }
   ],
   "alerts": []
