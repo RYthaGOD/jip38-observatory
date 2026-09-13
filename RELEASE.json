@@ -1,11 +1,11 @@
 {
   "_comment": "Written only after the published artifact was read back and confirmed to carry this snapshot. A build is not a deployment.",
   "url": "https://claude.ai/code/artifact/a6f040d8-e252-4f10-825b-f5c640b5e107",
-  "servedGeneratedAt": "2026-09-13T04:03:30.839Z",
+  "servedGeneratedAt": "2026-09-13T09:30:11.743Z",
   "schemaVersion": 3,
   "assessmentState": "current",
-  "sha256": "f14b2bcc6a9d55578a2095602fbc1945f6cbcde2f9fae0282fe59f5df0cc6b14",
-  "bytes": 40747,
-  "verifiedAt": "2026-09-13T04:06:54.819Z",
+  "sha256": "17abeb0a3761e077940f0c5ac831e3b575a1a601d739422440204961cf87572f",
+  "bytes": 42219,
+  "verifiedAt": "2026-09-13T09:34:59.434Z",
   "verifiedBy": "readback verified in this session"
 }
