@@ -101,7 +101,19 @@ const POLICY_BASE = [
 ];
 const POLICY_DATA = [...POLICY_BASE, "script-src 'none'", "style-src 'none'"].join("; ");
 
-const sha = (s) => `'sha256-${createHash("sha256").update(s, "utf8").digest("base64")}'`;
+// Hash what the BROWSER will hash, which is not what is on disk.
+//
+// The HTML parser normalises CRLF to LF in the input stream before it tokenises
+// anything, so the script text a browser hashes always has LF line endings —
+// whatever the file contains. Hashing the raw bytes therefore produces a policy
+// that matches on a Linux checkout and silently kills the page on a Windows
+// one, where git hands over CRLF. The failure is the worst shape available: a
+// correct-looking page serving 200 with every figure blank.
+//
+// Found by cloning the repository fresh and serving that, which is the only way
+// this would ever have shown up.
+const sha = (s) =>
+  `'sha256-${createHash("sha256").update(s.replace(/\r\n/g, "\n"), "utf8").digest("base64")}'`;
 
 function policyFor(html) {
   // Only blocks the browser would EXECUTE need a hash. The snapshot lives in a

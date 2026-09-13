@@ -1,0 +1,21 @@
+# Line endings are normalised to LF in the repository and in the working tree.
+#
+# This is not tidiness. The dashboard is served under a content policy that
+# allows its inline script by sha256 hash, and the HTML parser normalises CRLF
+# to LF before it hashes anything — so a CRLF checkout produces a file whose
+# bytes hash differently from what the browser will hash. server.mjs normalises
+# before hashing so it is correct either way, but leaving the working tree
+# consistent removes the whole class of problem rather than compensating for it.
+#
+# It also keeps the sha256 in RELEASE.json meaningful: the receipt records the
+# bytes of a built page, and those bytes should not depend on which machine
+# checked the template out.
+
+* text=auto eol=lf
+
+# Binary, never touched.
+*.png binary
+*.jpg binary
+*.pdf binary
+*.woff binary
+*.woff2 binary

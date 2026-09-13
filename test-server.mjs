@@ -16,7 +16,7 @@
 import assert from "node:assert/strict";
 import { spawn, spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { readFileSync, mkdtempSync, rmSync, existsSync } from "node:fs";
+import { readFileSync, writeFileSync, mkdtempSync, mkdirSync, rmSync, existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -169,6 +169,42 @@ try {
       .map((m) => createHash("sha256").update(m[2], "utf8").digest("base64"));
     assert.ok(executing.length > 0, "no executing inline script found to hash");
     for (const h of executing) assert.ok(csp.includes(`'sha256-${h}'`), `script hash ${h} is not in the policy`);
+  });
+  await t("the policy survives a CRLF checkout", async () => {
+    // This is a real failure that reached a clean clone. The HTML parser
+    // normalises CRLF to LF before hashing, so a page checked out with Windows
+    // line endings hashes differently on disk than in the browser — and the
+    // result is the worst available shape: HTTP 200, a page that looks right,
+    // and every figure blank because the script was refused.
+    const crlfDir = mkdtempSync(join(tmpdir(), "jip38-crlf-"));
+    const p3 = PORT + 2;
+    let alt;
+    try {
+      mkdirSync(join(crlfDir, "dist"), { recursive: true });
+      const lf = readFileSync("dist/dashboard.html", "utf8").replace(/\r\n/g, "\n");
+      writeFileSync(join(crlfDir, "dist", "dashboard.html"), lf.replace(/\n/g, "\r\n"));
+
+      alt = spawn(process.execPath, [join(process.cwd(), "server.mjs"), "--port", String(p3)],
+        { stdio: "ignore", cwd: crlfDir });
+      await waitForPort(p3);
+
+      const r = await fetch(`http://127.0.0.1:${p3}/`);
+      const served = await r.text();
+      assert.ok(served.includes("\r\n"), "the fixture lost its CRLF endings");
+
+      const policy = r.headers.get("content-security-policy");
+      // Hash the script as a browser would see it: LF, after parser
+      // normalisation. That is what the policy has to contain.
+      const script = [...served.matchAll(/<script([^>]*)>([\s\S]*?)<\/script>/g)]
+        .filter((m) => !/type\s*=/.test(m[1]))[0][2].replace(/\r\n/g, "\n");
+      const expected = createHash("sha256").update(script, "utf8").digest("base64");
+      assert.ok(policy.includes(`'sha256-${expected}'`),
+        "a CRLF page is served with a policy the browser will reject — the page would render blank");
+    } finally {
+      alt?.kill();
+      await new Promise((r) => setTimeout(r, 200));
+      try { rmSync(crlfDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 }); } catch { /* OS will clear it */ }
+    }
   });
   await t("the snapshot data island is NOT hashed — it is data, not script", () => {
     const html = readFileSync("dist/dashboard.html", "utf8");
