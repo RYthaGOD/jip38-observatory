@@ -337,7 +337,12 @@ of it, including that the hash in the header matches the script on the page.
 
 ### On Railway
 
-Live at **https://web-production-372cc.up.railway.app**.
+Live at **https://web-production-372cc.up.railway.app**, and this is the only
+thing that refreshes on a schedule. The Windows scheduled task that used to do
+it is disabled — two machines writing the same evidence produced two incomplete
+series, and its publish step could not work headlessly anyway.
+[`refresh.cmd`](refresh.cmd) still runs by hand.
+
 [`deploy-railway.sh`](deploy-railway.sh) provisions the whole thing, and runs
 the offline gate first so nothing is provisioned from a tree whose tests fail:
 

@@ -1,5 +1,28 @@
 @echo off
-REM Refresh the JIP-38 Observatory dashboard.
+REM Refresh the JIP-38 Observatory dashboard, on Windows, by hand.
+REM
+REM ---------------------------------------------------------------------------
+REM NO LONGER SCHEDULED, as of 13 September 2026.
+REM
+REM The "JIP38 Observatory Refresh" scheduled task is DISABLED (disabled, not
+REM deleted: Enable-ScheduledTask -TaskName "JIP38 Observatory Refresh" brings it
+REM back). Railway now serves the page and refreshes itself in-process every six
+REM hours, so this machine running the same refresh did two unhelpful things:
+REM
+REM   1. It wrote a SECOND series of treasury readings. Both series were
+REM      genuine, and neither was complete — they had diverged by three readings
+REM      before it was noticed. server.mjs now unions them on boot so nothing is
+REM      lost, but one writer is better than a merge.
+REM
+REM   2. It exited 3 on every run. That is correct: stage 3 below reports that
+REM      the page was built but not published to the Artifact, and the headless
+REM      publish step cannot work — it needs a Claude session with the Artifact
+REM      tool, which a scheduled task does not have. So every run raised a
+REM      failure notification for a condition nothing on this machine could fix.
+REM
+REM Running it by hand is still fine and still does the right thing. The Artifact
+REM is now updated deliberately rather than on a timer.
+REM ---------------------------------------------------------------------------
 REM
 REM Three stages, and they fail differently:
 REM   1. Read the chain and rebuild the page. Plain scripts; they fail loudly.
