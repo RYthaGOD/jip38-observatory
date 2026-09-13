@@ -5,10 +5,13 @@
 # holding the bytes can re-hash them and check them against this file's git history.
 #
 # status:
-#   ok       captured, and the body contains what was wanted
-#   shell    fetched successfully but the figures were not in it (client-rendered page)
-#   blocked  could not be attempted — a credential is missing
-#   fail     the fetch itself failed
+#   ok           captured AND structurally validated against the expected schema
+#   unvalidated  bytes archived and labelled metrics present, but scraped HTML carries
+#                no schema to validate against — transport success, not a checked claim
+#   stale        validated, but the operator query had not re-run in over 48 hours
+#   shell        fetched successfully but the figures were not in it (client-rendered page)
+#   blocked      could not be attempted — a credential is missing
+#   fail         the fetch itself failed, or the response did not validate
 #
 # A run of 'shell' or 'blocked' rows is a finding, not a malfunction: it dates the
 # point at which the operator's published figures were not archivable by this project.

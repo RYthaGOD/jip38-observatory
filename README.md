@@ -119,9 +119,20 @@ no burns so far. Both addresses verify on chain, and the treasury's JTO account
 turns out to be the one this project had **already identified independently** as
 the largest JTO holder, before any address was supplied.
 
-An independent search corroborates the absence: across the whole of JTO's
-history, no programme-scale burn exists anywhere — the largest burn found in any
-sample was 0.96 JTO, and all of it was rent-reclaim dust.
+What corroborates that absence, and what does not, has to be stated carefully —
+because the two are easy to conflate and this project got it wrong once already.
+
+**The supply invariant corroborates it.** Total JTO destroyed since genesis is
+~13.48M, which is roughly 55x more than the reported fee revenue could have
+bought. So the destruction on record predates activation, and is not JIP-38
+execution. That argument rests only on arithmetic over two chain reads.
+
+**The burn-filtered index does not corroborate it.** A sweep of that index
+returned a largest-ever burn of 0.96 JTO across JTO's entire history, all
+rent-reclaim dust — against 13.48M provably destroyed. That is not evidence of
+absence; it is evidence that the index misses essentially everything. It was
+described here as independent corroboration, and that was wrong: an unsound
+search finding nothing is not a finding. See [`FINDINGS.md`](FINDINGS.md) 2a.
 
 So against $198,908.37 of claimed JTX platform fees, of which 80% — about
 $159,127 — is committed to buying and burning JTO, the **execution ratio is 0%**.
@@ -204,7 +215,8 @@ it reaches zero, the record of supply-affecting events is provably complete.
 
 ## Running it
 
-Needs Node 22+ (for `process.loadEnvFile`) and a Solana RPC endpoint in `.env`:
+Needs Node 22+ (for `process.loadEnvFile`; tested on 24.13) and, for anything that
+reads the chain, a Solana RPC endpoint in `.env`:
 
 ```
 SOLANA_RPC_URL=https://mainnet.helius-rpc.com/?api-key=...
@@ -215,12 +227,13 @@ specifically, because it walks a burn-filtered index; everything else works
 against any RPC.
 
 ```
-node test.mjs        # 40 offline tests, no key needed
+node check.mjs       # THE GATE — every offline suite, no key needed
 node verify.mjs      # re-test every REGISTRY.tsv role against chain; exit 1 on any failure
 node track.mjs       # THE MAIN TOOL — crawl accounts, build EVENTS.tsv, reconcile against supply
 node capture.mjs     # archive the operator's claim alongside the chain state it describes
 node discover.mjs    # identify the mint, measure the window, sample and classify burns
 node rawscan.mjs     # exhaustive raw enumeration — sound, but needs a paid RPC tier
+node release.mjs status  # is what is published the same as what was built?
 node ledger.mjs      # burn enumeration via a burn-filtered index — KNOWN UNSOUND, see FINDINGS.md 2a
 ```
 
@@ -228,6 +241,66 @@ Run `verify.mjs` before trusting anything else. It exits non-zero both when an
 address stops behaving as `REGISTRY.tsv` records, and when an entry a figure
 depends on has no test at all — an unchecked dependency is a hole in the
 verification, not a detail.
+
+### Rebuilding the published page
+
+A clean checkout can rebuild the exact published page without a key, because the
+snapshot it was built from is committed:
+
+```
+git clone <this repo> && cd jip38-observatory
+node check.mjs                 # every offline suite; needs Node 22+
+node build-dashboard.mjs       # data/snapshot.json -> dist/dashboard.html
+node release.mjs status        # is the built page the one that is published?
+```
+
+`build-dashboard.mjs` validates the whole snapshot before it writes anything. A
+malformed one fails the build and leaves the previous release standing, rather
+than producing a page that throws halfway through rendering in the browser.
+
+To take a fresh reading instead, `node snapshot.mjs` — that needs the RPC key.
+
+### The three inputs that are not code
+
+Three files are deliberately data rather than logic, because each records a
+judgement a script must not make for itself:
+
+| File | What it records | Who may change it |
+|---|---|---|
+| [`REGISTRY.tsv`](REGISTRY.tsv) | the addresses, and the evidence for each | a person, with evidence |
+| [`CLAIM.json`](CLAIM.json) | the operator's figures, explicitly approved from an archived capture | a person, against the hash |
+| [`ASSESSMENT.json`](ASSESSMENT.json) | the burn finding, and the chain state it was made against | a person, after re-doing the attribution |
+
+A refresh reads the chain and can say what supply and the treasury are right
+now. It cannot say whether a burn was a JIP-38 burn — that needs attribution,
+and attribution needs a person. So a refresh never advances `ASSESSMENT.json`.
+It compares the chain against that file's anchor and, if supply or the treasury
+has moved materially or the assessment has expired, the page publishes **review
+required** instead of restamping a stale zero with today's date.
+
+That guard exists because the opposite behaviour was shipped: the execution
+ratio was a literal `0` in the snapshot script, so every refresh republished a
+dated zero-burn finding it had not made. A real programme burn could have
+happened and the page would have carried a freshly timestamped 0% straight
+through it.
+
+### Publishing
+
+`dist/dashboard.html` is a self-contained static file — no external scripts,
+styles or fonts — so it can be hosted anywhere. It is currently published as a
+Claude Artifact.
+
+**A build is not a deployment.** `release.mjs` tracks them separately:
+[`RELEASE.json`](RELEASE.json) records what was last *verified* to be served,
+written only after the published page was read back and its snapshot identity
+confirmed. `node release.mjs status` exits non-zero when the built page is not
+the published one.
+
+That exists because on 13 September 2026 the scheduled refresh invoked its
+publisher, the publisher correctly reported that it had no Artifact tool and
+could not publish, and then exited 0 — so the wrapper logged "done" and the
+scheduled task recorded success while the public page stayed three days stale.
+An exit code from a publisher is not evidence of publication.
 
 ## Licence
 

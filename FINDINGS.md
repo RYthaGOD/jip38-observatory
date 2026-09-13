@@ -470,7 +470,11 @@ archived claim is paired with the slot and supply it was made against.
 | [`ledger.mjs`](ledger.mjs) | Exhaustive burn enumeration, verified against chain, checksummed against supply | New; resumable |
 | [`capture.mjs`](capture.mjs) | Archive the operator's claim with a chain anchor and a hash manifest | New; runs, and reports the Dune gap |
 | [`lib.mjs`](lib.mjs) | The arithmetic that decides what gets published — base58, PDA derivation, coverage union, density integration, classification, registry parsing | New |
-| [`test.mjs`](test.mjs) | 40 offline tests over `lib.mjs`, needing no RPC key | New; all passing |
+| [`check.mjs`](check.mjs) | The offline gate: runs every suite below, needing no RPC key | New; all passing |
+| [`test.mjs`](test.mjs) | Pure logic in `lib.mjs` — arithmetic, coverage, registry parsing | Extended |
+| [`test-core.mjs`](test-core.mjs) | `core.mjs` and `rpc.mjs` — exact amounts, fail-closed reads, atomic writes | New |
+| [`test-pipeline.mjs`](test-pipeline.mjs) | verify/track/rawscan/discover/snapshot — the audit findings, asserted as fixed | New |
+| [`test-dashboard.mjs`](test-dashboard.mjs) | The builder — schema validation, escaping, last-valid retention | New |
 
 Two of those tests exist because of specific errors made building this:
 `unionSpans` is tested against overlapping segments because summing them would
@@ -478,5 +482,78 @@ report more than 100% of a window as examined, and `integrateDensity` is tested
 against a quiet window with a hot head because projecting one head reading
 across the window overstated it sevenfold.
 
-Status remains **pre-discovery**. Nothing is published, no execution ratio
-exists, and the Rev Splitter has not been identified.
+Status at the time this section was written: **pre-discovery**. Nothing was
+published, no execution ratio existed, and the Rev Splitter had not been
+identified. See section 8 for where that stands now.
+
+---
+
+## 8. Production audit and remediation, 2026-09-12 / 13
+
+The sections above are the record as it stood when each was written, and they
+are left as written. This section is what a full audit of the tooling found
+afterwards, and what was done about it.
+
+**The audit's own headline: the pipeline did not support the confidence the
+prose carried.** Twenty defects were confirmed by reproduction, four of them
+capable of putting a wrong number on a public page. Three matter most:
+
+1. **The execution ratio was a literal `0` in `snapshot.mjs`.** Every scheduled
+   refresh republished a dated zero-burn finding it had not made. A real
+   programme burn could have occurred and the page would have carried a freshly
+   timestamped 0% straight through it. Fixed: the assessment now lives in
+   [`ASSESSMENT.json`](ASSESSMENT.json), a refresh can never advance it, and the
+   page shows **review required** when supply or the treasury moves away from
+   the anchor the assessment was made against, or when it expires.
+
+2. **RPC failures became facts.** A failed mint read produced
+   `mintAuthority: null`, which the page rendered as "supply can never
+   increase" — a network timeout promoted to a verified property of the token.
+   Fixed: the client throws rather than returning null, and account identity and
+   ownership are asserted before anything is believed.
+
+3. **A build was being mistaken for a deployment.** On 13 September the
+   scheduled refresh invoked its publisher, the publisher correctly reported it
+   had no Artifact tool and could not publish, and exited 0 — so the wrapper
+   logged "done" and the task recorded success while the public page stayed
+   three days stale. Fixed: [`RELEASE.json`](RELEASE.json) records what was last
+   *verified* to be served, and `release.mjs status` exits non-zero when the
+   built page is not the published one.
+
+**Corrections to what this file and `README.md` previously claimed:**
+
+- The indexed burn scan was described as *independent corroboration* that no
+  programme burn exists. It is not. That index returns a largest-ever burn of
+  0.96 JTO across JTO's whole history against 13.48M provably destroyed — it
+  misses essentially everything, as section 2a records. An unsound search
+  finding nothing is not a finding. What does corroborate the absence is the
+  supply invariant alone: total destruction since genesis is ~55x larger than
+  the reported fee revenue could have bought, so it predates activation.
+
+- `ledger.mjs` printed "the enumeration is COMPLETE — proven" when its aggregate
+  balanced. It no longer does. The comparison was a float tolerance over
+  base-unit totals beyond `Number.MAX_SAFE_INTEGER`, over a read set from an
+  index known to miss burns; omissions and duplicates can cancel. The checksum
+  can falsify completeness, which is genuinely useful and is how this project
+  caught its own unsoundness. It cannot establish it.
+
+- The tracker reported accounts as "enumerated in full" when a signature page
+  had failed or a transaction could not be resolved. It now retains unresolved
+  signatures for retry and reports the account as INCOMPLETE, and the supply
+  reconciliation requires zero unresolved reads before it will say COMPLETE.
+
+- `--resume` was being treated as though it were monitoring. It is not: it
+  finishes unfinished work and never revisits a completed account, so a resumed
+  run read current supply against week-old account history. `--poll` is now the
+  separate operation, and reports state their coverage cutoff.
+
+**The remaining gap, stated plainly.** The execution ratio of 0% rests on the
+supply invariant and on Jito's own statement, not on an exhaustive chain
+reconstruction — `data/track-state.json` predates the exact-arithmetic rewrite
+and the crawl has yet to be run again from scratch. Until it is, "no JIP-38
+burn has occurred" is well-supported but not proven by enumeration here, and
+the dashboard says so.
+
+Status: the dashboard **is** published, with an execution ratio of 0% and its
+assessment dated. The Rev Splitter itself has still not been identified, and
+the sweep path, the 80/20 split and the fee total remain operator claims.
