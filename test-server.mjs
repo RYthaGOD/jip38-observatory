@@ -16,7 +16,7 @@
 import assert from "node:assert/strict";
 import { spawn, spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { readFileSync, writeFileSync, mkdtempSync, mkdirSync, rmSync, existsSync } from "node:fs";
+import { readFileSync, writeFileSync, copyFileSync, mkdtempSync, mkdirSync, rmSync, existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -245,6 +245,40 @@ try {
   });
 
   section("degraded states");
+  await t("an empty volume is seeded, and a populated one is never overwritten", async () => {
+    // A volume mounted at /app/data SHADOWS the committed data/ directory. It
+    // starts empty, so the first boot after attaching one loses the snapshot
+    // and — worse — data/history.jsonl, the treasury series, which is evidence
+    // that is never back-filled. The volume added to protect that file is what
+    // would have destroyed it.
+    const box = mkdtempSync(join(tmpdir(), "jip38-vol-"));
+    const p4 = PORT + 3;
+    let alt;
+    try {
+      mkdirSync(join(box, "dist"), { recursive: true });
+      mkdirSync(join(box, "data"), { recursive: true });        // the empty volume
+      mkdirSync(join(box, "data-seed"), { recursive: true });   // the build-time copy
+      copyFileSync("dist/dashboard.html", join(box, "dist", "dashboard.html"));
+      writeFileSync(join(box, "data-seed", "snapshot.json"), readFileSync("data/snapshot.json"));
+      writeFileSync(join(box, "data-seed", "history.jsonl"), "{\"t\":\"2026-09-10T01:15:56.529Z\",\"treasury\":1}\n");
+      // One file already present: it must survive untouched.
+      writeFileSync(join(box, "data", "history.jsonl"), "LIVE READINGS — MUST NOT BE REPLACED\n");
+
+      alt = spawn(process.execPath, [join(process.cwd(), "server.mjs"), "--port", String(p4)],
+        { stdio: "ignore", cwd: box });
+      await waitForPort(p4);
+
+      assert.equal((await fetch(`http://127.0.0.1:${p4}/snapshot.json`)).status, 200,
+        "the missing snapshot was not restored from the seed");
+      assert.equal(readFileSync(join(box, "data", "history.jsonl"), "utf8").trim(),
+        "LIVE READINGS — MUST NOT BE REPLACED",
+        "the seed overwrote readings the volume already held");
+    } finally {
+      alt?.kill();
+      await new Promise((r) => setTimeout(r, 200));
+      try { rmSync(box, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 }); } catch { /* OS will clear it */ }
+    }
+  });
   await t("an unbuilt deployment reports 503, and says so on healthz", async () => {
     // Run from a directory with no dist/. A fresh Railway deploy that has not
     // built yet must say it has nothing to serve — not return an empty 200 that

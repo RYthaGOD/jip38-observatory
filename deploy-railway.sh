@@ -1,33 +1,44 @@
 #!/usr/bin/env bash
 # Provision the whole Railway deployment, in one pass.
 #
-#   railway login       # you have to do this one — the CLI refuses to authenticate
+#   railway login       # you have to do this one — the CLI refuses to
+#                       # authenticate non-interactively, browserless included
 #   bash deploy-railway.sh
 #
-# Everything after the login is scripted, because the parts that are easy to
-# forget are the parts that fail quietly:
+# ---------------------------------------------------------------------------
+# ONE SERVICE, NOT TWO
 #
-#   - The volume. Railway's filesystem is ephemeral and resets to whatever was
-#     committed on every redeploy. data/history.jsonl is the treasury series —
-#     it is evidence, it is never back-filled, and a lost reading cannot be
-#     recovered. Without a volume the chart silently restarts from the committed
-#     readings each deploy and nobody notices, because a shorter chart still
-#     looks like a chart.
+# The obvious design is a web service that serves and a cron service that reads
+# the chain. This script built that first, and it silently does not work: each
+# Railway service is its own container with its own disk, so the cron service
+# rebuilds dist/dashboard.html inside ITSELF while the web service goes on
+# serving a copy nothing ever updates. Both deployments stay green and the page
+# never changes. A volume cannot bridge it — a volume instance binds to exactly
+# one service.
 #
-#   - The cron schedule. The CLI cannot set one, so it goes through Railway's
-#     GraphQL API using the session the login just created.
+# So there is one service. It serves, and it refreshes itself on a timer in the
+# same process, writing to the same disk it reads from.
 #
-#   - Keeping SOLANA_RPC_URL off the web service. The page is static and needs
-#     no credential to serve; only the refresh reads the chain. A secret that
-#     is not on a service cannot leak from it.
+# The rest of what is scripted here is scripted because forgetting it fails
+# quietly:
+#
+#   - The volume at /app/data. Railway's filesystem resets to whatever was
+#     committed on every redeploy, and data/history.jsonl is the treasury
+#     series — evidence, never back-filled, and a lost reading cannot be
+#     recovered. Without it the chart restarts from the committed readings each
+#     deploy, and a shorter chart still looks like a chart.
+#
+#   - PORT. Railway's edge returns "Application not found" if it cannot work out
+#     which port to route to, while the container sits there serving happily.
+# ---------------------------------------------------------------------------
 
 set -euo pipefail
 
 PROJECT_NAME="${PROJECT_NAME:-jip38-observatory}"
-WEB_SERVICE="web"
-CRON_SERVICE="refresh"
-CRON_SCHEDULE="${CRON_SCHEDULE:-0 */6 * * *}"
+SERVICE="${SERVICE:-web}"
+REFRESH_MINUTES="${REFRESH_MINUTES:-360}"   # six hours, matching the Windows task
 VOLUME_MOUNT="/app/data"
+APP_PORT="${APP_PORT:-8080}"
 
 say() { printf '\n\033[1m==> %s\033[0m\n' "$*"; }
 die() { printf '\n\033[31mERROR: %s\033[0m\n' "$*" >&2; exit 1; }
@@ -36,14 +47,11 @@ die() { printf '\n\033[31mERROR: %s\033[0m\n' "$*" >&2; exit 1; }
 
 command -v railway >/dev/null || die "railway CLI not found: npm i -g @railway/cli"
 railway whoami >/dev/null 2>&1 || die "not logged in. Run: railway login"
-
 say "logged in as $(railway whoami 2>/dev/null)"
 
-if [ -z "${SOLANA_RPC_URL:-}" ]; then
-  # Read it from .env rather than asking for it to be pasted anywhere.
-  if [ -f .env ]; then
-    SOLANA_RPC_URL="$(grep -E '^SOLANA_RPC_URL=' .env | head -1 | cut -d= -f2-)"
-  fi
+if [ -z "${SOLANA_RPC_URL:-}" ] && [ -f .env ]; then
+  # Read from .env rather than having it pasted anywhere.
+  SOLANA_RPC_URL="$(grep -E '^SOLANA_RPC_URL=' .env | head -1 | cut -d= -f2-)"
 fi
 [ -n "${SOLANA_RPC_URL:-}" ] || die "SOLANA_RPC_URL not set and not found in .env"
 
@@ -51,7 +59,7 @@ fi
 say "offline gate"
 node check.mjs >/dev/null || die "the offline suites do not pass; nothing should be deployed from this tree"
 
-# --- project ----------------------------------------------------------------
+# --- project and service ----------------------------------------------------
 
 if railway status >/dev/null 2>&1; then
   say "using the already-linked project"
@@ -60,56 +68,55 @@ else
   railway init --name "$PROJECT_NAME"
 fi
 
-# --- web service ------------------------------------------------------------
+say "deploying $SERVICE"
+railway add --service "$SERVICE" 2>/dev/null || echo "  (service already exists)"
+railway service "$SERVICE" >/dev/null 2>&1 || true
+
+# --- variables --------------------------------------------------------------
 #
-# Serves the built page. No credential: it needs none, and the surest way to
-# keep a secret out of a service is not to put it there.
+# PORT is set explicitly so the container and Railway's edge agree. Without it
+# the edge 404s while the container serves happily, which reads as a broken
+# deploy rather than a routing gap.
 
-say "deploying the web service"
-railway add --service "$WEB_SERVICE" 2>/dev/null || echo "  (service already exists)"
-railway service "$WEB_SERVICE" 2>/dev/null || true
-railway up --service "$WEB_SERVICE" --detach
-
-say "generating a public domain"
-railway domain --service "$WEB_SERVICE" || echo "  (a domain may already exist)"
-
-# --- cron service -----------------------------------------------------------
-#
-# Reads the chain and rebuilds the page. Runs for a few seconds, a few times a
-# day. This is the only thing that needs the RPC credential.
-
-say "creating the refresh service"
-railway add --service "$CRON_SERVICE" 2>/dev/null || echo "  (service already exists)"
-
-say "setting SOLANA_RPC_URL on the refresh service only"
-railway variables --service "$CRON_SERVICE" --set "SOLANA_RPC_URL=$SOLANA_RPC_URL" >/dev/null
-railway variables --service "$CRON_SERVICE" --set "RAILWAY_RUN_COMMAND=node refresh.mjs" >/dev/null
+say "setting variables"
+railway variables --service "$SERVICE" \
+  --set "PORT=$APP_PORT" \
+  --set "SOLANA_RPC_URL=$SOLANA_RPC_URL" \
+  --set "REFRESH_INTERVAL_MINUTES=$REFRESH_MINUTES" >/dev/null
+echo "  PORT=$APP_PORT  REFRESH_INTERVAL_MINUTES=$REFRESH_MINUTES  SOLANA_RPC_URL=(set)"
 
 # --- the volume, which is the part that is easy to skip ---------------------
 
-say "attaching a persistent volume at $VOLUME_MOUNT"
-if railway volume list 2>/dev/null | grep -q "$VOLUME_MOUNT"; then
-  echo "  (a volume is already mounted there)"
+say "persistent volume at $VOLUME_MOUNT"
+if railway volume list --json 2>/dev/null | grep -q '"mountPath": *"'"$VOLUME_MOUNT"'"'; then
+  echo "  (already mounted)"
 else
-  railway volume add --service "$CRON_SERVICE" --mount-path "$VOLUME_MOUNT" \
-    || echo "  could not add the volume automatically — add it in the dashboard, mounted at $VOLUME_MOUNT"
+  # MSYS_NO_PATHCONV stops Git Bash on Windows rewriting /app/data into a
+  # Windows path, which the CLI then rejects as not starting with a slash.
+  MSYS_NO_PATHCONV=1 railway volume add -m "$VOLUME_MOUNT" \
+    || echo "  could not add it automatically — add it in the dashboard at $VOLUME_MOUNT"
 fi
+
+# --- deploy -----------------------------------------------------------------
+
+say "uploading"
+railway up --service "$SERVICE" --detach
+
+say "public domain"
+railway domain --service "$SERVICE" 2>/dev/null || echo "  (a domain already exists)"
 
 cat <<EOF
 
-$(printf '\033[1m==> the one thing left\033[0m')
+$(printf '\033[1m==> done\033[0m')
 
-The CLI cannot set a cron schedule. In the Railway dashboard, open the
-"$CRON_SERVICE" service -> Settings -> Cron Schedule, and set:
-
-    $CRON_SCHEDULE
-
-That matches the Windows scheduled task: every six hours.
-
-Then check:
-    railway logs --service $WEB_SERVICE
+Check it:
+    railway logs --service $SERVICE
     curl https://<your-domain>/healthz
 
 /healthz reports whether the server actually has a page to serve, so a deploy
 that built nothing shows up there rather than as a blank page.
+
+The refresh runs inside the serving process every $REFRESH_MINUTES minutes. A run that
+fails leaves the previously built page untouched and still being served — stale
+and honest beats broken.
 EOF

@@ -13,7 +13,7 @@
     "check": "node check.mjs",
     "verify": "node verify.mjs",
     "snapshot": "node snapshot.mjs",
-    "build": "node build-dashboard.mjs",
+    "build": "node build-dashboard.mjs && node prepare-seed.mjs",
     "refresh": "node refresh.mjs",
     "release": "node release.mjs status"
   },

@@ -35,7 +35,9 @@
 // ---------------------------------------------------------------------------
 
 import { createServer } from "node:http";
-import { readFileSync, statSync, existsSync } from "node:fs";
+import { spawn } from "node:child_process";
+import { readFileSync, statSync, existsSync, mkdirSync, readdirSync, copyFileSync } from "node:fs";
+import { join } from "node:path";
 import { createHash } from "node:crypto";
 import { gzipSync } from "node:zlib";
 import { arg, integer, safeError } from "./core.mjs";
@@ -205,12 +207,101 @@ const server = createServer((req, res) => {
   }
 });
 
+// --- seeding the volume ------------------------------------------------------
+//
+// A volume mounted at /app/data SHADOWS the committed data/ directory. The
+// volume starts empty, so on the first boot after it is attached, the snapshot
+// and — worse — data/history.jsonl are simply gone. The treasury series is
+// evidence that is never back-filled, so the volume added to protect it would
+// have been what destroyed it.
+//
+// The build step copies data/ to data-seed/ BEFORE the volume is mounted, which
+// is the only moment the committed files are reachable. On boot, anything
+// missing from the volume is restored from that seed. Existing files are never
+// touched: the volume is the live record once it has one.
+function seedDataVolume() {
+  const seedDir = "data-seed";
+  if (!existsSync(seedDir)) return;
+  mkdirSync("data", { recursive: true });
+  let restored = 0;
+  for (const name of readdirSync(seedDir)) {
+    const from = join(seedDir, name);
+    const to = join("data", name);
+    if (statSync(from).isDirectory() || existsSync(to)) continue;
+    copyFileSync(from, to);
+    restored++;
+    console.log(`  seeded       data/${name} from the committed copy`);
+  }
+  if (!restored) console.log("  volume       already populated; nothing seeded");
+}
+
+// --- refreshing, in this process ---------------------------------------------
+//
+// WHY THE REFRESH LIVES HERE RATHER THAN IN ITS OWN SERVICE
+//
+// The obvious split is two services: one serving, one reading the chain on a
+// cron. It was built that way first, and it does not work — and the way it
+// fails is silent, which is what makes it worth this comment.
+//
+// Each Railway service is its own container with its own disk. A refresh
+// service rebuilds dist/dashboard.html inside ITSELF; the web service keeps
+// serving its own copy and never sees the new one. Both deployments stay green,
+// the cron reports success every six hours, and the page never changes. A
+// volume cannot bridge it either: a volume instance binds to exactly one
+// service.
+//
+// So the refresh runs in the process that serves. One disk, no synchronisation,
+// nothing to keep in step. The server already re-reads the page when its mtime
+// changes, so a completed rebuild is live on the next request.
+//
+// Off by default: REFRESH_INTERVAL_MINUTES is what turns it on, so a local
+// `npm start` serves what is already built and never touches the chain.
+const REFRESH_MINUTES = Number(process.env.REFRESH_INTERVAL_MINUTES ?? 0);
+
+function scheduleRefresh() {
+  if (!Number.isFinite(REFRESH_MINUTES) || REFRESH_MINUTES <= 0) {
+    console.log("  refresh      disabled (set REFRESH_INTERVAL_MINUTES to enable)");
+    return;
+  }
+  if (!process.env.SOLANA_RPC_URL) {
+    console.log("  refresh      REFRESH_INTERVAL_MINUTES is set but SOLANA_RPC_URL is not — not scheduling");
+    return;
+  }
+  console.log(`  refresh      every ${REFRESH_MINUTES} minute(s), in this process`);
+
+  let running = false;
+  const run = () => {
+    // A refresh that overruns its interval must not start a second one beside
+    // itself. snapshot.mjs also takes a lock, so this is belt and braces.
+    if (running) { console.log("refresh: previous run still going, skipping this tick"); return; }
+    running = true;
+    const started = Date.now();
+    const child = spawn(process.execPath, ["refresh.mjs", "--skip-verify"], { stdio: "inherit" });
+    child.on("exit", (code) => {
+      running = false;
+      const secs = ((Date.now() - started) / 1000).toFixed(1);
+      // A failed refresh leaves the previously built page untouched and the
+      // server keeps serving it. Stale and honest beats broken.
+      console.log(code === 0
+        ? `refresh: done in ${secs}s; the page is live on the next request`
+        : `refresh: FAILED (exit ${code}) after ${secs}s — still serving the previous page`);
+    });
+  };
+
+  // Not at boot: the build step already produced a page from the committed
+  // snapshot, so a deploy comes up serving rather than reading chain.
+  refreshTimer = setInterval(run, REFRESH_MINUTES * 60_000);
+}
+let refreshTimer;
+
 server.listen(PORT, HOST, () => {
   console.log(`serving on http://${HOST}:${PORT}`);
   for (const [path, r] of Object.entries(ROUTES)) console.log(`  ${path.padEnd(16)} ${r.file}`);
   console.log(`  ${"/healthz".padEnd(16)} liveness`);
+  seedDataVolume();
   const entry = load(ROUTES["/"]);
   console.log(entry ? `  page is built (${entry.body.length} bytes)` : "  WARNING: nothing built yet");
+  scheduleRefresh();
 });
 
 // Railway sends SIGTERM on redeploy. Finish in-flight requests rather than
@@ -218,6 +309,7 @@ server.listen(PORT, HOST, () => {
 for (const sig of ["SIGTERM", "SIGINT"]) {
   process.on(sig, () => {
     console.log(`${sig} — closing`);
+    if (refreshTimer) clearInterval(refreshTimer);
     server.close(() => process.exit(0));
     setTimeout(() => process.exit(0), 10000).unref();
   });
