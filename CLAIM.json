@@ -1,0 +1,36 @@
+{
+  "_comment": [
+    "The operator's published figures, EXPLICITLY IMPORTED into the snapshot.",
+    "",
+    "capture.mjs archives what Jito publishes and records a hash in CLAIMS.tsv. That",
+    "is a transport record: it proves what bytes were served on a date. It does not",
+    "make those figures correct, and it must not flow into a published number on its",
+    "own. So an archived capture becomes a dashboard input only by being approved",
+    "here, by hand, with the archive path and hash it came from.",
+    "",
+    "A stale claim is not an error — it is a finding, and the page says how old it is."
+  ],
+
+  "approvedAt": "2026-09-10T01:15:00Z",
+  "approvedBy": "manual review against the archived capture",
+
+  "capturedAt": "2026-09-09T23:40:00Z",
+  "source": "https://dune.com/jito/jtx-metrics-ee62",
+  "archivePath": "data/claims/manual-2026-09-09/dune-jtx-metrics.json",
+  "sha256": "b7e2eccc97ae4fe90e679a496912d642fdf24dd749e2e6ce1132ca313202b48c",
+
+  "platformFeesUsd": 198908.37,
+  "tradingVolumeUsd": 124236023.65,
+  "fills": 266827,
+  "dataBegins": "2026-07-24",
+
+  "note": "Figures move through the day, so they are captured and hashed: what was claimed on a date cannot be revised without record. Obtained via a rendering fetch — the public URL is a client-rendered shell and yields no figures over plain HTTP.",
+
+  "limitations": [
+    "The dashboard is the operator's own, and is mutable: a Dune query can be edited retroactively or deleted.",
+    "Coverage begins 2026-07-24, about ten days after JIP-38 activation on 2026-07-13, so early activity is not represented.",
+    "These are claimed fees, not fees this project has traced on chain."
+  ],
+
+  "staleAfterDays": 7
+}

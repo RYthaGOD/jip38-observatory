@@ -1,0 +1,52 @@
+{
+  "_comment": [
+    "The burn assessment. This is a HUMAN act, not a computed value, which is why",
+    "it lives in a reviewed file in git rather than as a literal inside snapshot.mjs.",
+    "",
+    "A refresh reads the chain and can say what supply and the treasury are RIGHT NOW.",
+    "It cannot say whether a burn was a JIP-38 burn — that needs attribution, and",
+    "attribution needs a person. So the refresh never advances this file. It compares",
+    "the chain against the anchor below and, if anything material has moved, marks the",
+    "published assessment 'review-required' instead of restamping it as freshly true.",
+    "",
+    "To advance the assessment: re-do the attribution work, then update assessedAt,",
+    "burnedRaw, basis and the anchor together, in one reviewed commit."
+  ],
+
+  "assessedAt": "2026-09-10T01:15:56.529Z",
+  "assessedBy": "manual review, recorded in FINDINGS.md",
+
+  "burnedRaw": "0",
+  "burnedValuation": null,
+
+  "basis": "No JIP-38 burn found on chain by any method attempted. Jito stated on 2026-09-10 that no buybacks or burns had yet occurred. The absence is corroborated by the supply invariant: total destruction since genesis predates activation by a wide margin.",
+
+  "coverage": {
+    "method": "supply invariant plus targeted account enumeration",
+    "establishes": "that no programme-scale burn appears in the accounts enumerated, and that total destruction since genesis is consistent with none",
+    "doesNotEstablish": [
+      "that the enumerated accounts are all the accounts a JIP-38 burn could use",
+      "that fees were swept into JTO at all — the buyback step is untraced",
+      "the dates of the JTO destroyed before activation"
+    ],
+    "indexedScanUnsound": true
+  },
+
+  "anchor": {
+    "_comment": "The chain state this assessment was made against. Movement away from it is what triggers review.",
+    "slot": 445756117,
+    "observedAt": "2026-09-10T01:15:56.529Z",
+    "supply": "986522733.331571300",
+    "treasury": "209747525.764502350",
+    "precisionNote": "float-derived; recorded before exact base-unit accounting existed, so it is a trigger threshold rather than an exact quantity"
+  },
+
+  "validForDays": 14,
+
+  "reviewTriggers": {
+    "_comment": "Any of these makes the published assessment 'review-required'.",
+    "supplyFallJto": "1000",
+    "treasuryFallJto": "0.000001",
+    "expiry": "validForDays since assessedAt"
+  }
+}

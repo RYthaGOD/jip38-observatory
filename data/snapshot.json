@@ -1,0 +1,263 @@
+{
+  "schemaVersion": 3,
+  "generatedAt": "2026-09-13T00:00:03.849Z",
+  "activation": "2026-07-13",
+  "daysSinceActivation": 62,
+  "chain": {
+    "source": "chain",
+    "observedAt": "2026-09-13T00:00:03.849Z",
+    "commitment": "finalized",
+    "endpoint": "https://mainnet.helius-rpc.com",
+    "slotRange": {
+      "from": 446560485,
+      "to": 446560487
+    },
+    "slotRangeNote": "reads span slots 446560485–446560487; measurements are not simultaneous",
+    "blockTimeIso": "2026-09-12T23:59:53.000Z",
+    "supply": {
+      "mintedEverRaw": "1000000000000000000",
+      "currentRaw": "986522686278609132",
+      "destroyedRaw": "13477313721390868",
+      "mintedEver": "1000000000.000000000",
+      "current": "986522686.278609132",
+      "destroyed": "13477313.721390868",
+      "decimals": 9,
+      "mintAuthority": null,
+      "freezeAuthority": null,
+      "mintingClosed": "2023-12-04T18:27:47Z",
+      "genesisMintTx": "2M1gWKQvjCav6JLkf2j5EfUmpp31RRM27YPnG1fGiyvgqu3s4C7Z1tWYXgYKoxwgMC84WG5v7tMHwMMQ74xUekVG"
+    },
+    "treasury": {
+      "owner": "5eosrve6LktMZgVNszYzebgmmC7BjLK8NoWyRQtcmGTF",
+      "tokenAccount": "2Ch9AWnbAaummLkWTTtNgTAvrFq8YMATUaaN77TB2Y6C",
+      "jtoRaw": "209755049535180132",
+      "jto": "209755049.535180132",
+      "accounts": 2
+    },
+    "feeProgram": {
+      "address": "JTXJTXfr1wVRMEzqiPhXUr69zJtfGuLh5qEiXG772Zj",
+      "exists": true,
+      "executable": true,
+      "owner": "BPFLoaderUpgradeab1e11111111111111111111111"
+    }
+  },
+  "claim": {
+    "source": "claim",
+    "capturedAt": "2026-09-09T23:40:00Z",
+    "approvedAt": "2026-09-10T01:15:00Z",
+    "url": "https://dune.com/jito/jtx-metrics-ee62",
+    "sha256": "b7e2eccc97ae4fe90e679a496912d642fdf24dd749e2e6ce1132ca313202b48c",
+    "platformFeesUsd": 198908.37,
+    "tradingVolumeUsd": 124236023.65,
+    "fills": 266827,
+    "dataBegins": "2026-07-24",
+    "ageDays": 3,
+    "stale": false,
+    "note": "Figures move through the day, so they are captured and hashed: what was claimed on a date cannot be revised without record. Obtained via a rendering fetch — the public URL is a client-rendered shell and yields no figures over plain HTTP.",
+    "limitations": [
+      "The dashboard is the operator's own, and is mutable: a Dune query can be edited retroactively or deleted.",
+      "Coverage begins 2026-07-24, about ten days after JIP-38 activation on 2026-07-13, so early activity is not represented.",
+      "These are claimed fees, not fees this project has traced on chain."
+    ]
+  },
+  "assessment": {
+    "source": "assessment",
+    "assessedAt": "2026-09-10T01:15:56.529Z",
+    "assessedBy": "manual review, recorded in FINDINGS.md",
+    "state": "current",
+    "reasons": [],
+    "burnedRaw": "0",
+    "burnedUsd": 0,
+    "ratio": 0,
+    "basis": "No JIP-38 burn found on chain by any method attempted. Jito stated on 2026-09-10 that no buybacks or burns had yet occurred. The absence is corroborated by the supply invariant: total destruction since genesis predates activation by a wide margin.",
+    "coverage": {
+      "method": "supply invariant plus targeted account enumeration",
+      "establishes": "that no programme-scale burn appears in the accounts enumerated, and that total destruction since genesis is consistent with none",
+      "doesNotEstablish": [
+        "that the enumerated accounts are all the accounts a JIP-38 burn could use",
+        "that fees were swept into JTO at all — the buyback step is untraced",
+        "the dates of the JTO destroyed before activation"
+      ],
+      "indexedScanUnsound": true
+    },
+    "anchor": {
+      "slot": 445756117,
+      "observedAt": "2026-09-10T01:15:56.529Z"
+    },
+    "ageDays": 2,
+    "validForDays": 14
+  },
+  "execution": {
+    "denominator": "80% of reported JTX platform fees, as captured in CLAIM.json",
+    "committedUsd": 159126.696,
+    "promisedRatio": 0.8,
+    "burnedRaw": "0",
+    "burnedJto": "0.000000000",
+    "burnedUsd": 0,
+    "ratio": 0
+  },
+  "unverified": [
+    "That JTX fees are being swept into JTO — the buyback step is an operator claim, not yet traced on chain.",
+    "The 80/20 split.",
+    "The $198,908.37 fee total, and the ~10 days of activity missing from the dashboard's start.",
+    "The dates of the 13477313.721390868 JTO destroyed before activation."
+  ],
+  "registry": [
+    {
+      "role": "jto-mint",
+      "address": "jtojtomepa8beP8AuQc6eXt5FriJwfFMwQx2v2f9mCL",
+      "confidence": "confirmed",
+      "since": "2026-09-09"
+    },
+    {
+      "role": "burn-authority-noise",
+      "address": "7AAzTfycmXWr4bREgpNDqUD8hcA4oV26Yp4eq3mEsM11",
+      "confidence": "rejected",
+      "since": "2026-09-09"
+    },
+    {
+      "role": "burn-authority-noise",
+      "address": "5WeuYwXNBqHsVBdq7HuQs9VihX58VzYpKL4p3UZnMWDv",
+      "confidence": "rejected",
+      "since": "2026-09-09"
+    },
+    {
+      "role": "burn-authority-noise",
+      "address": "7fbrW6eiGKYz6j8zrEBkFKh7U6peURLvbKN96YzS42Ki",
+      "confidence": "rejected",
+      "since": "2026-09-09"
+    },
+    {
+      "role": "program-not-burner",
+      "address": "jtogvBNH3WBSWDYD5FJfQP2ZxNTuf82zL8GkEhPeaJx",
+      "confidence": "rejected",
+      "since": "2026-09-09"
+    },
+    {
+      "role": "genesis-token-account",
+      "address": "FrXfXNmsw1XCC6AeYEaYd31PjfmjqfLNn42k3CfGjtbA",
+      "confidence": "confirmed",
+      "since": "2026-09-09"
+    },
+    {
+      "role": "mint-authority-historical",
+      "address": "Pay5KQqvaPxEey8xdibLiB3WfGfdKo3SfPreuSXeGWm",
+      "confidence": "confirmed",
+      "since": "2026-09-09"
+    },
+    {
+      "role": "mint-authority-historical",
+      "address": "AtNgME7ribDTqtZQcCL2xSBFL9NgHQsDFCj1TmxMpPtV",
+      "confidence": "confirmed",
+      "since": "2026-09-09"
+    },
+    {
+      "role": "distribution-hub",
+      "address": "7T6SXnG1m3pf3XQDNuwP8j3oCfD4CdLBCy79WgESykg1",
+      "confidence": "confirmed",
+      "since": "2026-09-09"
+    },
+    {
+      "role": "distribution-hub",
+      "address": "8XEMySUGKRLV9wjqv2pPbr9y8Mts7Fnjt8Jrk3gFkfVK",
+      "confidence": "confirmed",
+      "since": "2026-09-09"
+    },
+    {
+      "role": "jtx-fee-program",
+      "address": "JTXJTXfr1wVRMEzqiPhXUr69zJtfGuLh5qEiXG772Zj",
+      "confidence": "confirmed",
+      "since": "2026-09-10"
+    },
+    {
+      "role": "dao-treasury",
+      "address": "5eosrve6LktMZgVNszYzebgmmC7BjLK8NoWyRQtcmGTF",
+      "confidence": "confirmed",
+      "since": "2026-09-10"
+    },
+    {
+      "role": "dao-treasury-token-account",
+      "address": "2Ch9AWnbAaummLkWTTtNgTAvrFq8YMATUaaN77TB2Y6C",
+      "confidence": "confirmed",
+      "since": "2026-09-10"
+    }
+  ],
+  "history": [
+    {
+      "t": "2026-09-10T01:15:56.529Z",
+      "treasury": 209747525.76450235,
+      "supply": 986522733.3315713
+    },
+    {
+      "t": "2026-09-10T06:00:03.458Z",
+      "treasury": 209747525.76450235,
+      "supply": 986522720.7127235
+    },
+    {
+      "t": "2026-09-10T12:00:04.255Z",
+      "treasury": 209747525.76450235,
+      "supply": 986522719.1443698
+    },
+    {
+      "t": "2026-09-10T18:00:03.455Z",
+      "treasury": 209747525.76450235,
+      "supply": 986522717.8403329
+    },
+    {
+      "t": "2026-09-11T00:00:03.484Z",
+      "treasury": 209749509.00622278,
+      "supply": 986522702.7648582
+    },
+    {
+      "t": "2026-09-11T06:00:04.217Z",
+      "treasury": 209749517.67354164,
+      "supply": 986522698.4826782
+    },
+    {
+      "t": "2026-09-11T12:00:03.898Z",
+      "treasury": 209749517.67354164,
+      "supply": 986522697.8988008
+    },
+    {
+      "t": "2026-09-11T18:00:03.601Z",
+      "treasury": 209749517.67354164,
+      "supply": 986522693.1595268
+    },
+    {
+      "t": "2026-09-12T00:00:03.798Z",
+      "treasury": 209754204.43599808,
+      "supply": 986522690.2569226
+    },
+    {
+      "t": "2026-09-12T06:00:05.667Z",
+      "treasury": 209754425.28812826,
+      "supply": 986522689.3378493
+    },
+    {
+      "t": "2026-09-12T12:00:05.008Z",
+      "treasury": 209754558.25463876,
+      "supply": 986522689.092638
+    },
+    {
+      "t": "2026-09-12T16:56:37.712Z",
+      "treasury": 209754671.53394014,
+      "supply": 986522688.22438
+    },
+    {
+      "t": "2026-09-12T17:08:37.055Z",
+      "treasury": 209754671.5339401,
+      "supply": 986522688.22438
+    },
+    {
+      "t": "2026-09-12T18:00:03.587Z",
+      "treasury": 209754914.45814872,
+      "supply": 986522687.7288296
+    },
+    {
+      "t": "2026-09-13T00:00:03.849Z",
+      "treasury": 209755049.53518012,
+      "supply": 986522686.2786092
+    }
+  ],
+  "alerts": []
+}

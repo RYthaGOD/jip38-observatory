@@ -1,5 +1,27 @@
 node_modules/
 .env
 *.log
-data/
+
+# Working state and bulky archives stay out of git.
+data/*
+data/claims/
+
+# ...but the two files a clean checkout NEEDS to rebuild the page do not.
+#
+# `data/` used to be ignored wholesale, so a fresh clone could not run
+# build-dashboard.mjs at all: the snapshot it reads was never in the repository.
+# A release that cannot be rebuilt from its own source is not reproducible.
+#
+# The treasury series is also evidence rather than scratch — it is the only
+# record of what the balance was on a given date, and it is deliberately never
+# back-filled, so losing it cannot be undone.
+!data/snapshot.json
+!data/history.jsonl
+
+# Derived output. Rebuild it with: node snapshot.mjs && node build-dashboard.mjs
 dist/
+
+# Rollback payloads and lock files are runtime state, not source.
+*.prev
+*.lock
+*.tmp

@@ -22,6 +22,7 @@
 import { createHash } from "node:crypto";
 import { mkdirSync, writeFileSync, appendFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
+import { endpointLabel, safeError } from "./core.mjs";
 
 try { process.loadEnvFile(".env"); } catch {}
 
@@ -76,9 +77,13 @@ if (RPC) {
       blockTimeIso: new Date(blockTime * 1000).toISOString(),
       supply: supply.value.amount, supplyUi: supply.value.uiAmountString, decimals: supply.value.decimals,
     };
-    record("chain-anchor", RPC.replace(/api-key=[\w-]+/, "api-key=***"), "ok",
+    // A sanitised endpoint label, not a hand-rolled regex over the URL. The old
+    // one matched exactly one spelling of one query parameter, so credentials
+    // in userinfo, a path segment or a differently named parameter went
+    // straight into the committed manifest.
+    record("chain-anchor", endpointLabel(RPC), "ok",
       JSON.stringify(anchor, null, 2), `supply ${anchor.supplyUi} @ slot ${slot}`);
-  } catch (e) { record("chain-anchor", "rpc", "fail", "", e.message); }
+  } catch (e) { record("chain-anchor", endpointLabel(RPC), "fail", "", safeError(e)); }
 } else {
   console.log("  SKIP     chain-anchor           no SOLANA_RPC_URL — the claim will be archived unanchored");
 }
@@ -100,11 +105,26 @@ record("jito-token-metadata", "https://metadata.jito.network/token/jto",
 // the figures were not captured. An honest gap in the record is worth more than
 // a file that looks like evidence.
 const dash = await get("https://dune.com/jito/jtx-metrics-ee62");
-const hasFigures = /[0-9]{1,3}(,[0-9]{3})+(\.[0-9]+)?/.test(
-  dash.body.replace(/<script[\s\S]*?<\/script>/g, ""));
+// A comma-formatted number is not a figure. A client-rendered shell carries
+// commas in its embedded JSON, its navigation and its footer, so testing for
+// "any number with a comma in it" called an empty page a successful capture the
+// moment anything numeric appeared anywhere in the markup.
+//
+// A metric only counts as present if its LABEL appears with a number near it.
+// And even then the status is `unvalidated` rather than `ok`: scraped HTML
+// carries no schema, so nothing here can confirm the figure means what the
+// label says. Only the API result below can be validated structurally.
+const text = dash.body.replace(/<script[\s\S]*?<\/script>/g, " ").replace(/<[^>]+>/g, " ");
+const labelled = ["platform fee", "volume", "fills"].filter((label) => {
+  const at = text.toLowerCase().indexOf(label);
+  return at >= 0 && /[0-9]{1,3}(,[0-9]{3})+(\.[0-9]+)?/.test(text.slice(at, at + 400));
+});
+const hasFigures = labelled.length >= 2;
 record("dune-dashboard-html", "https://dune.com/jito/jtx-metrics-ee62",
-  dash.code === 200 ? (hasFigures ? "ok" : "shell") : "fail", dash.body,
-  hasFigures ? `http ${dash.code}` : `http ${dash.code} — client-rendered shell, NO FIGURES CAPTURED`);
+  dash.code !== 200 ? "fail" : hasFigures ? "unvalidated" : "shell", dash.body,
+  dash.code !== 200 ? `http ${dash.code}`
+    : hasFigures ? `http ${dash.code} — ${labelled.length} labelled metric(s) present, but scraped HTML carries no schema to validate against`
+    : `http ${dash.code} — client-rendered shell, NO FIGURES CAPTURED`);
 
 if (DUNE_KEY) {
   // Default to the query behind Jito's published JTX dashboard.
@@ -130,8 +150,32 @@ if (DUNE_KEY) {
   }
 
   const r = await get(`https://api.dune.com/api/v1/query/${qid}/results`, { "X-Dune-API-Key": DUNE_KEY });
-  record(`dune-query-${qid}-results`, `https://api.dune.com/api/v1/query/${qid}/results`,
-    r.code === 200 ? "ok" : "fail", r.body, `http ${r.code}`);
+
+  // A 200 is transport success. It is not a validated claim. The response has
+  // to carry the expected shape AND say when the query actually executed —
+  // otherwise an empty result, or figures computed a fortnight ago, would be
+  // archived as though they were current evidence.
+  let status = r.code === 200 ? "ok" : "fail";
+  let note = `http ${r.code}`;
+  if (r.code === 200) {
+    try {
+      const j = JSON.parse(r.body);
+      const resultRows = j?.result?.rows;
+      const ranAt = j?.execution_ended_at;
+      if (j?.state && j.state !== "QUERY_STATE_COMPLETED") {
+        status = "fail"; note = `query state ${j.state} — not a completed execution`;
+      } else if (!Array.isArray(resultRows) || resultRows.length === 0) {
+        status = "fail"; note = "http 200 but the result carries no rows";
+      } else if (!ranAt || Number.isNaN(Date.parse(ranAt))) {
+        status = "fail"; note = "http 200 but no execution_ended_at — the age of these figures is unknown";
+      } else {
+        const ageHours = (Date.now() - Date.parse(ranAt)) / 3600000;
+        note = `http 200, ${resultRows.length} row(s), executed ${ranAt} (${ageHours.toFixed(1)}h before capture)`;
+        if (ageHours > 48) { status = "stale"; note += " — STALE: the operator's query has not re-run recently"; }
+      }
+    } catch (e) { status = "fail"; note = `http 200 but the body is not valid JSON: ${safeError(e)}`; }
+  }
+  record(`dune-query-${qid}-results`, `https://api.dune.com/api/v1/query/${qid}/results`, status, r.body, note);
 } else {
   console.log("  BLOCKED  dune-query             no DUNE_API_KEY — the operator's figures cannot be archived");
   rows.push({ captured: stamp, source: "dune-query", url: "https://api.dune.com/api/v1/query/<id>/results",
@@ -163,11 +207,32 @@ for (const r of rows) {
   appendFileSync(MANIFEST, [r.captured, r.source, r.url, r.status, r.bytes, r.sha256, r.path, r.note ?? ""].join("\t") + "\n");
 }
 
-const blocked = rows.filter((r) => r.status === "blocked" || r.status === "shell");
+const blocked = rows.filter((r) => !["ok", "unvalidated"].includes(r.status));
 console.log(`\n${rows.length} row(s) appended to ${MANIFEST}`);
 if (blocked.length) {
-  console.log(`\n${blocked.length} of them did not capture the claim:`);
-  for (const b of blocked) console.log(`  ${b.source}: ${b.note}`);
+  console.log(`\n${blocked.length} of them did not capture a validated claim:`);
+  for (const b of blocked) console.log(`  ${b.status.toUpperCase()}  ${b.source}: ${b.note}`);
   console.log("\nThe reporting JIP-38 commits to is therefore not being archived by this");
   console.log("project yet. That gap is dated in CLAIMS.tsv rather than left implicit.");
+}
+
+// A run that captured nothing usable must not look like a successful one.
+//
+// The exit code is what a scheduler sees. This script previously exited 0 no
+// matter what, so a run in which every required capture was blocked or failed
+// reported success — and the gap in the archive was visible only to whoever
+// read the log. `blocked` is a finding, and a finding is not a clean run.
+//
+// The chain anchor and the operator's figures are the two required captures:
+// without the first an archived claim is not checkable later, and without the
+// second there is no claim archived at all.
+const REQUIRED = ["chain-anchor", "dune-query", "dune-dashboard-html"];
+const missing = REQUIRED.filter((name) => {
+  const got = rows.filter((r) => r.source.startsWith(name));
+  return got.length === 0 || got.every((r) => !["ok", "unvalidated"].includes(r.status));
+});
+if (missing.length) {
+  console.log(`\nFAILED: required capture(s) did not validate: ${missing.join(", ")}.`);
+  console.log("CLAIMS.tsv records the attempt; this run is not evidence of a captured claim.");
+  process.exit(1);
 }
