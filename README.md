@@ -334,9 +334,22 @@ of it, including that the hash in the header matches the script on the page.
 
 ### On Railway
 
-[`railway.toml`](railway.toml) configures the web service; the cron service is
-created alongside it with `node refresh.mjs` and a schedule. `SOLANA_RPC_URL` is
-the only secret.
+[`railway.toml`](railway.toml) configures the web service. Everything else —
+the refresh service, the credential, the volume — is provisioned by
+[`deploy-railway.sh`](deploy-railway.sh):
+
+```
+railway login          # the CLI refuses to authenticate non-interactively
+bash deploy-railway.sh
+```
+
+It runs the offline gate first, so nothing is provisioned from a tree whose
+tests do not pass. `SOLANA_RPC_URL` is set on the refresh service only: the page
+is static and needs no credential to serve, and the surest way to keep a secret
+off a service is not to put it there.
+
+The one step it cannot do is the cron schedule — Railway exposes no CLI for it,
+so the script ends by telling you exactly what to set and where.
 
 There is no publish step there, which is the point: the page that was built is
 the page that is served, off the same disk, and the server re-reads it when its
