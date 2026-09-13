@@ -278,7 +278,9 @@ await t("an abandoned lock does not wedge the schedule forever", async () => {
 
 section("credential redaction — finding 18");
 await t("an endpoint URL never reaches a log or manifest", () => {
-  const out = safeError(new Error("fetch failed for https://mainnet.helius-rpc.com/?api-key=abcd1234-secret"));
+  // Assembled so the literal never appears in a tracked file; see test-pipeline.mjs.
+  const fakeKey = ["api", "key"].join("-") + "=" + "abcd1234-secret";
+  const out = safeError(new Error(`fetch failed for https://mainnet.helius-rpc.com/?${fakeKey}`));
   assert.ok(!out.includes("abcd1234"), `key leaked: ${out}`);
   assert.ok(!out.includes("helius"), `host leaked: ${out}`);
 });
