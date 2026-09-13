@@ -334,34 +334,43 @@ of it, including that the hash in the header matches the script on the page.
 
 ### On Railway
 
-[`railway.toml`](railway.toml) configures the web service. Everything else —
-the refresh service, the credential, the volume — is provisioned by
-[`deploy-railway.sh`](deploy-railway.sh):
+Live at **https://web-production-372cc.up.railway.app**.
+[`deploy-railway.sh`](deploy-railway.sh) provisions the whole thing, and runs
+the offline gate first so nothing is provisioned from a tree whose tests fail:
 
 ```
 railway login          # the CLI refuses to authenticate non-interactively
 bash deploy-railway.sh
 ```
 
-It runs the offline gate first, so nothing is provisioned from a tree whose
-tests do not pass. `SOLANA_RPC_URL` is set on the refresh service only: the page
-is static and needs no credential to serve, and the surest way to keep a secret
-off a service is not to put it there.
-
-The one step it cannot do is the cron schedule — Railway exposes no CLI for it,
-so the script ends by telling you exactly what to set and where.
-
-There is no publish step there, which is the point: the page that was built is
-the page that is served, off the same disk, and the server re-reads it when its
+There is no publish step, which is the point: the page that was built is the
+page that is served, off the same disk, and the server re-reads it when its
 mtime changes. Nothing has to be pushed anywhere, so nothing can silently fail
 to be.
 
-One thing to get right before running the cron in anger — Railway's filesystem
-is ephemeral, and a redeploy resets it to whatever was committed.
-`data/history.jsonl` is the treasury series: it is evidence, it is never
-back-filled, and losing a reading cannot be undone. Attach a volume at
-`/app/data`, or the chart silently restarts from the committed readings on every
-deploy.
+Three things that are only obvious after getting them wrong:
+
+**One service, not two.** The natural split is a web service that serves and a
+cron service that reads the chain. It silently does not work. Each Railway
+service is its own container with its own disk, so the cron rebuilds
+`dist/dashboard.html` inside *itself* while the web service goes on serving a
+copy nothing updates — both deployments green, the cron reporting success every
+six hours, and the page never changing. A volume cannot bridge it: a volume
+instance binds to exactly one service. So the refresh runs inside the serving
+process on a timer. It is off unless `REFRESH_INTERVAL_MINUTES` is set, so a
+local `npm start` serves what is already built and never touches the chain.
+
+**The volume needs seeding.** Mounting at `/app/data` *shadows* the committed
+`data/` directory, and the volume starts empty — so the first boot after
+attaching one loses `data/history.jsonl`, the treasury series, which is evidence
+that is never back-filled. The volume added to protect it is what destroys it.
+[`prepare-seed.mjs`](prepare-seed.mjs) copies those files aside during the build
+phase, the only moment they are reachable; the server restores anything missing
+at boot, and never touches a file the volume already holds.
+
+**Set `PORT` explicitly.** Railway's edge returns "Application not found" if it
+cannot work out the target port, while the container sits there serving happily
+— which reads as a broken deploy rather than a routing gap.
 
 ## Licence
 
