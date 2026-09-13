@@ -279,6 +279,43 @@ try {
       try { rmSync(box, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 }); } catch { /* OS will clear it */ }
     }
   });
+  await t("a newer snapshot in the build replaces an older one on the volume", async () => {
+    // The page is built from the committed snapshot. If the volume keeps an
+    // older one, /snapshot.json serves evidence that disagrees with the figures
+    // on the page beside it — which, in a project whose argument is that the
+    // reader can check the numbers, is the worst small bug available.
+    const box = mkdtempSync(join(tmpdir(), "jip38-newer-"));
+    const p5 = PORT + 4;
+    let alt;
+    try {
+      mkdirSync(join(box, "dist"), { recursive: true });
+      mkdirSync(join(box, "data"), { recursive: true });
+      mkdirSync(join(box, "data-seed"), { recursive: true });
+      copyFileSync("dist/dashboard.html", join(box, "dist", "dashboard.html"));
+
+      const real = JSON.parse(readFileSync("data/snapshot.json", "utf8"));
+      const older = { ...real, generatedAt: "2026-01-01T00:00:00.000Z" };
+      writeFileSync(join(box, "data", "snapshot.json"), JSON.stringify(older));   // the volume
+      writeFileSync(join(box, "data-seed", "snapshot.json"), JSON.stringify(real)); // this build
+      // Readings the volume already holds must survive regardless.
+      writeFileSync(join(box, "data", "history.jsonl"), "LIVE\n");
+      writeFileSync(join(box, "data-seed", "history.jsonl"), "SEED\n");
+
+      alt = spawn(process.execPath, [join(process.cwd(), "server.mjs"), "--port", String(p5)],
+        { stdio: "ignore", cwd: box });
+      await waitForPort(p5);
+
+      const served = await (await fetch(`http://127.0.0.1:${p5}/snapshot.json`)).json();
+      assert.equal(served.generatedAt, real.generatedAt,
+        "the volume's stale snapshot was served while the page carried a newer one");
+      assert.equal(readFileSync(join(box, "data", "history.jsonl"), "utf8").trim(), "LIVE",
+        "append-only evidence was replaced by the seed");
+    } finally {
+      alt?.kill();
+      await new Promise((r) => setTimeout(r, 200));
+      try { rmSync(box, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 }); } catch { /* OS will clear it */ }
+    }
+  });
   await t("an unbuilt deployment reports 503, and says so on healthz", async () => {
     // Run from a directory with no dist/. A fresh Railway deploy that has not
     // built yet must say it has nothing to serve — not return an empty 200 that

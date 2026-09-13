@@ -219,20 +219,51 @@ const server = createServer((req, res) => {
 // is the only moment the committed files are reachable. On boot, anything
 // missing from the volume is restored from that seed. Existing files are never
 // touched: the volume is the live record once it has one.
+// The two files need opposite rules, and getting that wrong is visible.
+//
+//   history.jsonl is APPEND-ONLY EVIDENCE. Each line is a reading taken at a
+//   moment that will not come again, and it is never back-filled. The volume's
+//   copy always wins; the seed is a floor, not a replacement.
+//
+//   snapshot.json is a POINT IN TIME, and the page is built from it. If the
+//   volume keeps an older one while the deployed page carries a newer, then
+//   /snapshot.json serves evidence that disagrees with the figures beside it —
+//   which, in a project whose whole argument is that the reader can check the
+//   numbers, is about the worst small bug available. So the later generatedAt
+//   wins, whichever side it is on.
 function seedDataVolume() {
   const seedDir = "data-seed";
   if (!existsSync(seedDir)) return;
   mkdirSync("data", { recursive: true });
-  let restored = 0;
+
+  const generatedAt = (path) => {
+    try { return Date.parse(JSON.parse(readFileSync(path, "utf8")).generatedAt) || 0; }
+    catch { return 0; }
+  };
+
+  let acted = 0;
   for (const name of readdirSync(seedDir)) {
     const from = join(seedDir, name);
     const to = join("data", name);
-    if (statSync(from).isDirectory() || existsSync(to)) continue;
-    copyFileSync(from, to);
-    restored++;
-    console.log(`  seeded       data/${name} from the committed copy`);
+    if (statSync(from).isDirectory()) continue;
+
+    if (!existsSync(to)) {
+      copyFileSync(from, to);
+      console.log(`  seeded       data/${name} (the volume had none)`);
+      acted++;
+      continue;
+    }
+
+    // Present on both sides. Append-only evidence is left exactly alone.
+    if (name !== "snapshot.json") continue;
+
+    if (generatedAt(from) > generatedAt(to)) {
+      copyFileSync(from, to);
+      console.log(`  refreshed    data/${name} — this build carries a newer snapshot than the volume held`);
+      acted++;
+    }
   }
-  if (!restored) console.log("  volume       already populated; nothing seeded");
+  if (!acted) console.log("  volume       up to date; nothing seeded");
 }
 
 // --- refreshing, in this process ---------------------------------------------
