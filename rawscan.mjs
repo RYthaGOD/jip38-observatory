@@ -106,7 +106,40 @@ async function anchorAt(target) {
     if (r.time < target) lo = Math.max(lo + 1, r.slot + 1);
     else hi = Math.max(lo, Math.min(hi, r.slot));
   }
-  return await firstBlockAtOrAfter(lo);
+
+  // The binary search leaves a window of at most 3,000 slots straddling the
+  // target, and `lo` is by construction a slot whose block time is BEFORE it.
+  // Returning firstBlockAtOrAfter(lo) therefore handed back an anchor that
+  // could PRECEDE the boundary it was asked for — asking for t=9000 returned a
+  // block at t=7501. Adjacent scans pinned to those anchors then stopped at
+  // nominal lower boundaries while the next began earlier, leaving the space
+  // between them unexamined and reported as covered.
+  //
+  // So the window is resolved properly: list its blocks in one call and binary
+  // search their real times for the first at or after the target. A dozen
+  // getBlock calls, and the postcondition actually holds.
+  const blocks = await rpc("getBlocks", [lo, Math.min(hi, slotNow)]);
+  if (Array.isArray(blocks) && blocks.length) {
+    const timeOf = async (s) => await rpc("getBlock",
+      [s, { transactionDetails: "signatures", rewards: false, maxSupportedTransactionVersion: 0 }]);
+    let a = 0, b = blocks.length - 1, best = null;
+    while (a <= b) {
+      const m = (a + b) >> 1;
+      const blk = await timeOf(blocks[m]);
+      if (!blk || typeof blk.blockTime !== "number") { a = m + 1; continue; }
+      if (blk.blockTime >= target) {
+        if (blk.signatures?.length) best = { slot: blocks[m], time: blk.blockTime, sig: blk.signatures[0] };
+        b = m - 1;
+      } else a = m + 1;
+    }
+    if (best) return best;
+  }
+
+  // Nothing in the window is at or after the target: fall forward past it
+  // rather than back before it. An anchor that precedes its boundary is the
+  // defect; no anchor at all is an honest answer.
+  const after = await firstBlockAtOrAfter(Math.min(hi, slotNow));
+  return after && after.time >= target ? after : null;
 }
 
 // Read every JTO burn instruction out of a batch of resolved transactions.
@@ -117,17 +150,29 @@ function burnsFrom(txs) {
   const out = [];
   for (const tx of txs) {
     if (!tx || tx.meta?.err) continue;
-    const ins = [...(tx.transaction.message.instructions || []),
-      ...(tx.meta?.innerInstructions || []).flatMap((x) => x.instructions || [])];
-    const parsed = ins.map((x) => x.parsed).filter(Boolean);
+    // Each instruction carries its POSITION in the transaction: "3" for the
+    // fourth outer instruction, "3.1" for the second inner instruction under
+    // it. That position is what makes a burn instruction identifiable.
+    //
+    // Without it the only identity available was signature + account + amount,
+    // and two separate burn instructions in one transaction can share all
+    // three — so dedupe deleted one of them and understated total destruction.
+    // Repeat retrievals of the SAME instruction still collapse, which is what
+    // dedupe is actually for.
+    const ins = [
+      ...(tx.transaction.message.instructions || []).map((x, i) => ({ x, pos: String(i) })),
+      ...(tx.meta?.innerInstructions || []).flatMap((g) =>
+        (g.instructions || []).map((x, j) => ({ x, pos: `${g.index}.${j}` }))),
+    ];
+    const parsed = ins.map(({ x }) => x.parsed).filter(Boolean);
     const closes = parsed.filter((p) => p.type === "closeAccount").length;
     const others = new Set(parsed.filter((p) => /^burn/.test(p.type)).map((p) => p.info.mint).filter((m) => m !== MINT));
-    for (const x of ins) {
+    for (const { x, pos } of ins) {
       const p = x.parsed;
       if (!p || !/^burn/.test(p.type) || p.info.mint !== MINT) continue;
       const raw = BigInt(p.info.tokenAmount?.amount ?? p.info.amount ?? 0);
       out.push({
-        sig: tx.transaction.signatures[0], slot: tx.slot, time: tx.blockTime,
+        sig: tx.transaction.signatures[0], ix: pos, slot: tx.slot, time: tx.blockTime,
         authority: p.info.authority || p.info.multisigAuthority || "(unknown)",
         account: p.info.account, raw, amount: Number(raw) / 10 ** DECIMALS,
         closes, otherMints: others.size,
@@ -264,7 +309,9 @@ if (SAMPLE) {
 {
   const seen = new Set();
   for (let i = allBurns.length - 1; i >= 0; i--) {
-    const k = `${allBurns[i].sig}|${allBurns[i].account}|${allBurns[i].raw}`;
+    // Instruction identity: which transaction, and where in it. Two distinct
+    // burns of equal size in one transaction are two burns, and both survive.
+    const k = `${allBurns[i].sig}|${allBurns[i].ix}`;
     if (seen.has(k)) allBurns.splice(i, 1); else seen.add(k);
   }
 }

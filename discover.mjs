@@ -382,10 +382,16 @@ rule("5. verified burns, by authority");
 
 const authorities = new Map();
 let verified = 0;
+let failedTx = 0;
 
 for (const sig of found.keys()) {
   const tx = await rpc("getTransaction", [sig, { maxSupportedTransactionVersion: 0, encoding: "jsonParsed" }], { soft: true });
   if (!tx) continue;
+  // A transaction that failed executed nothing. Its burn instruction is a
+  // request, not a supply reduction — and this loop is what produces the
+  // "verified burns" figure. track, ledger and rawscan all reject these; this
+  // one did not, so a failed attempt could be counted as a verified burn.
+  if (tx.meta?.err) { failedTx++; continue; }
   const instrs = [
     ...(tx.transaction.message.instructions || []),
     ...(tx.meta?.innerInstructions || []).flatMap((i) => i.instructions || []),
@@ -415,7 +421,8 @@ for (const sig of found.keys()) {
   }
 }
 
-console.log(`verified burn instructions against this mint: ${verified}`);
+console.log(`verified burn instructions against this mint: ${verified}` +
+  (failedTx ? ` (${failedTx} failed transaction(s) excluded — they executed nothing)` : ""));
 console.log("");
 const rows = [...authorities.entries()].sort((a, b) => b[1].total - a[1].total);
 for (const [who, e] of rows) {

@@ -1,9 +1,17 @@
 // The JTO event ledger: everything that happens to the token, except retail.
 //
 //   node track.mjs                     # crawl from the registry's known accounts
-//   node track.mjs --resume            # continue where the last run stopped
+//   node track.mjs --resume            # continue UNFINISHED work in the same scan
+//   node track.mjs --poll              # check enumerated accounts for NEW activity
 //   node track.mjs --min-flow 10000    # frontier threshold, in JTO
 //   node track.mjs --report            # re-print the summary from the checkpoint
+//
+// --resume and --poll are different operations and must not be confused.
+// --resume finishes a bounded historical scan; it never revisits an account it
+// already completed. --poll is monitoring: it asks each completed account for
+// signatures newer than the cursor recorded when it finished. A resumed run
+// that reads today's supply while retaining last week's account history is
+// reporting two different moments as one.
 //
 // Writes EVENTS.tsv (append-only ledger) and data/track-state.json.
 //
@@ -45,29 +53,36 @@ import { mkdirSync, writeFileSync, readFileSync, existsSync } from "node:fs";
 import { dirname } from "node:path";
 import { parseRegistry } from "./lib.mjs";
 import { createRpc } from "./rpc.mjs";
+import { GENESIS_RAW, DECIMALS, units, decimalRaw, integer, safeError, atomicWrite } from "./core.mjs";
 
 try { process.loadEnvFile(".env"); } catch {}
 
 const MINT = "jtojtomepa8beP8AuQc6eXt5FriJwfFMwQx2v2f9mCL";
-const MINTED_EVER = 1_000_000_000;      // verified on chain; minting closed 2023-12-04
 const TOKEN_PROGRAM = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA";
 
+// The shape of data/track-state.json. Amounts became raw base-unit strings in
+// version 2, so a version-1 checkpoint cannot be resumed into this code: its
+// float amounts would silently mix with exact ones in the same reconciliation.
+const STATE_VERSION = 2;
+
 const RPC = process.env.SOLANA_RPC_URL || arg("--rpc", "");
-const MIN_FLOW = Number(arg("--min-flow", "10000"));     // JTO; below this we do not expand
-const MAX_TX = Number(arg("--max-tx", "6000"));          // per account, before we call it high-volume
-const CONC = Number(arg("--concurrency", "3"));
-const BATCH = Number(arg("--batch", "10"));
-const MAX_ACCOUNTS = Number(arg("--max-accounts", "400"));
+// Every numeric argument is validated before any network or output activity.
+// A zero batch, in particular, stops `i += BATCH` from making progress while
+// there is still work — which looks exactly like having finished.
+const MIN_FLOW_RAW = decimalRaw(arg("--min-flow", "10000"));  // JTO; below this we do not expand
+const MAX_TX = integer(arg("--max-tx", "6000"), "--max-tx");  // per account, before we call it high-volume
+const CONC = integer(arg("--concurrency", "3"), "--concurrency", 1, 64);
+const BATCH = integer(arg("--batch", "10"), "--batch", 1, 100);
+const MAX_ACCOUNTS = integer(arg("--max-accounts", "400"), "--max-accounts");
 const RESUME = process.argv.includes("--resume");
+const POLL = process.argv.includes("--poll");
 const REPORT_ONLY = process.argv.includes("--report");
 const OUT = arg("--out", "EVENTS.tsv");
 const STATE = arg("--state", "data/track-state.json");
 
 function arg(f, d) { const i = process.argv.indexOf(f); return i >= 0 && process.argv[i + 1] ? process.argv[i + 1] : d; }
 function die(m) { console.error("track: " + m); process.exit(2); }
-const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const iso = (t) => (t ? new Date(t * 1000).toISOString().replace(".000Z", "Z") : "");
-const fmt = (n, d = 6) => Number(n).toLocaleString(undefined, { maximumFractionDigits: d });
 
 // Venues whose accounts are retail flow. Reaching one of these ends a branch:
 // its pool vaults would otherwise drag millions of swap transactions into a
@@ -103,19 +118,26 @@ if (!RPC) die("no RPC endpoint. Set SOLANA_RPC_URL in .env or pass --rpc.");
 // Paced by credits, not by HTTP calls — see rpc.mjs. Batching without metering
 // was what produced 68-77% throttling in earlier runs: the provider counts every
 // item in a JSON-RPC batch, so a batch of 50 spends 50 requests at once.
-const client = createRpc({ url: RPC, rate: Number(arg("--rate", "8")), maxBatch: BATCH });
+const client = createRpc({ url: RPC, rate: integer(arg("--rate", "8"), "--rate", 1, 100), maxBatch: BATCH });
 const rpc = (m, p) => client.call(m, p);
 
 // --- state -----------------------------------------------------------------
 mkdirSync(dirname(STATE), { recursive: true });
 let state;
-if (RESUME && existsSync(STATE)) {
+if ((RESUME || POLL) && existsSync(STATE)) {
   state = JSON.parse(readFileSync(STATE, "utf8"));
+  // A checkpoint written before amounts became exact cannot be resumed into
+  // this code: its float amounts would be summed alongside base-unit ones in
+  // the same reconciliation, and the residual would be quietly meaningless.
+  if ((state.version ?? 1) !== STATE_VERSION) {
+    die(`${STATE} is version ${state.version ?? 1}, this build writes version ${STATE_VERSION}. ` +
+      `Amounts are now exact base units; re-run without --resume to rebuild it.`);
+  }
   state.counterparties ??= {};
   console.log(`resuming: ${Object.values(state.accounts).filter((a) => a.done).length}/` +
     `${Object.keys(state.accounts).length} accounts crawled, ${state.events.length} events\n`);
 } else {
-  state = { accounts: {}, events: [], seenSigs: [], counterparties: {} };
+  state = { version: STATE_VERSION, accounts: {}, events: [], seenSigs: [], counterparties: {} };
   // Seed from the registry: these are the addresses already identified, with
   // published evidence, and re-tested by verify.mjs on every run.
   let seeded = 0;
@@ -130,15 +152,19 @@ if (RESUME && existsSync(STATE)) {
   console.log(`seeded ${seeded} account(s) from REGISTRY.tsv\n`);
 }
 const seen = new Set(state.seenSigs);
-const save = () => { state.seenSigs = [...seen]; writeFileSync(STATE, JSON.stringify(state)); };
+const save = () => { state.version = STATE_VERSION; state.seenSigs = [...seen]; atomicWrite(STATE, JSON.stringify(state)); };
 
 // Read supply up front. Everything the crawl finds is measured against this, and
 // the gap between the two is the honest statement of what is still missing.
 {
   const s = await rpc("getTokenSupply", [MINT]);
-  if (!s) die("cannot read token supply");
-  state.currentSupply = Number(s.value.uiAmountString);
-  console.log(`JTO supply now ${s.value.uiAmountString}; ${fmt(MINTED_EVER - state.currentSupply)} JTO has been burned and must be accounted for.\n`);
+  if (!s?.value?.amount) die("cannot read token supply");
+  if (s.value.decimals !== DECIMALS) die(`mint reports ${s.value.decimals} decimals, expected ${DECIMALS}`);
+  // The raw base-unit amount, not the display string. This is the figure the
+  // whole reconciliation is measured against, so it stays exact.
+  state.currentSupplyRaw = String(s.value.amount);
+  const outstanding = GENESIS_RAW - BigInt(state.currentSupplyRaw);
+  console.log(`JTO supply now ${units(BigInt(state.currentSupplyRaw))}; ${units(outstanding)} JTO has been burned and must be accounted for.\n`);
 }
 
 // --- the crawl -------------------------------------------------------------
@@ -146,6 +172,49 @@ function classify(tx) {
   const keys = (tx.transaction.message.accountKeys || []).map((k) => k.pubkey ?? k);
   for (const k of keys) if (DEX_PROGRAMS.has(k)) return DEX_PROGRAMS.get(k);
   return null;
+}
+
+// Which mint does each token account in this transaction hold?
+//
+// An UNCHECKED SPL transfer carries no mint in its parsed info — only
+// `transferChecked` does. The code used to accept that absence and scale the
+// amount by 1e9 anyway, so in a multi-token transaction an unrelated token was
+// recorded as JTO and its counterparties promoted into the crawl. The ledger
+// this project publishes would have contained other people's tokens.
+//
+// The transaction's own token-balance metadata settles it: pre/postTokenBalances
+// name the mint for every token account the transaction touched, by index into
+// accountKeys.
+function tokenMints(tx) {
+  const keys = (tx.transaction.message.accountKeys || []).map((k) => k.pubkey ?? k);
+  const mints = new Map();
+  for (const b of [...(tx.meta?.preTokenBalances ?? []), ...(tx.meta?.postTokenBalances ?? [])]) {
+    const addr = keys[b.accountIndex];
+    if (addr && b.mint) mints.set(addr, b.mint);
+  }
+  return mints;
+}
+
+// The mint an instruction operates on, or null if the transaction does not say.
+// Null means UNRESOLVED — never "probably JTO".
+function mintOf(info, mints) {
+  if (info.mint) return info.mint;
+  for (const key of ["account", "source", "destination"]) {
+    const addr = info[key];
+    if (addr && mints.has(addr)) return mints.get(addr);
+  }
+  return null;
+}
+
+// The raw base-unit amount an instruction moves, as BigInt. Returns null when
+// the amount is absent or malformed, which must not become zero: a burn
+// recorded as 0 JTO is worse than a burn recorded as unresolved.
+function rawAmount(info) {
+  const v = info.tokenAmount?.amount ?? info.amount;
+  if (v === undefined || v === null) return null;
+  const s = String(v);
+  if (!/^(0|[1-9][0-9]*)$/.test(s)) return null;
+  return BigInt(s);
 }
 
 async function crawl(addr) {
@@ -164,15 +233,38 @@ async function crawl(addr) {
     if (acct.mint && acct.mint !== MINT) { acct.done = true; acct.skipped = "not a JTO account"; return; }
   }
 
-  let before, sigs = [];
-  while (sigs.length < MAX_TX) {
-    const p = await rpc("getSignaturesForAddress", [addr, before ? { limit: 1000, before } : { limit: 1000 }]);
-    if (!p?.length) break;
-    sigs.push(...p.filter((s) => !s.err));
-    before = p[p.length - 1].signature;
-    if (p.length < 1000) break;
+  // Pagination has to distinguish "the account has no more history" from "the
+  // page could not be read". Both used to break the loop, and the account was
+  // then marked done — so a single failed page permanently retired an account
+  // as fully enumerated, and resume would skip it forever.
+  //
+  // The client throws on a failed read, so reaching the end of this loop
+  // without an exception IS the completeness proof.
+  let before, sigs = [], paginationComplete = false;
+  try {
+    while (sigs.length < MAX_TX) {
+      const p = await rpc("getSignaturesForAddress", [addr, before ? { limit: 1000, before } : { limit: 1000 }]);
+      if (!Array.isArray(p)) throw new Error("getSignaturesForAddress returned a non-array");
+      if (!p.length) { paginationComplete = true; break; }
+      sigs.push(...p.filter((s) => !s.err));
+      before = p[p.length - 1].signature;
+      if (p.length < 1000) { paginationComplete = true; break; }
+    }
+  } catch (err) {
+    // Not done, not enumerated, and retained for a later run to finish.
+    acct.incomplete = `signature pagination failed: ${safeError(err)}`;
+    acct.done = false;
+    save();
+    return;
   }
   acct.tx = sigs.length;
+  acct.paginationComplete = paginationComplete;
+  // The newest signature this account has been enumerated up to. It is the
+  // cursor `--poll` uses to ask for anything newer, and it is what makes the
+  // difference between "this account was complete as of X" and "this account
+  // is complete", which are not the same claim.
+  if (sigs.length) acct.head = sigs[0].signature;
+  acct.coveredAt = new Date().toISOString();
   if (sigs.length >= MAX_TX) {
     // Almost always a venue or an exchange wallet. Recorded, not enumerated:
     // pretending to have crawled it would be worse than saying we did not.
@@ -181,11 +273,24 @@ async function crawl(addr) {
   }
 
   const fresh = sigs.filter((s) => !seen.has(s.signature));
+  const unresolved = [];
   for (let i = 0; i < fresh.length; i += BATCH) {
-    const res = await client.batch("getTransaction",
-      fresh.slice(i, i + BATCH).map((s) => [s.signature, { maxSupportedTransactionVersion: 0, encoding: "jsonParsed" }]));
-    for (const tx of res) {
-      if (!tx || tx.meta?.err) continue;
+    const chunk = fresh.slice(i, i + BATCH);
+    // batchSettled rather than batch: a transaction that could not be read is
+    // retained by signature so a later run can retry it. Skipping it and then
+    // marking the account done was how omitted transactions became permanent.
+    const res = await client.batchSettled("getTransaction",
+      chunk.map((s) => [s.signature, { maxSupportedTransactionVersion: 0, encoding: "jsonParsed" }]));
+    for (let n = 0; n < res.length; n++) {
+      const outcome = res[n];
+      if (!outcome.ok || !outcome.result) {
+        unresolved.push(chunk[n].signature);
+        continue;
+      }
+      const tx = outcome.result;
+      // A failed transaction executed nothing. Its instructions are requests,
+      // not events, and must never reach the ledger.
+      if (tx.meta?.err) { seen.add(tx.transaction.signatures[0]); continue; }
       const sig = tx.transaction.signatures[0];
       if (seen.has(sig)) continue;
       seen.add(sig);
@@ -208,28 +313,48 @@ async function crawl(addr) {
       // Recording everything in a transaction we have already paid to fetch is
       // also simply cheaper, and it makes the ledger independent of the order
       // accounts happen to be crawled in.
+      const mints = tokenMints(tx);
       for (const x of ins) {
         const p = x.parsed;
         if (!p || x.programId !== TOKEN_PROGRAM) continue;
         const info = p.info || {};
-        if (info.mint && info.mint !== MINT) continue;
-        const amt = Number(info.tokenAmount?.amount ?? info.amount ?? 0) / 1e9;
 
-        if (/^burn/.test(p.type) && info.mint === MINT) {
-          state.events.push({ t: tx.blockTime, kind: "BURN", amt, from: info.account,
+        // Positive JTO identification is required before anything is recorded
+        // or any counterparty is promoted. An unchecked transfer names no mint,
+        // and taking that silence for JTO put other people's tokens in this
+        // ledger. Unknown stays unknown.
+        const mint = mintOf(info, mints);
+        if (mint !== MINT) {
+          if (mint === null) acct.unresolvedMint = (acct.unresolvedMint ?? 0) + 1;
+          continue;
+        }
+
+        // Base units, exactly. A malformed amount is skipped rather than
+        // defaulted to zero, because a burn recorded as 0 JTO is a false
+        // reconciliation, not a missing one.
+        const amountRaw = rawAmount(info);
+        const needsAmount = /^burn|^mintTo|^transfer/.test(p.type);
+        if (needsAmount && amountRaw === null) {
+          acct.unresolvedAmount = (acct.unresolvedAmount ?? 0) + 1;
+          continue;
+        }
+        const raw = (amountRaw ?? 0n).toString();
+
+        if (/^burn/.test(p.type)) {
+          state.events.push({ t: tx.blockTime, kind: "BURN", raw, from: info.account,
             to: "", who: info.authority || info.multisigAuthority || "", venue: venue ?? "", sig });
-        } else if (/^mintTo/.test(p.type) && info.mint === MINT) {
-          state.events.push({ t: tx.blockTime, kind: "MINT", amt, from: "", to: info.account,
+        } else if (/^mintTo/.test(p.type)) {
+          state.events.push({ t: tx.blockTime, kind: "MINT", raw, from: "", to: info.account,
             who: info.mintAuthority || "", venue: venue ?? "", sig });
         } else if (p.type === "setAuthority") {
-          state.events.push({ t: tx.blockTime, kind: "AUTHORITY", amt: 0, from: info.account ?? info.mint ?? "",
+          state.events.push({ t: tx.blockTime, kind: "AUTHORITY", raw: "0", from: info.account ?? info.mint ?? "",
             to: info.newAuthority ?? "null", who: info.authorityType ?? "", venue: venue ?? "", sig });
         } else if (p.type === "closeAccount") {
-          state.events.push({ t: tx.blockTime, kind: "CLOSE", amt: 0, from: info.account ?? "",
+          state.events.push({ t: tx.blockTime, kind: "CLOSE", raw: "0", from: info.account ?? "",
             to: info.destination ?? "", who: info.owner ?? "", venue: venue ?? "", sig });
         } else if (/^transfer/.test(p.type)) {
-          if (amt <= 0) continue;
-          state.events.push({ t: tx.blockTime, kind: venue ? "DEX-FLOW" : "TRANSFER", amt,
+          if (amountRaw <= 0n) continue;
+          state.events.push({ t: tx.blockTime, kind: venue ? "DEX-FLOW" : "TRANSFER", raw,
             from: info.source ?? "", to: info.destination ?? "", who: info.authority ?? "", venue: venue ?? "", sig });
 
           // Both sides are remembered, whether or not there is budget to crawl
@@ -240,8 +365,8 @@ async function crawl(addr) {
           if (!venue) {
             for (const other of [info.source, info.destination]) {
               if (!other || other === addr) continue;
-              const c = state.counterparties[other] ?? { maxFlow: 0, via: addr };
-              if (amt > c.maxFlow) { c.maxFlow = amt; c.via = addr; }
+              const c = state.counterparties[other] ?? { maxFlowRaw: "0", via: addr };
+              if (amountRaw > BigInt(c.maxFlowRaw)) { c.maxFlowRaw = raw; c.via = addr; }
               state.counterparties[other] = c;
             }
           }
@@ -252,7 +377,20 @@ async function crawl(addr) {
       `${Object.keys(state.accounts).length} accounts, ${state.events.length} events, ` +
       `${client.status()}      \r`);
   }
-  acct.done = true;
+
+  // Done means every expected response was validated — not merely that the
+  // loop ran out of things it could read. An account with unresolved
+  // transactions keeps them queued and stays incomplete, so a later run
+  // retries rather than skipping it forever.
+  if (unresolved.length) {
+    acct.unresolvedSigs = [...new Set([...(acct.unresolvedSigs ?? []), ...unresolved])];
+    acct.incomplete = `${acct.unresolvedSigs.length} transaction(s) could not be resolved`;
+    acct.done = false;
+  } else {
+    delete acct.unresolvedSigs;
+    delete acct.incomplete;
+    acct.done = true;
+  }
   save();
 }
 
@@ -262,11 +400,11 @@ async function crawl(addr) {
 function promote() {
   let added = 0;
   const candidates = Object.entries(state.counterparties)
-    .filter(([a, c]) => !state.accounts[a] && c.maxFlow >= MIN_FLOW)
-    .sort((x, y) => y[1].maxFlow - x[1].maxFlow);
+    .filter(([a, c]) => !state.accounts[a] && BigInt(c.maxFlowRaw) >= MIN_FLOW_RAW)
+    .sort((x, y) => (BigInt(y[1].maxFlowRaw) > BigInt(x[1].maxFlowRaw) ? 1 : -1));
   for (const [a, c] of candidates) {
     if (Object.keys(state.accounts).length >= MAX_ACCOUNTS) break;
-    state.accounts[a] = { label: `found via ${c.via.slice(0, 8)}`, from: c.via, done: false, tx: 0, firstFlow: c.maxFlow };
+    state.accounts[a] = { label: `found via ${c.via.slice(0, 8)}`, from: c.via, done: false, tx: 0, firstFlowRaw: c.maxFlowRaw };
     added++;
   }
   return added;
@@ -279,14 +417,55 @@ for (const e of state.events) {
   if (e.kind !== "TRANSFER") continue;
   for (const a of [e.from, e.to]) {
     if (!a) continue;
-    const c = state.counterparties[a] ?? { maxFlow: 0, via: e.from || e.to };
-    if (e.amt > c.maxFlow) c.maxFlow = e.amt;
+    const c = state.counterparties[a] ?? { maxFlowRaw: "0", via: e.from || e.to };
+    if (BigInt(e.raw) > BigInt(c.maxFlowRaw)) c.maxFlowRaw = e.raw;
     state.counterparties[a] = c;
   }
 }
 console.log(`${Object.keys(state.counterparties).length} counterparties known, ` +
   `${Object.keys(state.accounts).length} of them queued as accounts`);
 console.log(`promoted ${promote()} more into the crawl (budget ${MAX_ACCOUNTS})\n`);
+
+// --- polling: monitoring, which resume is not -------------------------------
+//
+// `--resume` continues UNFINISHED work. It is the right thing for a bounded
+// historical scan and the wrong thing for monitoring, because an account that
+// finished is never looked at again — so a resumed run would read today's
+// supply, retain last week's account history, and report the pair as though
+// they described the same moment.
+//
+// `--poll` is the other operation: for every account already enumerated, ask
+// only for signatures NEWER than the cursor recorded when it completed. An
+// account with new activity is returned to the queue; one without is left
+// alone at the cost of a single call.
+if (POLL) {
+  const done = Object.entries(state.accounts).filter(([, a]) => a.done && a.head && !a.skipped);
+  console.log(`polling ${done.length} enumerated account(s) for new activity...`);
+  let reopened = 0, checked = 0;
+  for (let i = 0; i < done.length; i += CONC) {
+    await Promise.all(done.slice(i, i + CONC).map(async ([addr, acct]) => {
+      try {
+        const fresh = await rpc("getSignaturesForAddress", [addr, { until: acct.head, limit: 1000 }]);
+        checked++;
+        if (Array.isArray(fresh) && fresh.length) {
+          // Re-enumerate this account. Transactions already in `seen` are
+          // skipped, so the cost is listing signatures, not resolving them
+          // again.
+          acct.done = false;
+          acct.newSince = fresh.length;
+          reopened++;
+        }
+      } catch (err) {
+        // A failed poll is not "no new activity". Say so rather than leaving
+        // the account looking freshly confirmed.
+        acct.pollFailed = safeError(err);
+      }
+    }));
+  }
+  state.polledAt = new Date().toISOString();
+  console.log(`  ${checked} checked, ${reopened} had new activity and were requeued\n`);
+  save();
+}
 
 let guard = 0;
 while (guard++ < MAX_ACCOUNTS * 4) {
@@ -315,22 +494,64 @@ function report(st) {
     "#\n" +
     "# kind: BURN | MINT | AUTHORITY | CLOSE | TRANSFER | DEX-FLOW\n" +
     `# generated: ${new Date().toISOString()}\n#\n` +
-    "utc\tblock_time\tkind\tamount_jto\tfrom\tto\tauthority\tvenue\tsignature\n" +
-    ev.map((e) => [iso(e.t), e.t, e.kind, e.amt ? e.amt.toFixed(9) : "", e.from, e.to, e.who, e.venue, e.sig].join("\t")).join("\n") + "\n");
+    "utc\tblock_time\tkind\tamount_jto\tamount_raw\tfrom\tto\tauthority\tvenue\tsignature\n" +
+    ev.map((e) => [iso(e.t), e.t, e.kind, e.raw === "0" ? "" : units(BigInt(e.raw)), e.raw,
+      e.from, e.to, e.who, e.venue, e.sig].join("\t")).join("\n") + "\n");
 
   const by = (k) => ev.filter((e) => e.kind === k);
+  const sumRaw = (rows) => rows.reduce((s, e) => s + BigInt(e.raw), 0n);
   const burns = by("BURN");
-  const burned = burns.reduce((s, e) => s + e.amt, 0);
-  const crawled = Object.values(accounts).filter((a) => a.done && !a.skipped).length;
-  const skipped = Object.values(accounts).filter((a) => a.skipped);
+  const burnedRaw = sumRaw(burns);
+
+  // "Enumerated in full" now means exactly that: pagination completed and every
+  // transaction resolved. An account carrying unresolved work is counted
+  // separately rather than silently included in the completeness claim.
+  const all = Object.values(accounts);
+  const skipped = all.filter((a) => a.skipped);
+  const incomplete = all.filter((a) => a.incomplete);
+  const crawled = all.filter((a) => a.done && !a.skipped && !a.incomplete).length;
+  const unresolvedSigs = incomplete.reduce((s, a) => s + (a.unresolvedSigs?.length ?? 0), 0);
+  const unresolvedMint = all.reduce((s, a) => s + (a.unresolvedMint ?? 0), 0);
 
   console.log(`\nwrote ${OUT}`);
+
+  // Coverage is stated before the figures, because it decides what they mean.
+  // A supply reconciliation read NOW against accounts enumerated a week ago is
+  // comparing two different moments, and the report used to present that pair
+  // without saying so.
+  const covered = all.map((a) => a.coveredAt).filter(Boolean).sort();
+  const pollFailures = all.filter((a) => a.pollFailed);
+  console.log("\ncoverage:");
+  if (covered.length) {
+    console.log(`  accounts enumerated between ${covered[0].slice(0, 19)}Z and ${covered.at(-1).slice(0, 19)}Z`);
+    if (!st.polledAt) {
+      console.log("  this is a BOUNDED HISTORICAL SCAN as of those times, not live monitoring —");
+      console.log("  activity after an account's cutoff is not in this ledger. Run --poll for that.");
+    }
+  }
+  if (st.polledAt) console.log(`  polled for new activity at ${st.polledAt.slice(0, 19)}Z`);
+  if (pollFailures.length) {
+    console.log(`  ${pollFailures.length} account(s) could NOT be polled — their cutoff is unknown, not current:`);
+    for (const [a, v] of Object.entries(accounts).filter(([, v]) => v.pollFailed).slice(0, 5)) {
+      console.log(`    ${a}  ${v.pollFailed}`);
+    }
+  }
+
   console.log(`\naccounts:  ${crawled} enumerated in full, ${skipped.length} recorded but not enumerated, ` +
-    `${Object.keys(accounts).length} known`);
+    `${incomplete.length} INCOMPLETE, ${Object.keys(accounts).length} known`);
+  if (incomplete.length) {
+    console.log(`           ${unresolvedSigs} unresolved transaction(s) retained for retry — this ledger is NOT complete`);
+    for (const [a, v] of Object.entries(accounts).filter(([, v]) => v.incomplete).slice(0, 8)) {
+      console.log(`           ${a}  ${v.incomplete}`);
+    }
+  }
+  if (unresolvedMint) {
+    console.log(`           ${unresolvedMint} token instruction(s) whose mint the transaction did not identify — excluded, not assumed JTO`);
+  }
   console.log(`events:    ${ev.length}`);
   for (const k of ["BURN", "MINT", "AUTHORITY", "CLOSE", "TRANSFER", "DEX-FLOW"]) {
     const rows = by(k);
-    if (rows.length) console.log(`  ${k.padEnd(10)} ${String(rows.length).padStart(6)}   ${fmt(rows.reduce((s, e) => s + e.amt, 0))} JTO`);
+    if (rows.length) console.log(`  ${k.padEnd(10)} ${String(rows.length).padStart(6)}   ${units(sumRaw(rows))} JTO`);
   }
   if (ev.length) console.log(`span:      ${iso(ev[0].t)} -> ${iso(ev[ev.length - 1].t)}`);
 
@@ -343,8 +564,8 @@ function report(st) {
 
   if (burns.length) {
     console.log(`\nlargest burns found:`);
-    for (const b of burns.slice().sort((x, y) => y.amt - x.amt).slice(0, 10)) {
-      console.log(`  ${fmt(b.amt).padStart(18)} JTO  ${iso(b.t).slice(0, 19)}  ${b.who}`);
+    for (const b of burns.slice().sort((x, y) => (BigInt(y.raw) > BigInt(x.raw) ? 1 : -1)).slice(0, 10)) {
+      console.log(`  ${units(BigInt(b.raw)).padStart(22)} JTO  ${iso(b.t).slice(0, 19)}  ${b.who}`);
     }
   }
 
@@ -352,18 +573,31 @@ function report(st) {
   // history the ledger cannot yet account for.
   console.log("\n" + "=".repeat(72));
   console.log("SUPPLY RECONCILIATION");
-  console.log(`  minted ever (chain-verified, minting closed 2023-12-04) : ${fmt(MINTED_EVER, 0)}`);
-  console.log(`  burns in this ledger                                    : ${fmt(burned)}`);
-  console.log(`  => supply this ledger implies                           : ${fmt(MINTED_EVER - burned)}`);
-  if (st.currentSupply) {
-    const residual = (MINTED_EVER - st.currentSupply) - burned;
-    console.log(`  actual supply (chain)                                   : ${fmt(st.currentSupply)}`);
-    console.log(`  UNACCOUNTED BURNS                                       : ${fmt(residual)}`);
-    if (Math.abs(residual) < 1e-6) {
+  console.log(`  minted ever (chain-verified, minting closed 2023-12-04) : ${units(GENESIS_RAW)}`);
+  console.log(`  burns in this ledger                                    : ${units(burnedRaw)}`);
+  console.log(`  => supply this ledger implies                           : ${units(GENESIS_RAW - burnedRaw)}`);
+  if (st.currentSupplyRaw) {
+    // Exact, in base units. Subtracting displayed supplies as Numbers lost base
+    // units at this magnitude, so a residual of "0" could never be trusted to
+    // mean zero — and zero is the whole claim.
+    const supplyRaw = BigInt(st.currentSupplyRaw);
+    const residualRaw = (GENESIS_RAW - supplyRaw) - burnedRaw;
+    console.log(`  actual supply (chain)                                   : ${units(supplyRaw)}`);
+    console.log(`  UNACCOUNTED BURNS                                       : ${units(residualRaw)}`);
+
+    // Completeness is a conjunction, not an arithmetic coincidence. A balanced
+    // aggregate over an incomplete read set is not a proof: duplicates and
+    // omissions can cancel. Zero unresolved reads is required alongside it.
+    if (residualRaw === 0n && !incomplete.length && !unresolvedSigs && !pollFailures.length) {
       console.log("\n  RECONCILED. Every JTO missing from supply is accounted for by a burn");
-      console.log("  in this ledger. The record of supply-affecting events is COMPLETE.");
+      console.log("  in this ledger, and every expected read was resolved. The record of");
+      console.log("  supply-affecting events is COMPLETE.");
+    } else if (residualRaw === 0n) {
+      console.log("\n  The aggregate balances, but this ledger has unresolved reads. A balanced");
+      console.log("  total over an incomplete read set is not a proof of completeness —");
+      console.log("  omissions and duplicates can cancel. Resolve the outstanding reads first.");
     } else {
-      console.log(`\n  ${fmt(residual)} JTO has left supply without appearing in this ledger.`);
+      console.log(`\n  ${units(residualRaw)} JTO has left supply without appearing in this ledger.`);
       console.log("  The crawl has not reached the accounts that burned it. Raise --min-flow");
       console.log("  coverage or --max-accounts and resume; the residual is the error bar.");
     }

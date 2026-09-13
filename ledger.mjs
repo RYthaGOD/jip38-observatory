@@ -50,10 +50,16 @@
 //          sum(every burn since genesis)  ==  genesis supply - current supply
 //
 //      must hold exactly. Run with --since genesis and the ledger checks
-//      itself against that identity. If it balances, the enumeration is
-//      COMPLETE — proven, not assumed, and proven independently of whether the
-//      index was honest. If it falls short, the shortfall is the exact quantity
-//      of burns the walk missed, and the ledger says so.
+//      itself against that identity. If it falls short, the shortfall is the
+//      exact quantity of burns the walk missed, and the ledger says so — that
+//      direction is sound, and it is what caught this module's own unsoundness.
+//
+//      The other direction is NOT sound, and this header used to claim it was.
+//      A balance does not prove the enumeration complete: the comparison is a
+//      float tolerance over base-unit totals beyond Number.MAX_SAFE_INTEGER,
+//      and the index underneath is known to miss burns (FINDINGS.md 2a), so
+//      omissions and duplicates can cancel. A checksum that can only ever
+//      falsify is still worth having; it is just not a proof of the converse.
 //
 // The checksum only works over the whole history. A run scoped to the JIP-38
 // window cannot verify itself this way, because the supply as it stood on the
@@ -315,9 +321,31 @@ if (WHOLE_HISTORY && immutable) {
   console.log(`  unaccounted                                        : ${fmt(diff)}`);
   const relative = Math.abs(diff) / Math.max(expected, 1);
   if (relative < 1e-9) {
-    console.log("\n  BALANCED. The enumeration is COMPLETE — every burn that the supply");
-    console.log("  decline implies is present in this ledger, proven independently of");
-    console.log("  whether the index was honest.");
+    // This branch used to print "COMPLETE — proven". It is not a proof, and
+    // saying so was the most serious overclaim in this file.
+    //
+    // Two reasons. First, the comparison is a FLOAT tolerance over quantities
+    // whose base-unit totals exceed Number.MAX_SAFE_INTEGER, so "balanced" here
+    // means "agrees to within rounding", not "equal". Second, and worse, this
+    // ledger is built from a burn-filtered index that FINDINGS.md 2a records as
+    // unsound: sampling it across JTO's whole history returned a largest-ever
+    // burn of 0.96 JTO against 13.48M provably destroyed.
+    //
+    // An aggregate that balances over a read set with known omissions is
+    // consistent with completeness. It does not establish it — omissions and
+    // duplicates can cancel, and with an index that misses this much, they can
+    // cancel easily.
+    console.log("\n  The aggregate BALANCES to within floating-point tolerance.");
+    console.log("");
+    console.log("  That is consistent with a complete enumeration. It is NOT a proof of one:");
+    console.log("  this ledger is built from a burn-filtered index that FINDINGS.md 2a records");
+    console.log("  as unsound, and the comparison above is a float tolerance over base-unit");
+    console.log("  totals larger than Number.MAX_SAFE_INTEGER. Omissions and duplicates can");
+    console.log("  cancel in an aggregate.");
+    console.log("");
+    console.log("  Completeness needs exact integer arithmetic, unique instruction identities,");
+    console.log("  and zero unresolved reads. track.mjs reconciles on those terms; this does");
+    console.log("  not. Do not publish this run as a complete record of JTO burns.");
   } else {
     console.log(`\n  DOES NOT BALANCE — ${fmt(diff)} JTO of burns are missing from this ledger`);
     console.log(`  (${(relative * 100).toFixed(4)}% of the total). Either the walk missed burns, or`);
