@@ -36,7 +36,7 @@
 
 import { createServer } from "node:http";
 import { spawn } from "node:child_process";
-import { readFileSync, statSync, existsSync, mkdirSync, readdirSync, copyFileSync } from "node:fs";
+import { readFileSync, writeFileSync, statSync, existsSync, mkdirSync, readdirSync, copyFileSync } from "node:fs";
 import { join } from "node:path";
 import { createHash } from "node:crypto";
 import { gzipSync } from "node:zlib";
@@ -266,16 +266,54 @@ function seedDataVolume() {
       continue;
     }
 
-    // Present on both sides. Append-only evidence is left exactly alone.
-    if (name !== "snapshot.json") continue;
+    // Present on both sides, and the two files need different answers.
+    if (name === "history.jsonl") {
+      // UNION, not "volume wins".
+      //
+      // Two machines can both be taking readings — a local scheduled task and
+      // this one — and each series then holds readings the other does not.
+      // Keeping only one side silently drops real observations of a balance at
+      // a moment that will not come again. Every line is a genuine reading, so
+      // every line is kept; duplicates collapse on their timestamp.
+      const merged = mergeReadings(readFileSync(to, "utf8"), readFileSync(from, "utf8"));
+      if (merged.added) {
+        writeFileSync(to, merged.text);
+        console.log(`  merged       data/${name} — ${merged.added} reading(s) the volume did not have`);
+        acted++;
+      }
+      continue;
+    }
 
-    if (generatedAt(from) > generatedAt(to)) {
+    if (name === "snapshot.json" && generatedAt(from) > generatedAt(to)) {
       copyFileSync(from, to);
       console.log(`  refreshed    data/${name} — this build carries a newer snapshot than the volume held`);
       acted++;
     }
   }
   if (!acted) console.log("  volume       up to date; nothing seeded");
+}
+
+// Union two append-only reading series on their timestamps, oldest first.
+//
+// A malformed line is dropped rather than allowed to break the merge — the
+// series is read back defensively everywhere else too, for the same reason.
+function mergeReadings(existing, incoming) {
+  const byTime = new Map();
+  let kept = 0;
+  for (const text of [existing, incoming]) {
+    for (const line of text.split("\n")) {
+      if (!line.trim()) continue;
+      let row;
+      try { row = JSON.parse(line); } catch { continue; }
+      if (typeof row?.t !== "string") continue;
+      // First writer of a timestamp wins, so the volume's own reading is kept
+      // when both sides recorded the same moment.
+      if (!byTime.has(row.t)) { byTime.set(row.t, line.trim()); kept++; }
+    }
+  }
+  const before = existing.split("\n").filter((l) => l.trim()).length;
+  const sorted = [...byTime.entries()].sort((a, b) => Date.parse(a[0]) - Date.parse(b[0]));
+  return { text: sorted.map(([, line]) => line).join("\n") + "\n", added: kept - before };
 }
 
 // --- refreshing, in this process ---------------------------------------------

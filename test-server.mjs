@@ -322,9 +322,10 @@ try {
       const older = { ...real, generatedAt: "2026-01-01T00:00:00.000Z" };
       writeFileSync(join(box, "data", "snapshot.json"), JSON.stringify(older));   // the volume
       writeFileSync(join(box, "data-seed", "snapshot.json"), JSON.stringify(real)); // this build
-      // Readings the volume already holds must survive regardless.
-      writeFileSync(join(box, "data", "history.jsonl"), "LIVE\n");
-      writeFileSync(join(box, "data-seed", "history.jsonl"), "SEED\n");
+      const reading = (t, v) => `${JSON.stringify({ t, treasury: v })}\n`;
+      writeFileSync(join(box, "data", "history.jsonl"), reading("2026-09-13T09:54:04.756Z", 3));
+      writeFileSync(join(box, "data-seed", "history.jsonl"),
+        reading("2026-09-13T06:00:11.246Z", 1) + reading("2026-09-13T09:30:11.743Z", 2));
 
       alt = spawn(process.execPath, [join(process.cwd(), "server.mjs"), "--port", String(p5)],
         { stdio: "ignore", cwd: box, env: CLEAN_ENV });
@@ -333,8 +334,6 @@ try {
       const served = await (await fetch(`http://127.0.0.1:${p5}/snapshot.json`)).json();
       assert.equal(served.generatedAt, real.generatedAt,
         "the volume's stale snapshot was served while the page carried a newer one");
-      assert.equal(readFileSync(join(box, "data", "history.jsonl"), "utf8").trim(), "LIVE",
-        "append-only evidence was replaced by the seed");
     } finally {
       alt?.kill();
       await new Promise((r) => setTimeout(r, 200));
@@ -359,6 +358,45 @@ try {
     } finally {
       alt.kill();
       await new Promise((r) => setTimeout(r, 150));
+    }
+  });
+  await t("reading series are UNIONED, so neither machine loses an observation", async () => {
+    // Two machines can both be taking readings — a local scheduled task and the
+    // deployed one — and each series then holds readings the other does not.
+    // Keeping only one side silently drops a real balance at a moment that will
+    // not come again. This happened: the committed series and the volume's had
+    // diverged by three readings between them.
+    const box = mkdtempSync(join(tmpdir(), "jip38-merge-"));
+    const p7 = PORT + 6;
+    let alt;
+    try {
+      mkdirSync(join(box, "dist"), { recursive: true });
+      mkdirSync(join(box, "data"), { recursive: true });
+      mkdirSync(join(box, "data-seed"), { recursive: true });
+      copyFileSync("dist/dashboard.html", join(box, "dist", "dashboard.html"));
+      copyFileSync("data/snapshot.json", join(box, "data", "snapshot.json"));
+      copyFileSync("data/snapshot.json", join(box, "data-seed", "snapshot.json"));
+
+      const reading = (t, v) => `${JSON.stringify({ t, treasury: v })}\n`;
+      // One reading only the volume has, two only the build has.
+      writeFileSync(join(box, "data", "history.jsonl"), reading("2026-09-13T09:54:04.756Z", 3));
+      writeFileSync(join(box, "data-seed", "history.jsonl"),
+        reading("2026-09-13T06:00:11.246Z", 1) + reading("2026-09-13T09:30:11.743Z", 2));
+
+      alt = spawn(process.execPath, [join(process.cwd(), "server.mjs"), "--port", String(p7)],
+        { stdio: "ignore", cwd: box, env: CLEAN_ENV });
+      await waitForPort(p7);
+
+      const rows = readFileSync(join(box, "data", "history.jsonl"), "utf8")
+        .trim().split("\n").map((l) => JSON.parse(l));
+      assert.equal(rows.length, 3, "a reading was lost in the merge");
+      assert.deepEqual(rows.map((r) => r.t), [
+        "2026-09-13T06:00:11.246Z", "2026-09-13T09:30:11.743Z", "2026-09-13T09:54:04.756Z",
+      ], "the merged series is not in time order");
+    } finally {
+      alt?.kill();
+      await new Promise((r) => setTimeout(r, 200));
+      try { rmSync(box, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 }); } catch { /* OS will clear it */ }
     }
   });
   await t("an unbuilt deployment reports 503, and says so on healthz", async () => {
