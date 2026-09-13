@@ -1,0 +1,64 @@
+# Railway deployment.
+#
+# Two services off this one repository, and they want different things:
+#
+#   web   serves the built page. Stateless, no credential, always up.
+#   cron  reads the chain and rebuilds the page. Needs SOLANA_RPC_URL. Runs
+#         for about four seconds, a few times a day, and is otherwise absent.
+#
+# This file configures the web service. The cron service is created in the
+# Railway dashboard from the same repo with its start command set to
+# `node refresh.mjs` and a schedule — there is no way to express a second
+# service here, so the settings it needs are written down at the bottom rather
+# than left to memory.
+
+[build]
+builder = "NIXPACKS"
+# Nixpacks runs `npm run build` when package.json defines it, which rebuilds
+# the page from the COMMITTED snapshot. So a fresh deploy serves a real page
+# immediately, before the cron has ever run, rather than a 503 until the first
+# refresh happens to fire.
+buildCommand = "npm run build"
+
+[deploy]
+startCommand = "node server.mjs"
+
+# The server reports whether it actually has a page to serve, so a deploy that
+# built nothing is caught here instead of being routed traffic and returning
+# 503 to real readers.
+healthcheckPath = "/healthz"
+healthcheckTimeout = 30
+
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 3
+
+# Only one instance. The refresh writes dist/dashboard.html atomically, but
+# each instance has its own disk on Railway, so two of them would serve
+# snapshots from different moments under one URL — exactly the "two moments
+# presented as one" problem the rest of this project exists to avoid.
+numReplicas = 1
+
+# ---------------------------------------------------------------------------
+# The cron service, for whoever sets it up next
+#
+#   Start command   node refresh.mjs
+#   Schedule        0 */6 * * *      (matches the Windows task: every 6 hours)
+#   Variables       SOLANA_RPC_URL   the only secret this project needs
+#
+# refresh.mjs runs the offline gate and the registry verifier BEFORE it reads
+# the chain, so a tree whose tests fail cannot produce a page. If any step
+# fails it exits non-zero and leaves the previously built page untouched.
+#
+# Note the thing that does NOT need configuring: there is no publish step.
+# On Railway the page that was built is the page that is served, off the same
+# disk, and the server re-reads it when its mtime changes. The publish/verify
+# dance in release.mjs exists for the Claude Artifact, which is a separate
+# destination that has to be pushed to.
+#
+# The catch, and it is a real one: Railway's filesystem is ephemeral. A
+# redeploy resets it to whatever was committed, so `data/history.jsonl` — the
+# treasury series, which is evidence and is never back-filled — would lose
+# every reading taken since the last commit. Attach a volume mounted at
+# `/app/data` before running the cron in anger, or the chart quietly restarts
+# from the committed readings on every deploy.
+# ---------------------------------------------------------------------------

@@ -29,7 +29,8 @@ const SUITES = [
   ["test.mjs", "pure logic in lib.mjs — arithmetic, coverage, registry parsing"],
   ["test-core.mjs", "core.mjs and rpc.mjs — exact amounts, fail-closed reads, atomic writes"],
   ["test-pipeline.mjs", "verify/track/rawscan/discover — the audit's data-integrity findings"],
-  ["test-dashboard.mjs", "the dashboard builder — escaping, round-trip, placeholder"],
+  ["test-dashboard.mjs", "the dashboard builder — schema validation, escaping, last-valid retention"],
+  ["test-server.mjs", "the public server — route allowlist, CSP hashes, security headers"],
 ];
 
 console.log(`node ${process.versions.node}\n`);

@@ -1,0 +1,36 @@
+{
+  "name": "jip38-observatory",
+  "version": "1.0.0",
+  "private": true,
+  "description": "An independent, chain-derived record of whether Jito does what JIP-38 says it will do: 80% of JTX platform fees to JTO buybacks and permanent burns.",
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "start": "node server.mjs",
+    "check": "node check.mjs",
+    "verify": "node verify.mjs",
+    "snapshot": "node snapshot.mjs",
+    "build": "node build-dashboard.mjs",
+    "refresh": "node refresh.mjs",
+    "release": "node release.mjs status"
+  },
+  "//dependencies": [
+    "There are none, and that is deliberate rather than an oversight.",
+    "",
+    "This project's argument is that a reader can audit it end to end: take the",
+    "addresses out of REGISTRY.tsv, look at them yourself, and rebuild every",
+    "figure from the scripts here. Every dependency is a piece of that argument",
+    "a reader has to take on trust instead, and a supply-chain surface on a",
+    "machine that holds an RPC credential.",
+    "",
+    "Base58, the Metaplex layout, the token bucket, the static server and the",
+    "content policy are all small enough to write and test in the open. Where a",
+    "library would genuinely be better — schema validation, for one — the",
+    "trade was still refused, and build-dashboard.mjs says so where it does the",
+    "work by hand."
+  ],
+  "dependencies": {}
+}
