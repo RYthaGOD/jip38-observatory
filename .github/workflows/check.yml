@@ -1,0 +1,57 @@
+# The offline gate, run on a clean checkout.
+#
+# Two things are being proven here, and the second is the one the production
+# audit asked for: that the published page can be REBUILT from what is in the
+# repository. `data/` used to be gitignored wholesale, so a fresh clone could
+# not run build-dashboard.mjs at all — the snapshot it reads was never
+# committed. A release that cannot be rebuilt from its own source is not
+# reproducible, whatever its tests say.
+#
+# Nothing here touches the chain or needs a credential. Chain-facing behaviour
+# is verified by `node verify.mjs`, which needs an RPC key and therefore does
+# not belong in CI.
+
+name: check
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  offline:
+    name: offline suites + clean-checkout rebuild
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          # process.loadEnvFile needs 22. Pinned rather than 'latest' so a
+          # green run means the same thing next month as it does today.
+          node-version: "22"
+
+      - name: Offline suites
+        run: node check.mjs
+
+      - name: Rebuild the published page from the committed snapshot
+        run: node build-dashboard.mjs --out dist/dashboard.html
+
+      - name: Publication status
+        # Expected to fail when the built page is ahead of the last verified
+        # publish. That is the honest signal, not a broken build, so it does
+        # not fail the job — it is reported for a human to act on.
+        continue-on-error: true
+        run: node release.mjs status
+
+      - name: No credential may reach a committed file
+        run: |
+          if git grep -nEI 'api[-_]?key=[A-Za-z0-9_-]{8,}' -- . ':!*.yml'; then
+            echo "::error::a credential-shaped string is present in a tracked file"
+            exit 1
+          fi
+          echo "no credential-shaped strings in tracked files"

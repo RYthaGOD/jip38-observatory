@@ -1,0 +1,11 @@
+{
+  "_comment": "Written only after the published artifact was read back and confirmed to carry this snapshot. A build is not a deployment.",
+  "url": "https://claude.ai/code/artifact/a6f040d8-e252-4f10-825b-f5c640b5e107",
+  "servedGeneratedAt": "2026-09-13T00:00:03.849Z",
+  "schemaVersion": 3,
+  "assessmentState": "current",
+  "sha256": "8128ac77bfceea99dd3a1cb8aa2c26df83626816fa773d22a3d906de87720dd9",
+  "bytes": 40657,
+  "verifiedAt": "2026-09-13T00:55:27.615Z",
+  "verifiedBy": "readback of the published artifact in this session"
+}
