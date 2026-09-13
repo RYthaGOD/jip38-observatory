@@ -1,10 +1,26 @@
 # Questions for the Jito team
 
-A private ask, not a publication. Nothing in this repository is public, and the
-methodology is deliberately being written before any finding exists — see
-[`README.md`](README.md). This is the shortest path past the one obstacle that
-has cost the most: JIP-38 commits to reporting "with on-chain references" and
-names no addresses, so every address here has had to be inferred from chain.
+**Sent 2026-09-09, and answered.** Jito supplied the fee program, the sweep
+mechanism and the DAO treasury address in response to this, and confirmed that
+no buybacks or burns had yet occurred — which is the basis of the first finding.
+See [`FINDINGS.md`](FINDINGS.md) section 0 for the reply and what was done with
+it, and [`REGISTRY.tsv`](REGISTRY.tsv) for how each supplied address was then
+re-tested against chain before it was allowed to support a figure.
+
+It is kept here, unedited below this note, because it is the provenance of those
+addresses. A reader checking where `JTXJTXfr1wVRMEzqiPhXUr69zJtfGuLh5qEiXG772Zj`
+came from should be able to see that it was asked for, who answered, and what
+was asked alongside it.
+
+It was written as a private ask at a time when nothing in this repository was
+public, and the sentence that opened it said so. That is no longer the case, so
+the sentence has been replaced rather than left to contradict itself — the
+questions themselves are untouched.
+
+The problem it was written to solve: JIP-38 commits to reporting "with on-chain
+references" and names no addresses, so every address here had to be inferred
+from chain. The methodology was deliberately written before any finding existed
+— see [`README.md`](README.md).
 
 **How an answer will be used.** Anything Jito says is treated as a *claim*, not
 as evidence — the same standing as the Dune dashboard. Each address supplied
