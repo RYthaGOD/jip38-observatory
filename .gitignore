@@ -26,3 +26,9 @@ dist/
 *.lock
 *.tmp
 data-seed/
+
+# The reconstructed ledger. 18MB, and regenerable from chain by anyone who
+# runs track.mjs — which is the point the README makes about the chain being
+# its own archive. The durable record of what a crawl found is the
+# reconciliation in FINDINGS.md and the assessment it supports, not this file.
+EVENTS.tsv

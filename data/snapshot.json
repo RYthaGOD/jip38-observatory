@@ -1,26 +1,26 @@
 {
   "schemaVersion": 3,
-  "generatedAt": "2026-09-13T04:03:30.839Z",
+  "generatedAt": "2026-09-13T09:30:11.743Z",
   "activation": "2026-07-13",
   "daysSinceActivation": 62,
   "chain": {
     "source": "chain",
-    "observedAt": "2026-09-13T04:03:30.839Z",
+    "observedAt": "2026-09-13T09:30:11.743Z",
     "commitment": "finalized",
     "endpoint": "https://mainnet.helius-rpc.com",
     "slotRange": {
-      "from": 446606759,
-      "to": 446606762
+      "from": 446669014,
+      "to": 446669017
     },
-    "slotRangeNote": "reads span slots 446606759–446606762; measurements are not simultaneous",
-    "blockTimeIso": "2026-09-13T04:03:21.000Z",
+    "slotRangeNote": "reads span slots 446669014–446669017; measurements are not simultaneous",
+    "blockTimeIso": "2026-09-13T09:30:00.000Z",
     "supply": {
       "mintedEverRaw": "1000000000000000000",
-      "currentRaw": "986522685886393958",
-      "destroyedRaw": "13477314113606042",
+      "currentRaw": "986522682447803552",
+      "destroyedRaw": "13477317552196448",
       "mintedEver": "1000000000.000000000",
-      "current": "986522685.886393958",
-      "destroyed": "13477314.113606042",
+      "current": "986522682.447803552",
+      "destroyed": "13477317.552196448",
       "decimals": 9,
       "mintAuthority": null,
       "freezeAuthority": null,
@@ -30,8 +30,8 @@
     "treasury": {
       "owner": "5eosrve6LktMZgVNszYzebgmmC7BjLK8NoWyRQtcmGTF",
       "tokenAccount": "2Ch9AWnbAaummLkWTTtNgTAvrFq8YMATUaaN77TB2Y6C",
-      "jtoRaw": "209755126513272425",
-      "jto": "209755126.513272425",
+      "jtoRaw": "209755258163526053",
+      "jto": "209755258.163526053",
       "accounts": 2
     },
     "feeProgram": {
@@ -62,29 +62,42 @@
   },
   "assessment": {
     "source": "assessment",
-    "assessedAt": "2026-09-10T01:15:56.529Z",
-    "assessedBy": "manual review, recorded in FINDINGS.md",
+    "assessedAt": "2026-09-13T06:14:05.000Z",
+    "assessedBy": "exhaustive account enumeration — see FINDINGS.md section 9",
     "state": "current",
     "reasons": [],
     "burnedRaw": "0",
     "burnedUsd": 0,
     "ratio": 0,
-    "basis": "No JIP-38 burn found on chain by any method attempted. Jito stated on 2026-09-10 that no buybacks or burns had yet occurred. The absence is corroborated by the supply invariant: total destruction since genesis predates activation by a wide margin.",
+    "basis": "The DAO treasury's JTO token account 2Ch9AWnbAaummLkWTTtNgTAvrFq8YMATUaaN77TB2Y6C has been enumerated in full — every one of its 16,821 transactions resolved, none skipped, none unresolved — and contains no burn instruction. Across 77 accounts enumerated in full and 63,063 recorded events, the ledger holds zero burns of any size. The treasury's JTO balance has risen monotonically across every exact reading taken. So no JIP-38 burn has been executed from the DAO's JTO holdings. This supersedes the 2026-09-10 assessment, which rested on the supply invariant plus Jito's own statement.",
     "coverage": {
-      "method": "supply invariant plus targeted account enumeration",
-      "establishes": "that no programme-scale burn appears in the accounts enumerated, and that total destruction since genesis is consistent with none",
-      "doesNotEstablish": [
-        "that the enumerated accounts are all the accounts a JIP-38 burn could use",
-        "that fees were swept into JTO at all — the buyback step is untraced",
-        "the dates of the JTO destroyed before activation"
+      "method": "exhaustive per-account transaction enumeration, reconciled against the supply invariant",
+      "establishes": [
+        "The DAO treasury's JTO token account holds no burn instruction across its entire 16,821-transaction history.",
+        "Zero burn instructions appear anywhere in 63,063 events across 77 fully enumerated accounts.",
+        "The treasury's JTO balance is monotonically rising in exact base units, so nothing is leaving it.",
+        "Genesis was a single mint of exactly 1,000,000,000.000000000 JTO, confirmed as one event.",
+        "Every expected read was resolved: zero accounts left incomplete, zero unresolved signatures."
       ],
-      "indexedScanUnsound": true
+      "doesNotEstablish": [
+        "Three accounts exceed 60,000 transactions and were NOT enumerated: the JTX fee program, the DAO treasury wallet, and 8Xm3tkQH581s3MoRHWUNYA5jKbgPATW4tJAAxgwDC6T6.",
+        "13,477,314.113606042 JTO has left supply without appearing in this ledger. It predates activation by the fee-revenue argument, but its individual burn transactions have not been located.",
+        "A burn executed from an account this crawl never reached.",
+        "That JTX fees are being swept into JTO at all — the buyback step remains untraced.",
+        "The 80/20 split and the reported fee total, which remain operator claims."
+      ],
+      "indexedScanUnsound": true,
+      "eventsRecorded": 63063,
+      "accountsEnumeratedInFull": 77,
+      "accountsNotEnumerated": 3,
+      "unresolvedReads": 0,
+      "instructionsExcludedForUnidentifiedMint": 97468
     },
     "anchor": {
-      "slot": 445756117,
-      "observedAt": "2026-09-10T01:15:56.529Z"
+      "slot": 446629007,
+      "observedAt": "2026-09-13T06:00:11.246Z"
     },
-    "ageDays": 3,
+    "ageDays": 0,
     "validForDays": 14
   },
   "execution": {
@@ -100,7 +113,7 @@
     "That JTX fees are being swept into JTO — the buyback step is an operator claim, not yet traced on chain.",
     "The 80/20 split.",
     "The $198,908.37 fee total, and the ~10 days of activity missing from the dashboard's start.",
-    "The dates of the 13477314.113606042 JTO destroyed before activation."
+    "The dates of the 13477317.552196448 JTO destroyed before activation."
   ],
   "registry": [
     {
@@ -262,6 +275,16 @@
       "t": "2026-09-13T04:03:30.839Z",
       "treasury": 209755126.51327243,
       "supply": 986522685.8863939
+    },
+    {
+      "t": "2026-09-13T06:00:11.246Z",
+      "treasury": 209755212.09958005,
+      "supply": 986522685.2912511
+    },
+    {
+      "t": "2026-09-13T09:30:11.743Z",
+      "treasury": 209755258.16352606,
+      "supply": 986522682.4478035
     }
   ],
   "alerts": []

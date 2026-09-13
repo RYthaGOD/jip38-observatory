@@ -109,7 +109,10 @@ Written before any findings exist, so that it cannot be tuned to them.
 
 ## Status
 
-**First finding, 2026-09-10: no JTO has been burned under JIP-38.**
+**First finding, 2026-09-10: no JTO has been burned under JIP-38 — and as of
+2026-09-13 that is enumerated rather than inferred.** The DAO treasury JTO
+account has had all 16,821 of its transactions resolved and contains no burn
+instruction; see [`FINDINGS.md`](FINDINGS.md) section 9.
 
 The Jito team supplied the mechanism on request — JTX swap fees are collected by
 the program `JTXJTXfr1wVRMEzqiPhXUr69zJtfGuLh5qEiXG772Zj`, swept periodically

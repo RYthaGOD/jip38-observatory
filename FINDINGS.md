@@ -557,3 +557,62 @@ the dashboard says so.
 Status: the dashboard **is** published, with an execution ratio of 0% and its
 assessment dated. The Rev Splitter itself has still not been identified, and
 the sweep path, the 80/20 split and the fee total remain operator claims.
+
+---
+
+## 9. The treasury account, enumerated in full, 2026-09-13
+
+The 2026-09-10 headline rested on two things: the supply invariant, and Jito's
+own statement that no burns had occurred. Neither is enumeration. This is.
+
+**What was done.** `track.mjs`, rebuilt under exact base-unit arithmetic, was
+run from scratch against the registry seeds and allowed to expand its frontier
+to 80 accounts. 77 were enumerated in full. Every expected read was resolved —
+**zero accounts left incomplete, zero unresolved signatures** — which is the
+condition the reconciliation now requires before it will use the word complete.
+
+**The finding.** The DAO treasury's JTO token account
+`2Ch9AWnbAaummLkWTTtNgTAvrFq8YMATUaaN77TB2Y6C` — the account JIP-38 revenue
+accumulates in, and the one a burn would have to debit — had **all 16,821 of its
+transactions resolved, and contains no burn instruction**. Across the whole
+ledger, 63,063 events, there are **zero burns of any size**.
+
+Alongside it: the treasury's balance has risen monotonically across every exact
+reading taken, +7,686 JTO over the recorded window. Nothing is leaving the
+account, and nothing in its history is a burn.
+
+So the claim is now narrower in its assumptions and stronger in its support: **no
+JIP-38 burn has been executed from the DAO's JTO holdings.** That is an
+independent verification of Jito's statement rather than a restatement of it —
+which is what this project exists to produce.
+
+**What it still does not establish**, and this matters as much:
+
+- Three accounts exceed 60,000 transactions and were not enumerated: the JTX fee
+  program, the DAO treasury *wallet*, and `8Xm3tkQH581s3MoRHWUNYA5jKbgPATW4tJAAxgwDC6T6`.
+- 13,477,314.11 JTO has left supply without appearing in this ledger. The
+  fee-revenue argument places all of it before activation, but its individual
+  burn transactions have not been located. That residual is printed on every run
+  and is the crawl's own error bar.
+- The sweep path and the 80/20 split remain operator claims.
+
+**Two things the rewrite changed, visible in this run.**
+
+*97,468 token instructions were excluded because the transaction did not identify
+their mint.* The previous code took that silence for JTO and divided by 1e9 — so
+every one of those would have entered this ledger as JTO and pulled its
+counterparties into the crawl. That is finding 10, measured on real data.
+
+*The only apparent fall in the treasury series is float noise.* Between
+`2026-09-12T16:56` and `17:08` the recorded balance drops by 30 base units. Those
+are the last reading written by the old float code and the first written by the
+exact one; in base units the balance rose. The error class the rewrite removed,
+caught leaving the building.
+
+**The ledger itself is not committed.** `EVENTS.tsv` is 18MB and regenerable by
+anyone who runs `track.mjs` — the chain is its own archive, as the README argues.
+What is durable is this reconciliation and the assessment it supports.
+
+`ASSESSMENT.json` was advanced on this evidence: `assessedAt`, `basis`,
+`coverage` and the anchor together, in one reviewed commit, exactly as that file
+requires. The number did not change. What changed is what stands behind it.

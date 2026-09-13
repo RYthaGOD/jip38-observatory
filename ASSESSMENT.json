@@ -13,32 +13,45 @@
     "burnedRaw, basis and the anchor together, in one reviewed commit."
   ],
 
-  "assessedAt": "2026-09-10T01:15:56.529Z",
-  "assessedBy": "manual review, recorded in FINDINGS.md",
+  "assessedAt": "2026-09-13T06:14:05.000Z",
+  "assessedBy": "exhaustive account enumeration — see FINDINGS.md section 9",
 
   "burnedRaw": "0",
   "burnedValuation": null,
 
-  "basis": "No JIP-38 burn found on chain by any method attempted. Jito stated on 2026-09-10 that no buybacks or burns had yet occurred. The absence is corroborated by the supply invariant: total destruction since genesis predates activation by a wide margin.",
+  "basis": "The DAO treasury's JTO token account 2Ch9AWnbAaummLkWTTtNgTAvrFq8YMATUaaN77TB2Y6C has been enumerated in full — every one of its 16,821 transactions resolved, none skipped, none unresolved — and contains no burn instruction. Across 77 accounts enumerated in full and 63,063 recorded events, the ledger holds zero burns of any size. The treasury's JTO balance has risen monotonically across every exact reading taken. So no JIP-38 burn has been executed from the DAO's JTO holdings. This supersedes the 2026-09-10 assessment, which rested on the supply invariant plus Jito's own statement.",
 
   "coverage": {
-    "method": "supply invariant plus targeted account enumeration",
-    "establishes": "that no programme-scale burn appears in the accounts enumerated, and that total destruction since genesis is consistent with none",
-    "doesNotEstablish": [
-      "that the enumerated accounts are all the accounts a JIP-38 burn could use",
-      "that fees were swept into JTO at all — the buyback step is untraced",
-      "the dates of the JTO destroyed before activation"
+    "method": "exhaustive per-account transaction enumeration, reconciled against the supply invariant",
+    "establishes": [
+      "The DAO treasury's JTO token account holds no burn instruction across its entire 16,821-transaction history.",
+      "Zero burn instructions appear anywhere in 63,063 events across 77 fully enumerated accounts.",
+      "The treasury's JTO balance is monotonically rising in exact base units, so nothing is leaving it.",
+      "Genesis was a single mint of exactly 1,000,000,000.000000000 JTO, confirmed as one event.",
+      "Every expected read was resolved: zero accounts left incomplete, zero unresolved signatures."
     ],
-    "indexedScanUnsound": true
+    "doesNotEstablish": [
+      "Three accounts exceed 60,000 transactions and were NOT enumerated: the JTX fee program, the DAO treasury wallet, and 8Xm3tkQH581s3MoRHWUNYA5jKbgPATW4tJAAxgwDC6T6.",
+      "13,477,314.113606042 JTO has left supply without appearing in this ledger. It predates activation by the fee-revenue argument, but its individual burn transactions have not been located.",
+      "A burn executed from an account this crawl never reached.",
+      "That JTX fees are being swept into JTO at all — the buyback step remains untraced.",
+      "The 80/20 split and the reported fee total, which remain operator claims."
+    ],
+    "indexedScanUnsound": true,
+    "eventsRecorded": 63063,
+    "accountsEnumeratedInFull": 77,
+    "accountsNotEnumerated": 3,
+    "unresolvedReads": 0,
+    "instructionsExcludedForUnidentifiedMint": 97468
   },
 
   "anchor": {
     "_comment": "The chain state this assessment was made against. Movement away from it is what triggers review.",
-    "slot": 445756117,
-    "observedAt": "2026-09-10T01:15:56.529Z",
-    "supply": "986522733.331571300",
-    "treasury": "209747525.764502350",
-    "precisionNote": "float-derived; recorded before exact base-unit accounting existed, so it is a trigger threshold rather than an exact quantity"
+    "slot": 446629007,
+    "observedAt": "2026-09-13T06:00:11.246Z",
+    "supply": "986522685.291251073",
+    "treasury": "209755212.099580059",
+    "precisionNote": "exact base units, read at the slot above"
   },
 
   "validForDays": 14,
