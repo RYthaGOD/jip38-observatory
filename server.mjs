@@ -42,7 +42,19 @@ import { createHash } from "node:crypto";
 import { gzipSync } from "node:zlib";
 import { arg, integer, safeError } from "./core.mjs";
 
-const PORT = integer(process.env.PORT ?? arg("--port", "8080"), "PORT", 1, 65535);
+// An explicit --port beats the ambient PORT, not the other way round.
+//
+// It was the other way round, and that is a production failure rather than a
+// style point. On Railway PORT=8080 is set in the environment, the refresh runs
+// in the serving process, the refresh runs check.mjs, and check.mjs starts test
+// servers with `--port <something free>`. Those children inherit PORT=8080,
+// ignored their own argument, tried to bind the port the live server already
+// holds, and died with EADDRINUSE — failing the suite, failing the refresh, and
+// reporting a deployment failure that had nothing to do with the data.
+//
+// A flag someone typed is more specific than a variable the platform set.
+const portFlag = arg("--port", null);
+const PORT = integer(portFlag ?? process.env.PORT ?? "8080", "PORT", 1, 65535);
 const HOST = process.env.HOST ?? "0.0.0.0";
 
 // Every URL this server will answer. Anything else is a 404.

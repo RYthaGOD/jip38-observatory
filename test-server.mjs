@@ -40,11 +40,36 @@ if (!existsSync("dist/dashboard.html")) {
   }
 }
 
-// A port unlikely to collide with anything the developer is running.
-const PORT = 8000 + Math.floor(Math.random() * 1000);
+// A port well clear of anything else, and specifically clear of the server this
+// suite may be running INSIDE.
+//
+// On Railway the refresh runs in the serving process, and the refresh runs
+// check.mjs, which runs this file. The old range was 8000-8999, which contains
+// the 8080 the live server is bound to — so roughly one refresh in a couple of
+// hundred would pick a port already in use, fail to bind, fail the suite, fail
+// the refresh, and report a deployment failure for no reason at all.
+//
+// The ephemeral range is used instead, and the live PORT is excluded outright
+// along with the four offsets this suite takes from its own base.
+const LIVE_PORT = Number(process.env.PORT ?? 0);
+function pickPort() {
+  for (;;) {
+    const p = 30000 + Math.floor(Math.random() * 20000);
+    // This suite also binds p+1 .. p+4 for its isolated cases.
+    if (!LIVE_PORT || LIVE_PORT < p - 4 || LIVE_PORT > p + 4) return p;
+  }
+}
+const PORT = pickPort();
 const BASE = `http://127.0.0.1:${PORT}`;
 
-const child = spawn(process.execPath, ["server.mjs", "--port", String(PORT)], { stdio: ["ignore", "pipe", "pipe"] });
+// PORT is stripped from every child's environment as well as being overridden
+// by --port. The flag now wins on its own, but a test suite that silently
+// inherits the ambient port of whatever is running it is a trap worth removing
+// at both ends.
+const { PORT: _ignored, ...CLEAN_ENV } = process.env;
+
+const child = spawn(process.execPath, ["server.mjs", "--port", String(PORT)],
+  { stdio: ["ignore", "pipe", "pipe"], env: CLEAN_ENV });
 let serverLog = "";
 child.stdout.on("data", (d) => { serverLog += d; });
 child.stderr.on("data", (d) => { serverLog += d; });
@@ -185,7 +210,7 @@ try {
       writeFileSync(join(crlfDir, "dist", "dashboard.html"), lf.replace(/\n/g, "\r\n"));
 
       alt = spawn(process.execPath, [join(process.cwd(), "server.mjs"), "--port", String(p3)],
-        { stdio: "ignore", cwd: crlfDir });
+        { stdio: "ignore", cwd: crlfDir, env: CLEAN_ENV });
       await waitForPort(p3);
 
       const r = await fetch(`http://127.0.0.1:${p3}/`);
@@ -265,7 +290,7 @@ try {
       writeFileSync(join(box, "data", "history.jsonl"), "LIVE READINGS — MUST NOT BE REPLACED\n");
 
       alt = spawn(process.execPath, [join(process.cwd(), "server.mjs"), "--port", String(p4)],
-        { stdio: "ignore", cwd: box });
+        { stdio: "ignore", cwd: box, env: CLEAN_ENV });
       await waitForPort(p4);
 
       assert.equal((await fetch(`http://127.0.0.1:${p4}/snapshot.json`)).status, 200,
@@ -302,7 +327,7 @@ try {
       writeFileSync(join(box, "data-seed", "history.jsonl"), "SEED\n");
 
       alt = spawn(process.execPath, [join(process.cwd(), "server.mjs"), "--port", String(p5)],
-        { stdio: "ignore", cwd: box });
+        { stdio: "ignore", cwd: box, env: CLEAN_ENV });
       await waitForPort(p5);
 
       const served = await (await fetch(`http://127.0.0.1:${p5}/snapshot.json`)).json();
@@ -316,6 +341,26 @@ try {
       try { rmSync(box, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 }); } catch { /* OS will clear it */ }
     }
   });
+  await t("an explicit --port beats an ambient PORT", async () => {
+    // This precedence was backwards, and it was a production failure rather
+    // than a style point. On Railway PORT=8080 is set, the refresh runs in the
+    // serving process, the refresh runs check.mjs, and check.mjs starts test
+    // servers with --port. Those children inherited PORT=8080, ignored their own
+    // argument, tried to bind the port the live server already held, and died
+    // with EADDRINUSE — failing the suite, failing the refresh, and reporting a
+    // deployment failure that had nothing to do with the data.
+    const p6 = PORT + 5;
+    const alt = spawn(process.execPath, ["server.mjs", "--port", String(p6)],
+      { stdio: "ignore", env: { ...CLEAN_ENV, PORT: String(PORT) } }); // PORT points at the busy one
+    try {
+      await waitForPort(p6);
+      const r = await fetch(`http://127.0.0.1:${p6}/healthz`);
+      assert.equal(r.status, 200, "the flag did not win; the child followed the environment instead");
+    } finally {
+      alt.kill();
+      await new Promise((r) => setTimeout(r, 150));
+    }
+  });
   await t("an unbuilt deployment reports 503, and says so on healthz", async () => {
     // Run from a directory with no dist/. A fresh Railway deploy that has not
     // built yet must say it has nothing to serve — not return an empty 200 that
@@ -323,7 +368,7 @@ try {
     const empty = mkdtempSync(join(tmpdir(), "jip38-unbuilt-"));
     const p2 = PORT + 1;
     const alt = spawn(process.execPath, [join(process.cwd(), "server.mjs"), "--port", String(p2)],
-      { stdio: "ignore", cwd: empty });
+      { stdio: "ignore", cwd: empty, env: CLEAN_ENV });
     try {
       await waitForPort(p2);
       const page = await fetch(`http://127.0.0.1:${p2}/`);
