@@ -616,3 +616,90 @@ What is durable is this reconciliation and the assessment it supports.
 `ASSESSMENT.json` was advanced on this evidence: `assessedAt`, `basis`,
 `coverage` and the anchor together, in one reviewed commit, exactly as that file
 requires. The number did not change. What changed is what stands behind it.
+
+---
+
+## 10. The buyback is executing. The burn is not. 2026-09-14
+
+Section 9 established that the DAO treasury's JTO account contains no burn. It
+left the other half of JIP-38 — whether fees are bought back into JTO at all —
+listed as an operator claim, not yet traced on chain. It is now traced, in full.
+
+**What was done.** The treasury's JTO account had already been enumerated by
+`track.mjs`. Since activation it received 17,357 JTO transfers, in 16,673
+transactions, the first on **2026-07-14 — the day JTX launched**. Before
+activation that account had received 134 transfers in its entire history.
+[`sweeps.mjs`](sweeps.mjs) resolved every one of those 16,673 transactions.
+None unresolved.
+
+**It reconciles exactly.** The treasury JTO `sweeps.mjs` attributes to those
+transactions is **333,118.232956444 JTO**. The inbound total `track.mjs` recorded
+for the same account, by a separate parse of the same chain, is
+**333,118.232956444 JTO**. Equal to the base unit.
+
+**What the transactions are.** 16,670 of the 16,673 are JTX fee sweeps by the JTX
+program's own account of itself: its log names the instruction
+`FeeSweepPrepare` or `FeeSweepFinalize`. All 16,670 are signed by one keeper,
+`23zyeKyn8wpF8VyWSGHTGvTVEGi5SPyziGSs9pGKr5ta`. Each swaps fee tokens that the JTX
+program holds into JTO through DFlow and pays the JTO out. The remaining 3 do not
+touch JTX.
+
+| | JTO |
+|---|---:|
+| Acquired by sweeps since activation | **432,765.885134320** |
+| to the DAO treasury | **333,117.585776670** |
+| to `8DBak2z28Wsf6baVqTBWjZvdn2t9KncKzNQWGmZQsuFs` | 83,190.088839069 |
+| to `DTA5YXD9Ckrjyj7jSMEsgbaEmWZTGth13u1TkxWJJDMd` | 16,368.902922186 |
+| to one other | 89.307596395 |
+| **Burned** | **0** |
+
+**The split is systematic.** Measured per sweep in basis points:
+
+| Sweeps | DAO treasury | `8DBak2z2…` | `DTA5YXD9…` |
+|---:|---:|---:|---:|
+| ~7,880 | 80% | 20% | — |
+| ~8,480 | 64% | 16% | 20% |
+| 11 | 60% | 15% | 25% |
+
+Between the treasury and `8DBak2z2…` the ratio is **exactly 4:1 on every
+pattern**, so the 80/20 split JIP-38 describes holds precisely between those two.
+On roughly half the sweeps, `DTA5YXD9…` takes 20% — occasionally 25% — before
+that split. `DTA5YXD9…` is an account **owned by the JTX program itself**, the
+only one of its type. Across every sweep it received 3.78% of the JTO bought,
+which is why the treasury's aggregate share is 76.97% rather than 80%.
+
+Whether that cut sits *inside* "JTX platform fees" — in which case the DAO
+receives less than the 80% JIP-38 commits — or *outside* them, as a partner or
+referral share, **cannot be settled from chain.** It depends on what JIP-38
+counts as a platform fee and what `DTA5YXD9…` is for. It is recorded here as a
+precise question, not a conclusion.
+
+**So the finding changes shape.** It is no longer "no JTO has been burned and
+the buyback is unverified". It is: **JIP-38's buyback is executing on chain, and
+has acquired 432,766 JTO since JTX launched, 333,118 of it for the DAO — and none
+of it has been burned.** Of the JTO bought back for the DAO, the share burned is
+**0%**, and that ratio needs no price, no fee claim and no operator figure. It is
+two chain measurements in the same unit.
+
+That is still not evidence of a breach. JIP-38 runs through Q4 2027 and does not
+say burns must follow each purchase. What it establishes is narrower and harder:
+the tokens exist, they sit in the treasury, and they could be burned at any time.
+
+**What this does not yet establish.**
+
+- **Whether every fee is swept.** Sweeps only show fees that reached a sweep.
+  Fees collected and not yet swept are the check that follows this section.
+- **The USD value of what was bought.** Sweeps spend many tokens and this project
+  has no price series. The token outflows in a sweep also include intermediate
+  swap hops, so they are not a fee total.
+- **Who controls `8DBak2z2…` and `DTA5YXD9…`.** Recorded by address and on-chain
+  account type only: the first is a plain wallet, the second a JTX program account.
+
+**Corrections made on the way here.** Two samples of 20 and 24 transactions
+reported every inflow as a `FeeSweepPrepare` sweep. The full run found that
+classifier would have filed 688 `FeeSweepFinalize` transactions as not-sweeps,
+understating both the count and the JTO attributed. A sample is a lead; this
+section rests on all 16,673.
+
+[`SWEEPS.json`](SWEEPS.json) is the committed record, including every distinct
+split pattern.
