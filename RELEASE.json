@@ -1,11 +1,22 @@
 {
-  "_comment": "Written only after the published artifact was read back and confirmed to carry this snapshot. A build is not a deployment.",
+  "_comment": "The Artifact is retired to a pointer: it no longer carries the dashboard, so it cannot fall behind a build. Written only after the pointer was published and read back.",
+  "retired": true,
   "url": "https://claude.ai/code/artifact/a6f040d8-e252-4f10-825b-f5c640b5e107",
-  "servedGeneratedAt": "2026-09-13T09:30:11.743Z",
-  "schemaVersion": 3,
-  "assessmentState": "current",
-  "sha256": "17abeb0a3761e077940f0c5ac831e3b575a1a601d739422440204961cf87572f",
-  "bytes": 42219,
-  "verifiedAt": "2026-09-13T09:34:59.434Z",
-  "verifiedBy": "readback verified in this session"
+  "pointsTo": "https://web-production-372cc.up.railway.app/",
+  "pointerFile": "artifact-pointer.html",
+  "pointerSha256": "c8275e5d1671a0e0dfca870e9358e91d9f29c38700251b203f858d31595d32db",
+  "sha256": "c8275e5d1671a0e0dfca870e9358e91d9f29c38700251b203f858d31595d32db",
+  "retiredAt": "2026-09-14T04:56:54.450Z",
+  "verifiedBy": "readback of the published pointer in this session",
+  "lastDashboardPublish": {
+    "_comment": "Written only after the published artifact was read back and confirmed to carry this snapshot. A build is not a deployment.",
+    "url": "https://claude.ai/code/artifact/a6f040d8-e252-4f10-825b-f5c640b5e107",
+    "servedGeneratedAt": "2026-09-13T09:30:11.743Z",
+    "schemaVersion": 3,
+    "assessmentState": "current",
+    "sha256": "17abeb0a3761e077940f0c5ac831e3b575a1a601d739422440204961cf87572f",
+    "bytes": 42219,
+    "verifiedAt": "2026-09-13T09:34:59.434Z",
+    "verifiedBy": "readback verified in this session"
+  }
 }

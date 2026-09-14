@@ -1,0 +1,181 @@
+<title>JIP-38 Observatory</title>
+<style>
+  /* One visual world, matching the dashboard this points to: a reader who
+     follows the link should not feel they have left the project. Every colour
+     is painted explicitly so the page holds on either host ground. */
+  :root {
+    color-scheme: dark;
+    --ground: #0b1113;
+    --panel: #111a1d;
+    --rule: #263337;
+    --ink: #eaf1ef;
+    --muted: #a0b1b5;
+    --mint: #b4efce;
+    --mint-ink: #102219;
+    --amber: #f0c486;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    --sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+  html, body { background: var(--ground); }
+  body {
+    margin: 0;
+    color: var(--ink);
+    font: 16px/1.6 var(--sans);
+  }
+  .page {
+    max-width: 40rem;
+    margin: 0 auto;
+    padding: 4.5rem 1.5rem 4rem;
+    display: grid;
+    gap: 2.5rem;
+  }
+  .label {
+    font: 500 0.72rem/1 var(--mono);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  header { display: grid; gap: 1rem; }
+  h1 {
+    margin: 0;
+    font-size: clamp(1.7rem, 4.2vw, 2.35rem);
+    line-height: 1.15;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+  }
+  .lede { margin: 0; color: var(--muted); max-width: 36rem; }
+
+  .go { display: grid; gap: 0.7rem; justify-items: start; }
+  .button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    min-height: 3rem;
+    padding: 0 1.25rem;
+    border-radius: 6px;
+    background: var(--mint);
+    color: var(--mint-ink);
+    font-weight: 600;
+    text-decoration: none;
+  }
+  .button:hover { background: #d0f7e0; }
+  .url {
+    font: 0.85rem var(--mono);
+    color: var(--muted);
+    overflow-wrap: anywhere;
+  }
+  a:focus-visible { outline: 2px solid var(--mint); outline-offset: 4px; }
+
+  /* The historical block is the one thing lifted off the ground, and the amber
+     rule says what kind of thing it is: dated, not live. */
+  .record {
+    background: var(--panel);
+    border: 1px solid var(--rule);
+    border-left: 3px solid var(--amber);
+    border-radius: 4px;
+    padding: 1.5rem;
+    display: grid;
+    gap: 1.25rem;
+  }
+  .record-head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0.5rem 1rem; align-items: baseline; }
+  .record-head .label { color: var(--amber); }
+  .stamp { font: 0.8rem var(--mono); color: var(--muted); }
+
+  dl { margin: 0; display: grid; gap: 0; }
+  .row {
+    display: grid;
+    grid-template-columns: 11rem 1fr;
+    gap: 1rem;
+    padding: 0.8rem 0;
+    border-top: 1px solid var(--rule);
+  }
+  .row:first-child { border-top: 0; padding-top: 0; }
+  dt { color: var(--muted); font-size: 0.9rem; }
+  dd { margin: 0; font-variant-numeric: tabular-nums; }
+  .big { font: 600 1.35rem/1.2 var(--sans); letter-spacing: -0.01em; }
+  .addr { font: 0.82rem var(--mono); overflow-wrap: anywhere; color: var(--ink); }
+  .note { color: var(--muted); font-size: 0.9rem; }
+
+  .caveat { margin: 0; font-size: 0.9rem; color: var(--muted); }
+  footer {
+    border-top: 1px solid var(--rule);
+    padding-top: 1.25rem;
+    display: grid;
+    gap: 0.4rem;
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+  footer a { color: var(--mint); }
+
+  @media (max-width: 34rem) {
+    .page { padding-top: 3rem; }
+    .row { grid-template-columns: 1fr; gap: 0.25rem; }
+  }
+</style>
+
+<main class="page">
+  <header>
+    <span class="label">JIP-38 Observatory · This page has moved</span>
+    <h1>The record of Jito's burn commitment now lives at one address.</h1>
+    <p class="lede">
+      This page used to carry the dashboard itself. It stopped updating on
+      13 September 2026, when the record moved to a host that reads Solana every
+      six hours. So there are never two pages showing two different sets of
+      figures, this one now only points there.
+    </p>
+  </header>
+
+  <div class="go">
+    <a class="button" href="https://web-production-372cc.up.railway.app/" target="_blank" rel="noopener noreferrer">
+      Open the live record <span aria-hidden="true">→</span>
+    </a>
+    <span class="url">web-production-372cc.up.railway.app</span>
+  </div>
+
+  <section class="record" aria-labelledby="record-title">
+    <div class="record-head">
+      <span class="label" id="record-title">Last finding published here</span>
+      <span class="stamp">dated, not live</span>
+    </div>
+
+    <dl>
+      <div class="row">
+        <dt>Assessed</dt>
+        <dd>13 Sep 2026, 06:14 UTC <span class="note">· anchored at slot 446629007</span></dd>
+      </div>
+      <div class="row">
+        <dt>JIP-38 burns found</dt>
+        <dd class="big">0 JTO</dd>
+      </div>
+      <div class="row">
+        <dt>Execution ratio</dt>
+        <dd><span class="big">0%</span> <span class="note">against the 80% of JTX platform fees committed</span></dd>
+      </div>
+      <div class="row">
+        <dt>Evidence</dt>
+        <dd>
+          The DAO treasury's JTO account, enumerated in full: 16,821 transactions,
+          no burn instruction.
+          <div class="addr">2Ch9AWnbAaummLkWTTtNgTAvrFq8YMATUaaN77TB2Y6C</div>
+        </dd>
+      </div>
+      <div class="row">
+        <dt>Not established</dt>
+        <dd class="note">
+          The JTX fee program (60,000+ transactions) has not been enumerated, so
+          the buyback step is untraced. The sweep path and the 80/20 split remain
+          Jito's own claims.
+        </dd>
+      </div>
+    </dl>
+
+    <p class="caveat">Figures change. Check the live record before relying on these.</p>
+  </section>
+
+  <footer>
+    <span>Independent research, not affiliated with Jito.</span>
+    <span>The raw snapshot behind the live page:
+      <a href="https://web-production-372cc.up.railway.app/snapshot.json" target="_blank" rel="noopener noreferrer">snapshot.json</a></span>
+  </footer>
+</main>

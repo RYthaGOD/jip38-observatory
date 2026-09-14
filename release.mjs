@@ -36,8 +36,11 @@ const command = process.argv[2];
 try {
   if (command === "status") status();
   else if (command === "record") record();
+  else if (command === "retire") retire();
   else {
-    console.error("usage: node release.mjs status | record --url <artifact-url> --served <generatedAt>");
+    console.error("usage: node release.mjs status\n" +
+      "       node release.mjs record --url <artifact-url> --served <generatedAt>\n" +
+      "       node release.mjs retire --url <artifact-url> --pointer <file> --to <live-url>");
     process.exit(2);
   }
 } catch (err) {
@@ -74,6 +77,29 @@ function status() {
   }
 
   const rel = readJsonFile(RELEASE, "the record of the last verified publish");
+
+  // A retired Artifact is not stale. It no longer carries the dashboard at all:
+  // it points to the host that serves the page directly, so there is no build
+  // for it to fall behind. What CAN go wrong is the pointer page itself being
+  // edited and not republished, so that is what gets checked.
+  if (rel.retired) {
+    console.log(`\nRETIRED: the Artifact carries a pointer, not the dashboard.`);
+    console.log(`  artifact    ${rel.url}`);
+    console.log(`  points to   ${rel.pointsTo}`);
+    console.log(`  retired     ${rel.retiredAt} by ${rel.verifiedBy}`);
+    if (existsSync(rel.pointerFile ?? "")) {
+      const now = sha256(readFileSync(rel.pointerFile));
+      if (now !== rel.pointerSha256) {
+        console.log(`\nSTALE: ${rel.pointerFile} has changed since it was published.`);
+        console.log(`  Republish it to ${rel.url}, read it back, then run:`);
+        console.log(`    node release.mjs retire --url ${rel.url} --pointer ${rel.pointerFile} --to ${rel.pointsTo}`);
+        fail();
+      }
+    }
+    console.log(`\nThe live record is served directly at ${rel.pointsTo}; nothing here to publish.`);
+    return;
+  }
+
   console.log(`\nlast verified publish`);
   console.log(`  url         ${rel.url}`);
   console.log(`  snapshot    ${rel.servedGeneratedAt}`);
@@ -126,6 +152,40 @@ function record() {
   console.log(`recorded ${RELEASE}`);
   console.log(`  ${url}`);
   console.log(`  serving snapshot ${served} (sha256 ${built.sha256.slice(0, 16)}…)`);
+}
+
+// Record that the Artifact was retired to a pointer, AFTER the pointer was
+// published and read back. The previous dashboard receipt is kept inside the
+// new one, so the history of what the Artifact last served is not overwritten
+// by the fact that it stopped serving it.
+function retire() {
+  const url = arg("--url", "");
+  const pointerFile = arg("--pointer", "");
+  const pointsTo = arg("--to", "");
+  requireThat(/^https:\/\/claude\.ai\/code\/artifact\/[\w-]+$/.test(url), "--url must be the artifact URL");
+  requireThat(pointerFile && existsSync(pointerFile), "--pointer must name the published pointer page");
+  requireThat(/^https:\/\//.test(pointsTo), "--to must be the https URL the pointer sends readers to");
+  requireThat(readFileSync(pointerFile, "utf8").includes(pointsTo),
+    `${pointerFile} does not link to ${pointsTo} — record only what the published page actually says`);
+
+  const previous = existsSync(RELEASE) ? readJsonFile(RELEASE, "the previous release receipt") : null;
+  const body = readFileSync(pointerFile);
+  const receipt = {
+    _comment: "The Artifact is retired to a pointer: it no longer carries the dashboard, so it cannot fall behind a build. Written only after the pointer was published and read back.",
+    retired: true,
+    url,
+    pointsTo,
+    pointerFile,
+    pointerSha256: sha256(body),
+    // Kept at the top level too, so anything reading this file for a content
+    // hash still finds one.
+    sha256: sha256(body),
+    retiredAt: new Date().toISOString(),
+    verifiedBy: arg("--by", "readback of the published artifact"),
+    lastDashboardPublish: previous?.retired ? previous.lastDashboardPublish : previous,
+  };
+  atomicWrite(RELEASE, `${JSON.stringify(receipt, null, 2)}\n`);
+  console.log(`recorded ${RELEASE}: ${url} retired, pointing to ${pointsTo}`);
 }
 
 function fail() {

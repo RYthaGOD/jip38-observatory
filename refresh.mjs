@@ -54,13 +54,14 @@ for (const [name, argv, enabled] of steps) {
   }
 }
 
-// Not a publish check — there is nothing to publish here — but it does report
-// whether the page differs from the last artifact release, which is useful on
-// the Windows box and harmless on Railway.
+// Not a publish check — the Artifact is retired to a pointer and nothing is
+// published to it. What can still drift is the pointer page itself, edited
+// without being republished, and release.mjs status reports exactly that.
 const rel = spawnSync(process.execPath, ["release.mjs", "status"], { encoding: "utf8" });
 if (rel.status !== 0) {
-  console.log(`\n[${stamp()}] note: this build is ahead of the last verified Artifact publish.`);
-  console.log("That is expected on Railway, which serves the build directly.");
+  console.log(`\n[${stamp()}] note: release.mjs status reports a problem with the Artifact pointer:`);
+  console.log(rel.stdout.split("\n").filter((l) => /STALE|NOT PUBLISHED/.test(l)).join("\n") || "  (run node release.mjs status)");
+  console.log("The page built here is unaffected and is being served.");
 }
 
 console.log(`\n[${stamp()}] done in ${((Date.now() - started) / 1000).toFixed(1)}s.`);
