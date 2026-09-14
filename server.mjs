@@ -39,8 +39,8 @@ import { spawn } from "node:child_process";
 import { readFileSync, writeFileSync, statSync, existsSync, mkdirSync, readdirSync, copyFileSync } from "node:fs";
 import { join } from "node:path";
 import { createHash } from "node:crypto";
-import { gzipSync } from "node:zlib";
-import { arg, integer, safeError } from "./core.mjs";
+import { gzipSync, gunzipSync } from "node:zlib";
+import { arg, integer, safeError, atomicWrite } from "./core.mjs";
 
 // An explicit --port beats the ambient PORT, not the other way round.
 //
@@ -67,6 +67,12 @@ const ROUTES = {
   // What was last verified as published, so the served page's provenance can be
   // checked from outside the repository.
   "/release.json": { file: "RELEASE.json", type: "application/json; charset=utf-8" },
+  // Produced by the live cycle below, so they may not exist yet on a fresh
+  // deploy. `optional` makes their absence a 404 that says so, rather than the
+  // "not built" 503 that would wrongly suggest the site itself is broken.
+  "/sweeps.json": { file: "data/SWEEPS.json", type: "application/json; charset=utf-8", optional: true },
+  "/fees.json": { file: "data/FEES.json", type: "application/json; charset=utf-8", optional: true },
+  "/cycle.json": { file: "data/cycle.json", type: "application/json; charset=utf-8", optional: true },
 };
 
 // --- content, cached by mtime ----------------------------------------------
@@ -197,10 +203,14 @@ const server = createServer((req, res) => {
     const route = ROUTES[path];
     if (!route) {
       return send(404, { "content-type": "text/plain; charset=utf-8", "x-content-type-options": "nosniff" },
-        "Not found.\n\nThis server publishes one page and its evidence:\n  /               the dashboard\n  /snapshot.json  the snapshot it was built from\n  /release.json   what was last verified as published\n");
+        "Not found.\n\nThis server publishes one page and its evidence:\n  /               the dashboard\n  /snapshot.json  the snapshot it was built from\n  /sweeps.json    every JTX fee sweep into the DAO treasury, decoded\n  /fees.json      JTX fees on chain: swept, and still held\n  /cycle.json     what the live tracking cycle last did, and when\n  /release.json   what was last verified as published\n");
     }
 
     const entry = load(route);
+    if (!entry && route.optional) {
+      return send(404, { "content-type": "text/plain; charset=utf-8", "x-content-type-options": "nosniff" },
+        `${path} has not been produced yet. The live cycle writes it; see /cycle.json.\n`);
+    }
     if (!entry) {
       return send(503, { "content-type": "text/plain; charset=utf-8" },
         "Not built yet. Run: node snapshot.mjs && node build-dashboard.mjs\n");
@@ -284,14 +294,36 @@ function seedDataVolume() {
       continue;
     }
 
-    if (name === "snapshot.json" && generatedAt(from) > generatedAt(to)) {
+    // Point-in-time documents: the later generatedAt wins, whichever side.
+    if (POINT_IN_TIME.has(name) && generatedAt(from) > generatedAt(to)) {
       copyFileSync(from, to);
-      console.log(`  refreshed    data/${name} — this build carries a newer snapshot than the volume held`);
+      console.log(`  refreshed    data/${name} — this build carries a newer copy than the volume held`);
+      acted++;
+    }
+  }
+
+  // Working state for the live cycle: the enumerated ledger and the decoded
+  // sweeps. Tens of megabytes, built over hours of RPC, so a deploy carries it
+  // compressed in bootstrap/ rather than making the container re-crawl the chain.
+  //
+  // SEEDED ONLY WHEN MISSING, and never replaced. Once the live cycle has
+  // advanced these files on the volume they are the record, and the copy
+  // shipped with a deploy is by definition older. Overwriting would silently
+  // roll the ledger back and re-decode work already done.
+  if (existsSync("bootstrap")) {
+    for (const name of readdirSync("bootstrap").filter((n) => n.endsWith(".json.gz"))) {
+      const to = join("data", name.replace(/\.gz$/, ""));
+      if (existsSync(to)) continue;
+      writeFileSync(to, gunzipSync(readFileSync(join("bootstrap", name))));
+      console.log(`  bootstrapped ${to} from the compressed state shipped with this deploy`);
       acted++;
     }
   }
   if (!acted) console.log("  volume       up to date; nothing seeded");
 }
+
+// Summaries that describe a single moment, where the newer one is correct.
+const POINT_IN_TIME = new Set(["snapshot.json", "SWEEPS.json", "FEES.json"]);
 
 // Union two append-only reading series on their timestamps, oldest first.
 //
@@ -337,43 +369,163 @@ function mergeReadings(existing, incoming) {
 //
 // Off by default: REFRESH_INTERVAL_MINUTES is what turns it on, so a local
 // `npm start` serves what is already built and never touches the chain.
-const REFRESH_MINUTES = Number(process.env.REFRESH_INTERVAL_MINUTES ?? 0);
+//
+// ---------------------------------------------------------------------------
+// THE LIVE CYCLE
+//
+// Until 14 September 2026 the live site refreshed only the snapshot — supply,
+// the treasury balance, the fee program's existence — with the registry
+// verifier switched off. Everything the research had actually established ran
+// on one laptop: the enumerated ledger that detects a burn, the decoded sweeps
+// that prove the buyback, the on-chain fee measurement. The public page was
+// tracking a fraction of what it claimed to.
+//
+// So each cycle now runs the whole pipeline, one step at a time, in the only
+// order that keeps its figures consistent with each other:
+//
+//   1. ledger   poll every enumerated account for new activity (burns, flows)
+//   2. sweeps   decode any new fee sweeps into the treasury
+//   3. fees     read what is still held unswept — daily, and only after 1 and 2,
+//               because reading balances before the sweeps are up to date
+//               counts a fee held-then-swept twice
+//   4. refresh  verify the registry, read the chain, rebuild the page
+//
+// Step 4 ALWAYS runs. A failure in 1–3 is recorded and the page is still
+// rebuilt from what is known, rather than freezing on the last good cycle.
+// Steps run serially: they share a disk, a lock and an RPC budget.
+//
+// What the cycle did, when, and whether each step succeeded is written to
+// data/cycle.json and served at /cycle.json — so "is it tracking?" is a question
+// anyone can answer from outside, not a claim to take on trust.
+// ---------------------------------------------------------------------------
+const CYCLE_MINUTES = Number(process.env.REFRESH_INTERVAL_MINUTES ?? 0);
+const FEES_EVERY_MINUTES = Number(process.env.FEES_INTERVAL_MINUTES ?? 1440);
+const FIRST_CYCLE_DELAY_MS = Number(process.env.FIRST_CYCLE_DELAY_SECONDS ?? 120) * 1000;
 
-function scheduleRefresh() {
-  if (!Number.isFinite(REFRESH_MINUTES) || REFRESH_MINUTES <= 0) {
-    console.log("  refresh      disabled (set REFRESH_INTERVAL_MINUTES to enable)");
+// Each step is bounded. A step that hangs past its budget is killed, recorded
+// as a timeout, and the cycle moves on — a stuck RPC call must not stop the
+// page being rebuilt for the rest of the day.
+const STEPS = {
+  ledger: { argv: ["track.mjs", "--resume", "--poll", "--max-tx", "60000", "--max-accounts", "80",
+    "--concurrency", "4", "--rate", "8"], timeoutMin: 120 },
+  sweeps: { argv: ["sweeps.mjs", "--rate", "8", "--summary", "data/SWEEPS.json"], timeoutMin: 60 },
+  fees: { argv: ["fees.mjs", "--rate", "8", "--summary", "data/FEES.json"], timeoutMin: 90 },
+  refresh: { argv: ["refresh.mjs"], timeoutMin: 20 },
+};
+
+// The step in progress, so a shutdown can stop it rather than orphan it.
+let runningChild = null;
+
+function runStep(name) {
+  const { argv, timeoutMin } = STEPS[name];
+  const started = Date.now();
+  console.log(`cycle: ${name} — starting`);
+  return new Promise((resolve) => {
+    const child = spawn(process.execPath, argv, { stdio: "inherit" });
+    runningChild = child;
+    let timedOut = false, settled = false;
+    const timer = setTimeout(() => { timedOut = true; child.kill("SIGTERM"); }, timeoutMin * 60_000);
+    // Exactly once, whichever arrives. A child that fails to START emits "error"
+    // and may never emit "exit" — and a promise that never settles would leave
+    // the cycle marked as running forever, which stops tracking without a word.
+    const finish = (code, error) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      runningChild = null;
+      const r = { step: name, ok: code === 0 && !timedOut && !error, exit: code, timedOut,
+        seconds: Number(((Date.now() - started) / 1000).toFixed(1)), ...(error ? { error } : {}) };
+      const outcome = r.ok ? "ok" : timedOut ? `TIMED OUT after ${timeoutMin}m`
+        : error ? `could not start: ${error}` : `FAILED (exit ${code})`;
+      console.log(`cycle: ${name} — ${outcome} in ${r.seconds}s`);
+      resolve(r);
+    };
+    child.on("exit", (code) => finish(code));
+    child.on("error", (err) => finish(null, safeError(err)));
+  });
+}
+
+// The headline times from the snapshot the cycle just built, so /cycle.json
+// answers "is it tracking?" with the chain's own dates, not only exit codes.
+function latestTimes() {
+  try {
+    const snap = JSON.parse(readFileSync("data/snapshot.json", "utf8"));
+    return {
+      chainObservedAt: snap.chain?.observedAt ?? null,
+      ledgerPolledAt: snap.tracking?.ledger?.polledAt ?? null,
+      ledgerStale: snap.tracking?.ledger?.stale ?? null,
+      burnsSinceActivation: snap.tracking?.ledger?.burnsSinceActivation ?? null,
+      lastSweep: snap.tracking?.buyback?.lastSweep ?? null,
+      feesHeldReadAt: snap.tracking?.fees?.heldReadAt ?? null,
+      assessmentState: snap.assessment?.state ?? null,
+      unreviewedAlerts: Array.isArray(snap.alerts) ? snap.alerts.length : null,
+    };
+  } catch { return null; }
+}
+
+function feesDue() {
+  try {
+    const at = Date.parse(JSON.parse(readFileSync("data/FEES.json", "utf8")).generatedAt);
+    return !Number.isFinite(at) || Date.now() - at >= FEES_EVERY_MINUTES * 60_000;
+  } catch { return true; } // never measured on this volume
+}
+
+let cycleRunning = false;
+async function cycle() {
+  if (cycleRunning) { console.log("cycle: previous cycle still running, skipping this tick"); return; }
+  cycleRunning = true;
+  const startedAt = new Date().toISOString();
+  const steps = [];
+  try {
+    // The ledger only runs once it has state to continue from. A fresh volume
+    // with no bootstrap would otherwise start a multi-hour crawl inside a cycle.
+    if (existsSync("data/track-state.json")) {
+      const ledger = await runStep("ledger"); steps.push(ledger);
+      if (ledger.ok) {
+        const sweeps = await runStep("sweeps"); steps.push(sweeps);
+        // Fees read balances LAST, and only when the swept side is current.
+        if (sweeps.ok && feesDue()) steps.push(await runStep("fees"));
+        else if (sweeps.ok) steps.push({ step: "fees", ok: true, skipped: `not due (every ${FEES_EVERY_MINUTES}m)` });
+      }
+    } else {
+      steps.push({ step: "ledger", ok: false, skipped: "no data/track-state.json on this volume — ledger not bootstrapped" });
+    }
+    steps.push(await runStep("refresh"));
+  } finally {
+    const record = {
+      _comment: "What the live tracking cycle last did. Written by server.mjs after every cycle.",
+      startedAt,
+      finishedAt: new Date().toISOString(),
+      everyMinutes: CYCLE_MINUTES,
+      feesEveryMinutes: FEES_EVERY_MINUTES,
+      ok: steps.every((s) => s.ok),
+      steps,
+      latest: latestTimes(),
+      nextCycleAround: new Date(Date.parse(startedAt) + CYCLE_MINUTES * 60_000).toISOString(),
+    };
+    try { atomicWrite("data/cycle.json", `${JSON.stringify(record, null, 2)}\n`); } catch (e) { console.error(`cycle: could not record status: ${safeError(e)}`); }
+    console.log(`cycle: finished — ${record.ok ? "every step ok" : "one or more steps did not succeed; see /cycle.json"}`);
+    cycleRunning = false;
+  }
+}
+
+function scheduleCycle() {
+  if (!Number.isFinite(CYCLE_MINUTES) || CYCLE_MINUTES <= 0) {
+    console.log("  tracking     disabled (set REFRESH_INTERVAL_MINUTES to enable)");
     return;
   }
   if (!process.env.SOLANA_RPC_URL) {
-    console.log("  refresh      REFRESH_INTERVAL_MINUTES is set but SOLANA_RPC_URL is not — not scheduling");
+    console.log("  tracking     REFRESH_INTERVAL_MINUTES is set but SOLANA_RPC_URL is not — not scheduling");
     return;
   }
-  console.log(`  refresh      every ${REFRESH_MINUTES} minute(s), in this process`);
-
-  let running = false;
-  const run = () => {
-    // A refresh that overruns its interval must not start a second one beside
-    // itself. snapshot.mjs also takes a lock, so this is belt and braces.
-    if (running) { console.log("refresh: previous run still going, skipping this tick"); return; }
-    running = true;
-    const started = Date.now();
-    const child = spawn(process.execPath, ["refresh.mjs", "--skip-verify"], { stdio: "inherit" });
-    child.on("exit", (code) => {
-      running = false;
-      const secs = ((Date.now() - started) / 1000).toFixed(1);
-      // A failed refresh leaves the previously built page untouched and the
-      // server keeps serving it. Stale and honest beats broken.
-      console.log(code === 0
-        ? `refresh: done in ${secs}s; the page is live on the next request`
-        : `refresh: FAILED (exit ${code}) after ${secs}s — still serving the previous page`);
-    });
-  };
-
-  // Not at boot: the build step already produced a page from the committed
-  // snapshot, so a deploy comes up serving rather than reading chain.
-  refreshTimer = setInterval(run, REFRESH_MINUTES * 60_000);
+  console.log(`  tracking     full cycle every ${CYCLE_MINUTES}m (ledger, sweeps, fees every ${FEES_EVERY_MINUTES}m, refresh), first in ${FIRST_CYCLE_DELAY_MS / 1000}s`);
+  // Shortly after boot, not at it: the build already produced a page, and the
+  // server should be answering before it starts reading chain. But soon enough
+  // that a deploy shows current tracking within minutes, not six hours.
+  firstCycleTimer = setTimeout(cycle, FIRST_CYCLE_DELAY_MS);
+  refreshTimer = setInterval(cycle, CYCLE_MINUTES * 60_000);
 }
-let refreshTimer;
+let refreshTimer, firstCycleTimer;
 
 server.listen(PORT, HOST, () => {
   console.log(`serving on http://${HOST}:${PORT}`);
@@ -382,7 +534,7 @@ server.listen(PORT, HOST, () => {
   seedDataVolume();
   const entry = load(ROUTES["/"]);
   console.log(entry ? `  page is built (${entry.body.length} bytes)` : "  WARNING: nothing built yet");
-  scheduleRefresh();
+  scheduleCycle();
 });
 
 // Railway sends SIGTERM on redeploy. Finish in-flight requests rather than
@@ -391,6 +543,10 @@ for (const sig of ["SIGTERM", "SIGINT"]) {
   process.on(sig, () => {
     console.log(`${sig} — closing`);
     if (refreshTimer) clearInterval(refreshTimer);
+    if (firstCycleTimer) clearTimeout(firstCycleTimer);
+    // Every step writes atomically, so stopping one mid-run loses only its
+    // progress since the last checkpoint — never a half-written file.
+    if (runningChild) runningChild.kill("SIGTERM");
     server.close(() => process.exit(0));
     setTimeout(() => process.exit(0), 10000).unref();
   });

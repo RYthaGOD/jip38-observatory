@@ -53,7 +53,7 @@ import { mkdirSync, writeFileSync, readFileSync, existsSync } from "node:fs";
 import { dirname } from "node:path";
 import { parseRegistry } from "./lib.mjs";
 import { createRpc } from "./rpc.mjs";
-import { GENESIS_RAW, DECIMALS, units, decimalRaw, integer, safeError, atomicWrite } from "./core.mjs";
+import { GENESIS_RAW, DECIMALS, TREASURY, units, decimalRaw, integer, safeError, atomicWrite } from "./core.mjs";
 
 try { process.loadEnvFile(".env"); } catch {}
 
@@ -240,10 +240,23 @@ async function crawl(addr) {
   //
   // The client throws on a failed read, so reaching the end of this loop
   // without an exception IS the completeness proof.
+  //
+  // An account that was enumerated in full before, and has been reopened by
+  // --poll, CONTINUES from its cursor instead of being listed again from the
+  // start. Listing from the start was correct and was a trap for monitoring:
+  // the treasury's JTO account gains a few hundred transactions a day, so every
+  // cycle re-listed a history that only grows — and on the day it crossed
+  // --max-tx, the account the burn detection rests on would have been marked
+  // high-volume and retired from the ledger, silently, by the code that was
+  // meant to be watching it.
+  const continuing = Boolean(acct.head && acct.paginationComplete && !acct.skipped);
   let before, sigs = [], paginationComplete = false;
   try {
     while (sigs.length < MAX_TX) {
-      const p = await rpc("getSignaturesForAddress", [addr, before ? { limit: 1000, before } : { limit: 1000 }]);
+      const page = { limit: 1000 };
+      if (before) page.before = before;
+      if (continuing) page.until = acct.head;
+      const p = await rpc("getSignaturesForAddress", [addr, page]);
       if (!Array.isArray(p)) throw new Error("getSignaturesForAddress returned a non-array");
       if (!p.length) { paginationComplete = true; break; }
       sigs.push(...p.filter((s) => !s.err));
@@ -257,22 +270,36 @@ async function crawl(addr) {
     save();
     return;
   }
-  acct.tx = sigs.length;
-  acct.paginationComplete = paginationComplete;
+  if (continuing && !paginationComplete) {
+    // More new activity than one run may list. This account is already part of
+    // the ledger, so it is NOT retired as high-volume — that would stop watching
+    // it. The cursor stays where it was and the account stays visibly incomplete.
+    acct.incomplete = `more than ${MAX_TX} new transactions since the last cursor — raise --max-tx to continue`;
+    acct.done = false;
+    save();
+    return;
+  }
+  acct.tx = continuing ? (acct.tx ?? 0) + sigs.length : sigs.length;
+  acct.paginationComplete = continuing ? true : paginationComplete;
   // The newest signature this account has been enumerated up to. It is the
   // cursor `--poll` uses to ask for anything newer, and it is what makes the
   // difference between "this account was complete as of X" and "this account
   // is complete", which are not the same claim.
   if (sigs.length) acct.head = sigs[0].signature;
   acct.coveredAt = new Date().toISOString();
-  if (sigs.length >= MAX_TX) {
+  if (!continuing && sigs.length >= MAX_TX) {
     // Almost always a venue or an exchange wallet. Recorded, not enumerated:
     // pretending to have crawled it would be worse than saying we did not.
     acct.done = true; acct.skipped = `high-volume (>=${MAX_TX} tx) — not enumerated`;
     return;
   }
 
-  const fresh = sigs.filter((s) => !seen.has(s.signature));
+  // Transactions a previous run could not read are retried here. A full listing
+  // includes them anyway; a continuation starts after the cursor, so it has to
+  // be handed them explicitly or they would never be looked at again.
+  const retry = (acct.unresolvedSigs ?? []).map((signature) => ({ signature }));
+  const fresh = [...new Map([...sigs, ...retry].map((s) => [s.signature, s])).values()]
+    .filter((s) => !seen.has(s.signature));
   const unresolved = [];
   for (let i = 0; i < fresh.length; i += BATCH) {
     const chunk = fresh.slice(i, i + BATCH);
@@ -383,7 +410,9 @@ async function crawl(addr) {
   // transactions keeps them queued and stays incomplete, so a later run
   // retries rather than skipping it forever.
   if (unresolved.length) {
-    acct.unresolvedSigs = [...new Set([...(acct.unresolvedSigs ?? []), ...unresolved])];
+    // Only what is STILL unresolved. Every earlier failure was retried above, so
+    // carrying the old list forward would keep counting reads that succeeded.
+    acct.unresolvedSigs = [...new Set(unresolved)];
     acct.incomplete = `${acct.unresolvedSigs.length} transaction(s) could not be resolved`;
     acct.done = false;
   } else {
@@ -439,6 +468,28 @@ console.log(`promoted ${promote()} more into the crawl (budget ${MAX_ACCOUNTS})\
 // account with new activity is returned to the queue; one without is left
 // alone at the cost of a single call.
 if (POLL) {
+  // Every JTO account the DAO treasury owns is watched — not only the one the
+  // registry names. On 14 September 2026 the treasury held a second JTO account,
+  // empty, that this ledger had never enumerated: JTO paid into it and burned
+  // there would never have touched the account the burn detection rests on. So
+  // each poll asks the chain which accounts exist and queues any it has not seen.
+  try {
+    const owned = await rpc("getTokenAccountsByOwner", [TREASURY, { mint: MINT }, { encoding: "jsonParsed" }]);
+    if (!Array.isArray(owned?.value)) throw new Error("getTokenAccountsByOwner returned no account list");
+    let added = 0;
+    for (const { pubkey } of owned.value) {
+      if (state.accounts[pubkey]) continue;
+      state.accounts[pubkey] = { label: "dao-treasury-jto-account", from: "treasury discovery", done: false, tx: 0 };
+      added++;
+    }
+    state.treasuryDiscovery = { at: new Date().toISOString(), accounts: owned.value.length, added };
+    console.log(`treasury owns ${owned.value.length} JTO account(s); ${added} new to this ledger and queued`);
+  } catch (err) {
+    // Not "no new accounts". Recorded, and it blocks the completeness claim.
+    state.treasuryDiscovery = { at: new Date().toISOString(), failed: safeError(err) };
+    console.log(`treasury account discovery FAILED: ${safeError(err)}`);
+  }
+
   const done = Object.entries(state.accounts).filter(([, a]) => a.done && a.head && !a.skipped);
   console.log(`polling ${done.length} enumerated account(s) for new activity...`);
   let reopened = 0, checked = 0;
@@ -447,6 +498,11 @@ if (POLL) {
       try {
         const fresh = await rpc("getSignaturesForAddress", [addr, { until: acct.head, limit: 1000 }]);
         checked++;
+        // A poll that succeeded clears an earlier failure — otherwise one
+        // transient error would block the completeness claim forever — and
+        // records the moment this account was last confirmed current.
+        delete acct.pollFailed;
+        acct.checkedAt = new Date().toISOString();
         if (Array.isArray(fresh) && fresh.length) {
           // Re-enumerate this account. Transactions already in `seen` are
           // skipped, so the cost is listing signatures, not resolving them
@@ -530,6 +586,10 @@ function report(st) {
     }
   }
   if (st.polledAt) console.log(`  polled for new activity at ${st.polledAt.slice(0, 19)}Z`);
+  const discoveryFailed = st.treasuryDiscovery?.failed;
+  if (discoveryFailed) {
+    console.log(`  the treasury's JTO accounts could NOT be listed — one this ledger does not watch may exist: ${discoveryFailed}`);
+  }
   if (pollFailures.length) {
     console.log(`  ${pollFailures.length} account(s) could NOT be polled — their cutoff is unknown, not current:`);
     for (const [a, v] of Object.entries(accounts).filter(([, v]) => v.pollFailed).slice(0, 5)) {
@@ -588,7 +648,7 @@ function report(st) {
     // Completeness is a conjunction, not an arithmetic coincidence. A balanced
     // aggregate over an incomplete read set is not a proof: duplicates and
     // omissions can cancel. Zero unresolved reads is required alongside it.
-    if (residualRaw === 0n && !incomplete.length && !unresolvedSigs && !pollFailures.length) {
+    if (residualRaw === 0n && !incomplete.length && !unresolvedSigs && !pollFailures.length && !discoveryFailed) {
       console.log("\n  RECONCILED. Every JTO missing from supply is accounted for by a burn");
       console.log("  in this ledger, and every expected read was resolved. The record of");
       console.log("  supply-affecting events is COMPLETE.");

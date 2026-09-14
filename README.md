@@ -315,14 +315,20 @@ node refresh.mjs    # check, verify, read chain, rebuild — cross-platform
 ```
 
 [`server.mjs`](server.mjs) has no dependencies and serves an **allowlist**, not
-a directory. Four URLs exist:
+a directory. These URLs exist:
 
 | | |
 |---|---|
 | `/` | the dashboard |
 | `/snapshot.json` | the snapshot it was built from — the evidence, fetchable directly |
+| `/sweeps.json` | every JTX fee sweep into the DAO treasury, decoded (`sweeps.mjs --summary`) |
+| `/fees.json` | JTX fees on chain: swept, plus still held (`fees.mjs --summary`) |
+| `/cycle.json` | what the live tracking cycle last did, step by step, and when |
 | `/release.json` | what was last verified as published |
 | `/healthz` | whether there is actually a page to serve |
+
+The three live-cycle files are 404 — saying so — until the cycle has produced
+them, rather than a 503 that would suggest the site itself is down.
 
 Anything else is a 404 before any disk access happens. That is deliberate:
 `dist/` also holds `dashboard.html.prev`, the rollback payload written before
@@ -357,6 +363,35 @@ There is no publish step, which is the point: the page that was built is the
 page that is served, off the same disk, and the server re-reads it when its
 mtime changes. Nothing has to be pushed anywhere, so nothing can silently fail
 to be.
+
+#### The live cycle
+
+Every `REFRESH_INTERVAL_MINUTES` (360 in production) the server runs the whole
+pipeline, one step at a time, in the only order that keeps its figures
+consistent with each other:
+
+| step | what it does | when |
+|---|---|---|
+| ledger | `track.mjs --resume --poll`: lists the treasury's JTO accounts (queueing any new one), polls every enumerated account, and continues each one with new activity from its cursor | every cycle |
+| sweeps | `sweeps.mjs`: decodes any new fee sweeps into the treasury, and writes `/sweeps.json` | after the ledger |
+| fees | `fees.mjs`: reads what the JTX program still holds unswept, and writes `/fees.json` | daily (`FEES_INTERVAL_MINUTES`, default 1440), and only after sweeps — reading balances before the sweeps are current counts a fee held-then-swept twice |
+| refresh | `refresh.mjs`: offline checks, registry verification, chain read, page rebuild | **always**, even when a step above failed |
+
+The snapshot carries a `tracking` block summarising all three, each part dated.
+If the ledger ever records a burn instruction since activation, the assessment
+is forced to review in that same cycle and one alert is raised per burn,
+keyed on its transaction; a ledger not polled for 24 hours, a treasury JTO
+account it does not watch, or a live-cycle file that cannot be read each raise
+an alert too. `/cycle.json` records every step's outcome and duration plus the
+chain dates the cycle ended on, so whether the site is tracking can be checked
+from outside.
+
+The ledger and the decoded sweeps took hours of RPC to build, so
+`deploy-railway.sh` ships them compressed in `bootstrap/` with the upload. The
+server unpacks one onto the volume **only if the volume has none** — once the
+cycle has advanced them there, they are the record, and a deploy's copy is
+older by definition. The upload is staged from `git archive HEAD`, so an
+uncommitted change is never deployed by accident.
 
 Three things that are only obvious after getting them wrong:
 

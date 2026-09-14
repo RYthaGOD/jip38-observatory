@@ -57,7 +57,7 @@ if (!existsSync("dist/dashboard.html")) {
 // both ranges, and the live PORT is still excluded along with the offsets this
 // suite takes from its own base.
 const LIVE_PORT = Number(process.env.PORT ?? 0);
-const OFFSETS = 8; // this suite binds base+1 .. base+6 for isolated cases
+const OFFSETS = 10; // this suite binds base+1 .. base+8 for isolated cases
 function pickPort() {
   for (;;) {
     const p = 20000 + Math.floor(Math.random() * 11900);
@@ -71,7 +71,11 @@ const BASE = `http://127.0.0.1:${PORT}`;
 // by --port. The flag now wins on its own, but a test suite that silently
 // inherits the ambient port of whatever is running it is a trap worth removing
 // at both ends.
-const { PORT: _ignored, ...CLEAN_ENV } = process.env;
+//
+// The tracking variables go too. On Railway this suite runs INSIDE a live cycle,
+// with REFRESH_INTERVAL_MINUTES set; a test server inheriting it would schedule
+// a cycle of its own against the real volume, beside the one already running.
+const { PORT: _ignored, REFRESH_INTERVAL_MINUTES: _cycle, FIRST_CYCLE_DELAY_SECONDS: _first, ...CLEAN_ENV } = process.env;
 
 const child = spawn(process.execPath, ["server.mjs", "--port", String(PORT)],
   { stdio: ["ignore", "pipe", "pipe"], env: CLEAN_ENV });
@@ -410,6 +414,87 @@ try {
       assert.deepEqual(rows.map((r) => r.t), [
         "2026-09-13T06:00:11.246Z", "2026-09-13T09:30:11.743Z", "2026-09-13T09:54:04.756Z",
       ], "the merged series is not in time order");
+    } finally {
+      alt?.kill();
+      await new Promise((r) => setTimeout(r, 200));
+      try { rmSync(box, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 }); } catch { /* OS will clear it */ }
+    }
+  });
+  await t("the live cycle's state is bootstrapped only when missing, and its outputs are optional routes", async () => {
+    // The ledger and the decoded sweeps are hours of RPC work, shipped with a
+    // deploy so the container does not re-crawl the chain. Once the live cycle has
+    // advanced them on the volume they ARE the record: a deploy's copy is older by
+    // definition, and replacing it would silently roll the ledger back.
+    const { gzipSync } = await import("node:zlib");
+    const box = mkdtempSync(join(tmpdir(), "jip38-boot-"));
+    const p8 = PORT + 7;
+    let alt;
+    try {
+      for (const d of ["dist", "data", "data-seed", "bootstrap"]) mkdirSync(join(box, d), { recursive: true });
+      copyFileSync("dist/dashboard.html", join(box, "dist", "dashboard.html"));
+      writeFileSync(join(box, "data", "track-state.json"), "VOLUME LEDGER — MUST NOT BE REPLACED");
+      writeFileSync(join(box, "bootstrap", "track-state.json.gz"), gzipSync('{"from":"bootstrap"}'));
+      writeFileSync(join(box, "bootstrap", "sweeps-state.json.gz"), gzipSync('{"from":"bootstrap"}'));
+      // A decoded-sweeps summary on both sides: the newer must be served.
+      writeFileSync(join(box, "data", "SWEEPS.json"), JSON.stringify({ generatedAt: "2026-09-01T00:00:00.000Z", side: "volume" }));
+      writeFileSync(join(box, "data-seed", "SWEEPS.json"), JSON.stringify({ generatedAt: "2026-09-14T00:00:00.000Z", side: "build" }));
+
+      alt = spawn(process.execPath, [join(process.cwd(), "server.mjs"), "--port", String(p8)],
+        { stdio: "ignore", cwd: box, env: CLEAN_ENV });
+      await waitForPort(p8);
+
+      assert.equal(readFileSync(join(box, "data", "track-state.json"), "utf8"), "VOLUME LEDGER — MUST NOT BE REPLACED",
+        "the bootstrap overwrote a ledger the volume already held");
+      assert.equal(readFileSync(join(box, "data", "sweeps-state.json"), "utf8"), '{"from":"bootstrap"}',
+        "missing sweep state was not bootstrapped from the deploy");
+
+      const sweeps = await fetch(`http://127.0.0.1:${p8}/sweeps.json`);
+      assert.equal(sweeps.status, 200);
+      assert.equal((await sweeps.json()).side, "build", "an older sweeps summary on the volume was served over a newer one");
+      assert.match(sweeps.headers.get("content-security-policy"), /script-src 'none'/);
+
+      for (const path of ["/fees.json", "/cycle.json"]) {
+        const r = await fetch(`http://127.0.0.1:${p8}${path}`);
+        assert.equal(r.status, 404, `${path} returned ${r.status} with nothing produced`);
+        assert.match(await r.text(), /has not been produced yet/, `${path}'s absence read as a broken site`);
+      }
+    } finally {
+      alt?.kill();
+      await new Promise((r) => setTimeout(r, 200));
+      try { rmSync(box, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 }); } catch { /* OS will clear it */ }
+    }
+  });
+  await t("a cycle whose steps fail still attempts the rebuild, and says so at /cycle.json", async () => {
+    // Steps 1-3 failing must never freeze the page; and whether the site is
+    // tracking has to be answerable from outside, not taken on trust. Run where
+    // none of the step scripts exist, so every step fails fast and offline.
+    const box = mkdtempSync(join(tmpdir(), "jip38-cycle-"));
+    const p9 = PORT + 8;
+    let alt;
+    try {
+      mkdirSync(join(box, "dist"), { recursive: true });
+      mkdirSync(join(box, "data"), { recursive: true });
+      copyFileSync("dist/dashboard.html", join(box, "dist", "dashboard.html"));
+      writeFileSync(join(box, "data", "track-state.json"), "{}"); // so the ledger step is attempted
+
+      alt = spawn(process.execPath, [join(process.cwd(), "server.mjs"), "--port", String(p9)], {
+        stdio: "ignore", cwd: box,
+        env: { ...CLEAN_ENV, REFRESH_INTERVAL_MINUTES: "60", FIRST_CYCLE_DELAY_SECONDS: "0", SOLANA_RPC_URL: "https://rpc.invalid" },
+      });
+      await waitForPort(p9);
+
+      let record = null;
+      for (let i = 0; i < 100 && !record; i++) {
+        const r = await fetch(`http://127.0.0.1:${p9}/cycle.json`);
+        if (r.status === 200) record = await r.json();
+        else await new Promise((res) => setTimeout(res, 100));
+      }
+      assert.ok(record, "no cycle status was published within 10 seconds");
+      assert.equal(record.ok, false, "a cycle whose steps failed reported success");
+      assert.deepEqual(record.steps.map((s) => s.step), ["ledger", "refresh"],
+        "a failed ledger must skip sweeps and fees, and must NOT skip the rebuild");
+      assert.equal(record.steps[0].ok, false);
+      assert.ok(record.startedAt && record.finishedAt && record.nextCycleAround, "the record is not dated");
     } finally {
       alt?.kill();
       await new Promise((r) => setTimeout(r, 200));

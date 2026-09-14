@@ -43,10 +43,15 @@ numReplicas = 1
 # Variables
 #
 #   SOLANA_RPC_URL             required for the refresh. The only secret.
-#   REFRESH_INTERVAL_MINUTES   360 — every six hours, matching the Windows task.
-#                              Unset or 0 disables refreshing entirely, which is
-#                              what a local `npm start` wants: serve what is
-#                              already built, never touch the chain.
+#   REFRESH_INTERVAL_MINUTES   360 — one live cycle every six hours: ledger,
+#                              sweeps, fees (when due), refresh. Unset or 0
+#                              disables it entirely, which is what a local
+#                              `npm start` wants: serve what is already built,
+#                              never touch the chain.
+#   FEES_INTERVAL_MINUTES      1440 (default) — how often the cycle re-reads the
+#                              fees still held unswept. Optional.
+#   FIRST_CYCLE_DELAY_SECONDS  120 (default) — the first cycle after boot.
+#                              Optional.
 #   PORT                       8080. Railway routes to it; the server reads it.
 #
 # A volume must be mounted at /app/data. Railway's filesystem is otherwise

@@ -1,0 +1,3341 @@
+{
+  "_comment": [
+    "JTX fees measured on chain: swept (outflows from JTX fee accounts in sweeps) plus held (balances read now).",
+    "Produced by fees.mjs. Exact base units per token; no prices, so tokens are not summed together."
+  ],
+  "generatedAt": "2026-09-14T10:09:32.807Z",
+  "program": "JTXJTXfr1wVRMEzqiPhXUr69zJtfGuLh5qEiXG772Zj",
+  "sweptThrough": "2026-09-14T09:25:54.000Z",
+  "heldReadAt": "2026-09-14T10:09:32.693Z",
+  "heldSlotRange": {
+    "from": 446944649,
+    "to": 446950175
+  },
+  "gapHours": 0.73,
+  "complete": true,
+  "feeHoldingAccounts": 3622,
+  "programAccounts": 3961,
+  "everSwept": 2042,
+  "unresolvedBalanceReads": 0,
+  "stablecoins": [
+    {
+      "mint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+      "symbol": "USDC",
+      "decimals": 6,
+      "sweptRaw": "138934538478",
+      "heldRaw": "3713696",
+      "collectedRaw": "138938252174"
+    },
+    {
+      "mint": "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB",
+      "symbol": "USDT",
+      "decimals": 6,
+      "sweptRaw": "3379572562",
+      "heldRaw": "42892",
+      "collectedRaw": "3379615454"
+    }
+  ],
+  "tokens": [
+    {
+      "mint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+      "symbol": "USDC",
+      "decimals": 6,
+      "sweptRaw": "138934538478",
+      "heldRaw": "3713696",
+      "collectedRaw": "138938252174"
+    },
+    {
+      "mint": "So11111111111111111111111111111111111111112",
+      "symbol": "wSOL",
+      "decimals": 9,
+      "sweptRaw": "496213474527",
+      "heldRaw": "5353797",
+      "collectedRaw": "496218828324"
+    },
+    {
+      "mint": "A7bdiYdS5GjqGFtxf17ppRHtDKPkkRqbKtR27dxvQXaS",
+      "symbol": null,
+      "decimals": 8,
+      "sweptRaw": "109072491",
+      "heldRaw": "359",
+      "collectedRaw": "109072850"
+    },
+    {
+      "mint": "J1toso1uCk3RLmjorhTtrVwY9HJ7X8V9yYac6Y7kGCPn",
+      "symbol": "JitoSOL",
+      "decimals": 9,
+      "sweptRaw": "4466139972",
+      "heldRaw": "173402",
+      "collectedRaw": "4466313374"
+    },
+    {
+      "mint": "9Pfync3ejPC9eHqVzq3nYQJAhyhjqpnB9UsaSfLxpump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "25107624713",
+      "heldRaw": "0",
+      "collectedRaw": "25107624713"
+    },
+    {
+      "mint": "98sMhvDwXj1RQi5c5Mndm3vPe9cBqPrbLaufMXFNMh5g",
+      "symbol": null,
+      "decimals": 9,
+      "sweptRaw": "1001572529",
+      "heldRaw": "84747",
+      "collectedRaw": "1001657276"
+    },
+    {
+      "mint": "3NZ9JMVBmGAqocybic2c7LQCJScmgsAZ6vQqTDzcqmJh",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "3167",
+      "heldRaw": "0",
+      "collectedRaw": "3167"
+    },
+    {
+      "mint": "9cRCn9rGT8V2imeM2BaKs13yhMEais3ruM3rPvTGpump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "1405288661",
+      "heldRaw": "0",
+      "collectedRaw": "1405288661"
+    },
+    {
+      "mint": "suifhC9gU1VbJAPYPTBkHJyyyStKGLLYPVDTmPoqbvA",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "1833320354",
+      "heldRaw": "0",
+      "collectedRaw": "1833320354"
+    },
+    {
+      "mint": "CashcatZMRn4Jv8sPQZUSsbTLi2PcPe1ssqbHcnaJqSS",
+      "symbol": null,
+      "decimals": 8,
+      "sweptRaw": "20921132673",
+      "heldRaw": "1165552",
+      "collectedRaw": "20922298225"
+    },
+    {
+      "mint": "pumpCmXqMfrsAkQ5r49WcJnRayYRqmXz6ae8H7H9Dfn",
+      "symbol": null,
+      "decimals": 6,
+      "sweptRaw": "2728885649248",
+      "heldRaw": "6047629",
+      "collectedRaw": "2728891696877"
+    },
+    {
+      "mint": "3ZLekZYq2qkZiSpnSvabjit34tUkjSwD1JFuW9as9wBG",
+      "symbol": null,
+      "decimals": 9,
+      "sweptRaw": "1752795891",
+      "heldRaw": "1363244",
+      "collectedRaw": "1754159135"
+    },
+    {
+      "mint": "2zCo6bUowJMvr89ajxuWsPadAqJ2F9akCkxumNsSdgsL",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "836357",
+      "heldRaw": "0",
+      "collectedRaw": "836357"
+    },
+    {
+      "mint": "7vfCXTUXx5WJV5JADk17DUJ4ksgau7utNKj4b963voxs",
+      "symbol": null,
+      "decimals": 8,
+      "sweptRaw": "100976",
+      "heldRaw": "70",
+      "collectedRaw": "101046"
+    },
+    {
+      "mint": "FLWSojG1gB5VStYR3Sb4nQFRt43UBYkqih1j2CpVLqgd",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "3965",
+      "heldRaw": "0",
+      "collectedRaw": "3965"
+    },
+    {
+      "mint": "EpXtn6xGoZ4Y45vRjiDUHSCGbBoJD5FaEqZbF98YswH1",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "2881646312",
+      "heldRaw": "0",
+      "collectedRaw": "2881646312"
+    },
+    {
+      "mint": "StargWr5r6r8gZSjmEKGZ1dmvKWkj79r2z1xqjFstar",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "35717780205",
+      "heldRaw": "0",
+      "collectedRaw": "35717780205"
+    },
+    {
+      "mint": "6GmAFSYs4gk3FDao5FzzySQpPZaWsa4rUJHacpMpUNgx",
+      "symbol": null,
+      "decimals": 9,
+      "sweptRaw": "10718790593002",
+      "heldRaw": "19312040",
+      "collectedRaw": "10718809905042"
+    },
+    {
+      "mint": "BANKJmvhT8tiJRsBSS1n2HryMBPvT5Ze4HU95DUAmeta",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "725448",
+      "heldRaw": "0",
+      "collectedRaw": "725448"
+    },
+    {
+      "mint": "XsP7xzNPvEHS1m6qfanPUGjNmdnmsLKEoNAnHjdxxyZ",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "593759",
+      "heldRaw": "0",
+      "collectedRaw": "593759"
+    },
+    {
+      "mint": "9BB6NFEcjBCtnNLFko2FqVQBq8HHM13kCyYcdQbgpump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "1304065114",
+      "heldRaw": "0",
+      "collectedRaw": "1304065114"
+    },
+    {
+      "mint": "CARSsxWPkpQWvfyRBwfGMGvysJBHdHGfE46X5MNgmeta",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "520968804",
+      "heldRaw": "0",
+      "collectedRaw": "520968804"
+    },
+    {
+      "mint": "DPaQfq5sFnoqw2Sh9WMmmASFL9LNu6RdtDqwE1tab2tB",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "2721919016",
+      "heldRaw": "0",
+      "collectedRaw": "2721919016"
+    },
+    {
+      "mint": "METvsvVRapdj9cFLzq4Tr43xK4tAjQfwX76z3n6mWQL",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "78010830",
+      "heldRaw": "0",
+      "collectedRaw": "78010830"
+    },
+    {
+      "mint": "5UUH9RTDiSpq6HKS6bp4NdU9PNJpXRXuiw6ShBTBhgH2",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "925450",
+      "heldRaw": "0",
+      "collectedRaw": "925450"
+    },
+    {
+      "mint": "he1iusmfkpAdwvxLNGV8Y1iSbj4rUy6yMhEA3fotn9A",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "289434",
+      "heldRaw": "0",
+      "collectedRaw": "289434"
+    },
+    {
+      "mint": "Ai66LHZG9MCzg1WKdawwqduVAXpNDUuV8M3uyq5ppump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "5484522354",
+      "heldRaw": "0",
+      "collectedRaw": "5484522354"
+    },
+    {
+      "mint": "4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R",
+      "symbol": null,
+      "decimals": 6,
+      "sweptRaw": "3091133",
+      "heldRaw": "9131",
+      "collectedRaw": "3100264"
+    },
+    {
+      "mint": "XsoCS1TfEyfFhfvj8EtZ528L3CaKBDBRqRapnBbDF2W",
+      "symbol": null,
+      "decimals": 8,
+      "sweptRaw": "75785",
+      "heldRaw": "615",
+      "collectedRaw": "76400"
+    },
+    {
+      "mint": "XsaBXg8dU5cPM6ehmVctMkVqoiRG2ZjMo1cyBJ3AykQ",
+      "symbol": null,
+      "decimals": 8,
+      "sweptRaw": "122851",
+      "heldRaw": "3494",
+      "collectedRaw": "126345"
+    },
+    {
+      "mint": "BPxxfRCXkUVhig4HS1Lh7kZqV6SPJhzfEk4x6fVBjPCy",
+      "symbol": null,
+      "decimals": 9,
+      "sweptRaw": "31146393971",
+      "heldRaw": "9372870",
+      "collectedRaw": "31155766841"
+    },
+    {
+      "mint": "taoC6xyv2v8tDLcev4uaGUgV4vdQsWJrGft2kcBRrBY",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "21259665",
+      "heldRaw": "0",
+      "collectedRaw": "21259665"
+    },
+    {
+      "mint": "69LjZUUzxj3Cb3Fxeo1X4QpYEQTboApkhXTysPpbpump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "5283550",
+      "heldRaw": "0",
+      "collectedRaw": "5283550"
+    },
+    {
+      "mint": "A13oRB9FFaiUjfi6LdCg6p9ka1u8SfGkUFs4SKvPpump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "3144169279",
+      "heldRaw": "0",
+      "collectedRaw": "3144169279"
+    },
+    {
+      "mint": "EicWvteVi2fWepEzS3FYWsnuPoP6caZfjnKqNvydLjCH",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "14873437",
+      "heldRaw": "0",
+      "collectedRaw": "14873437"
+    },
+    {
+      "mint": "DC6HP2A7SUy49WeazfeWgbwxVpzKdEPuB46mtb7XBzWx",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "26820022199012",
+      "heldRaw": "0",
+      "collectedRaw": "26820022199012"
+    },
+    {
+      "mint": "SoLo9oxzLDpcq1dpqAgMwgce5WqkRDtNXK7EPnbmeta",
+      "symbol": null,
+      "decimals": 6,
+      "sweptRaw": "9222410",
+      "heldRaw": "9750",
+      "collectedRaw": "9232160"
+    },
+    {
+      "mint": "2fRDA5f353VXLs2PeLJNqqHqTMhrjJunAXmWWpLkpump",
+      "symbol": null,
+      "decimals": 6,
+      "sweptRaw": "77190910",
+      "heldRaw": "177283510",
+      "collectedRaw": "254474420"
+    },
+    {
+      "mint": "esprDDGBNVg3pJM8EQtCsVwcUsEk5TxgYGVjD4Uu7pZ",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "158973",
+      "heldRaw": "0",
+      "collectedRaw": "158973"
+    },
+    {
+      "mint": "BBKPiLM9KjdJW7oQSKt99RVWcZdhF6sEHRKnwqeBGHST",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "389626551920",
+      "heldRaw": "0",
+      "collectedRaw": "389626551920"
+    },
+    {
+      "mint": "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB",
+      "symbol": "USDT",
+      "decimals": 6,
+      "sweptRaw": "3379572562",
+      "heldRaw": "42892",
+      "collectedRaw": "3379615454"
+    },
+    {
+      "mint": "CARDSccUMFKoPRZxt5vt3ksUbxEFEcnZ3H2pd3dKxYjp",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "730314801",
+      "heldRaw": "0",
+      "collectedRaw": "730314801"
+    },
+    {
+      "mint": "2u1tszSeqZ3qBWF3uNGPFc8TzMk2tdiwknnRMWGWjGWH",
+      "symbol": null,
+      "decimals": 6,
+      "sweptRaw": "13498147",
+      "heldRaw": "1006",
+      "collectedRaw": "13499153"
+    },
+    {
+      "mint": "XsCPL9dNWBMvFtTmwcCA5v3xWPSMEBCszbQdiLLq6aN",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "91624",
+      "heldRaw": "0",
+      "collectedRaw": "91624"
+    },
+    {
+      "mint": "Dso1bDeDjCQxTrWHqUUi63oBvV7Mdm6WaobLbQ7gnPQ",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "100000",
+      "heldRaw": "0",
+      "collectedRaw": "100000"
+    },
+    {
+      "mint": "PerPsCe2SJ7Q25CN4R5TTX4fmBdmknE2hQmqCt96fHL",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "23042556514",
+      "heldRaw": "0",
+      "collectedRaw": "23042556514"
+    },
+    {
+      "mint": "9AvytnUKsLxPxFHFqS6VLxaxt5p6BhYNr53SD2Chpump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "5097435198",
+      "heldRaw": "0",
+      "collectedRaw": "5097435198"
+    },
+    {
+      "mint": "cbbtcf3aa214zXHbiAZQwf4122FBYbraNdFqgw4iMij",
+      "symbol": null,
+      "decimals": 8,
+      "sweptRaw": "37192",
+      "heldRaw": "9",
+      "collectedRaw": "37201"
+    },
+    {
+      "mint": "DEkqHyPN7GMRJ5cArtQFAWefqbZb33Hyf6s5iCwjEonT",
+      "symbol": null,
+      "decimals": 9,
+      "sweptRaw": "721964503",
+      "heldRaw": "6520788",
+      "collectedRaw": "728485291"
+    },
+    {
+      "mint": "MUxEsUKSMACyw5fZf68wxf5FLnZVhtU9CwH8uNNGay1",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "520",
+      "heldRaw": "0",
+      "collectedRaw": "520"
+    },
+    {
+      "mint": "5GgRAEmv8ZxF2PR5hY72Qs5x1bnQ6UK2RbTPoqJ3wSwW",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "44",
+      "heldRaw": "0",
+      "collectedRaw": "44"
+    },
+    {
+      "mint": "WENAZ2WyPbmgvUcKfQ8hyMDfBQP9bZ65hsZ5KTFrRGZ",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "26155",
+      "heldRaw": "0",
+      "collectedRaw": "26155"
+    },
+    {
+      "mint": "SPCXxcqXj6e5dJDVNovHN8744zkbhM2bYudU45BimGb",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "650859",
+      "heldRaw": "0",
+      "collectedRaw": "650859"
+    },
+    {
+      "mint": "Xs3oZwbHvqis4NYcf4YKWmEia2eC84wSiVrcYcTqpH8",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "4728606",
+      "heldRaw": "0",
+      "collectedRaw": "4728606"
+    },
+    {
+      "mint": "ZBCNpuD7YMXzTHB2fhGkGi78MNsHGLRXUhRewNRm9RU",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "68140176",
+      "heldRaw": "0",
+      "collectedRaw": "68140176"
+    },
+    {
+      "mint": "2zMMhcVQEXDtdE6vsFS7S7D5oUodfJHE8vd1gnBouauv",
+      "symbol": null,
+      "decimals": 6,
+      "sweptRaw": "534728165",
+      "heldRaw": "1265",
+      "collectedRaw": "534729430"
+    },
+    {
+      "mint": "MukLDtJ8Cx9DxLbeyLRSWPSposTMWuwHANbuaudpump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "1929887234",
+      "heldRaw": "0",
+      "collectedRaw": "1929887234"
+    },
+    {
+      "mint": "5voS9evDjxF589WuEub5i4ti7FWQmZCsAsyD5ucbuRqM",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "748690975",
+      "heldRaw": "0",
+      "collectedRaw": "748690975"
+    },
+    {
+      "mint": "Hg5Ja55T5wESq4vyFoiVCMeHXtGyVA69X2UHq8hgpump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "49464328",
+      "heldRaw": "0",
+      "collectedRaw": "49464328"
+    },
+    {
+      "mint": "EkcTa8n14fXcHdfvZqCg72cTCutJnnKb19vcHwKTpump",
+      "symbol": null,
+      "decimals": 6,
+      "sweptRaw": "2247873858",
+      "heldRaw": "2500000",
+      "collectedRaw": "2250373858"
+    },
+    {
+      "mint": "zGh48JtNHVBb5evgoZLXwgPD2Qu4MhkWdJLGDAupump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "17007744108",
+      "heldRaw": "0",
+      "collectedRaw": "17007744108"
+    },
+    {
+      "mint": "4eDf52YYzL6i6gbZ6FXqrLUPXbtP61f1gPSFM66M4XHe",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "1047594884",
+      "heldRaw": "0",
+      "collectedRaw": "1047594884"
+    },
+    {
+      "mint": "7LA4wwjoXU4hAdwX1eT5ouuSsMrHq9wHQBfAyPfJK1eQ",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "825794657400",
+      "heldRaw": "0",
+      "collectedRaw": "825794657400"
+    },
+    {
+      "mint": "2b1kV6DkPAnxd5ixfnxCpjxmKwqjjaYmCZfHsFu24GXo",
+      "symbol": null,
+      "decimals": 6,
+      "sweptRaw": "8251892",
+      "heldRaw": "2829",
+      "collectedRaw": "8254721"
+    },
+    {
+      "mint": "USD1ttGY1N17NEEHLmELoaybftRBUSErhqYiQzvEmuB",
+      "symbol": null,
+      "decimals": 6,
+      "sweptRaw": "12087485",
+      "heldRaw": "9740",
+      "collectedRaw": "12097225"
+    },
+    {
+      "mint": "4K1m7gAMDKzrxQn68yuZAd767w57Fw7Ykw69dG3umeta",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "163639209",
+      "heldRaw": "0",
+      "collectedRaw": "163639209"
+    },
+    {
+      "mint": "4sWNB8zGWHkh6UnmwiEtzNxL4XrN7uK9tosbESbJFfVs",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "83174896",
+      "heldRaw": "0",
+      "collectedRaw": "83174896"
+    },
+    {
+      "mint": "Ax5dAamJPeuaLpFUzs9FdcpoUhHDcxyjPzxCJQidjups",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "16737510",
+      "heldRaw": "0",
+      "collectedRaw": "16737510"
+    },
+    {
+      "mint": "6SjVTj1VGwFSXn7wEjwFm77LvACeTqB7sQUebYKX8Ds5",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "108385418984",
+      "heldRaw": "0",
+      "collectedRaw": "108385418984"
+    },
+    {
+      "mint": "8K5X85PAJHAAVSvYaAzgVPPAPsqqHmvx16ZyBiscYF8L",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "1727032435447",
+      "heldRaw": "0",
+      "collectedRaw": "1727032435447"
+    },
+    {
+      "mint": "poNSfquKq512ApeYjVghwViSun4x1MhCqHVH2Paq4jN",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "1513731261",
+      "heldRaw": "0",
+      "collectedRaw": "1513731261"
+    },
+    {
+      "mint": "7Y7V1a4m2nWK7BMgbka5B4vR1pDvCK7yva3Hnrqkraze",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "961785519",
+      "heldRaw": "0",
+      "collectedRaw": "961785519"
+    },
+    {
+      "mint": "6ogzHhzdrQr9Pgv6hZ2MNze7UrzBMAFyBBWUYp1Fhitx",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "190774024",
+      "heldRaw": "0",
+      "collectedRaw": "190774024"
+    },
+    {
+      "mint": "J8PSdNP3QewKq2Z1JJJFDMaqF7KcaiJhR7gbr5KZpump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "1088714936",
+      "heldRaw": "0",
+      "collectedRaw": "1088714936"
+    },
+    {
+      "mint": "JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN",
+      "symbol": null,
+      "decimals": 6,
+      "sweptRaw": "79876525",
+      "heldRaw": "21324107",
+      "collectedRaw": "101200632"
+    },
+    {
+      "mint": "4P8ZC4cGTBPz4TPsFHtuoyLT8ftDcf8J9pzmJrUMoNb8",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "3000000000",
+      "heldRaw": "0",
+      "collectedRaw": "3000000000"
+    },
+    {
+      "mint": "omfgRBnxHsNJh6YeGbGAmWenNkenzsXyBXm3WDhmeta",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "194999989",
+      "heldRaw": "0",
+      "collectedRaw": "194999989"
+    },
+    {
+      "mint": "HxQhDGYqyjorgogMJx7YbBHADEDxuHhLnMMmr6VYpyn",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "2385260381151",
+      "heldRaw": "0",
+      "collectedRaw": "2385260381151"
+    },
+    {
+      "mint": "Dz9mQ9NzkBcCsuGPFJ3r1bS4wgqKMHBPiVuniW8Mbonk",
+      "symbol": null,
+      "decimals": 6,
+      "sweptRaw": "47158686",
+      "heldRaw": "29052",
+      "collectedRaw": "47187738"
+    },
+    {
+      "mint": "SKRbvo6Gf7GondiT3BbTfuRDPqLWei4j2Qy2NPGZhW3",
+      "symbol": null,
+      "decimals": 6,
+      "sweptRaw": "35637476",
+      "heldRaw": "112797",
+      "collectedRaw": "35750273"
+    },
+    {
+      "mint": "8DPB5jBFyu32HPxfXXb4UEvBnGPaNBe5sWjk1XjFezH",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "17367399016366",
+      "heldRaw": "0",
+      "collectedRaw": "17367399016366"
+    },
+    {
+      "mint": "PreweJYECqtQwBtpxHL171nL2K6umo692gTm7Q3rpgF",
+      "symbol": null,
+      "decimals": 9,
+      "sweptRaw": "1740547",
+      "heldRaw": "9314",
+      "collectedRaw": "1749861"
+    },
+    {
+      "mint": "DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263",
+      "symbol": null,
+      "decimals": 5,
+      "sweptRaw": "73788656351",
+      "heldRaw": "723756920",
+      "collectedRaw": "74512413271"
+    },
+    {
+      "mint": "BoTx8y9ynfdxf5ZjWtCoBVkff52qKA82ysaLU8ZM6d8T",
+      "symbol": null,
+      "decimals": 6,
+      "sweptRaw": "33927",
+      "heldRaw": "74",
+      "collectedRaw": "34001"
+    },
+    {
+      "mint": "7RDvypx3p9EWq4nZZKux1ZQAc7DUWXpHTVKxCCnupump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "794304578",
+      "heldRaw": "0",
+      "collectedRaw": "794304578"
+    },
+    {
+      "mint": "4DDZYqRUPBFT31uteeXKpHdFUbVoesGhKDBt3qD2nb2c",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "66913255483445",
+      "heldRaw": "0",
+      "collectedRaw": "66913255483445"
+    },
+    {
+      "mint": "5XZw2LKTyrfvfiskJ78AMpackRjPcyCif1WhUsPDuVqQ",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "445",
+      "heldRaw": "0",
+      "collectedRaw": "445"
+    },
+    {
+      "mint": "eGGxZwNSfuNKRqQLKaz2hc4QkA2mau7skyxPdj7ondo",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "24955",
+      "heldRaw": "0",
+      "collectedRaw": "24955"
+    },
+    {
+      "mint": "Pren1FvFX6J3E4kXhJuCiAD5aDmGEb7qJRncwA8Lkhw",
+      "symbol": null,
+      "decimals": 9,
+      "sweptRaw": "2283896",
+      "heldRaw": "1817582",
+      "collectedRaw": "4101478"
+    },
+    {
+      "mint": "Xsv9hRk1z5ystj9MhnA7Lq4vjSsLwzL2nxrwmwtD3re",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "10576",
+      "heldRaw": "0",
+      "collectedRaw": "10576"
+    },
+    {
+      "mint": "PrekqLJvJ3qVdXmBGDiexvwUTF4rLFDa6HWS4HJbw9S",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "111900",
+      "heldRaw": "0",
+      "collectedRaw": "111900"
+    },
+    {
+      "mint": "H3f4jYE3tEY8JWve2tRJYzqZpAHEHPihJkGQA5BCqqkn",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "6992557060963",
+      "heldRaw": "0",
+      "collectedRaw": "6992557060963"
+    },
+    {
+      "mint": "Ga5ErptAQ5oHwB7G195UEq9FeJ5UNDoV9SCRCpebFeG7",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "187316401605201",
+      "heldRaw": "0",
+      "collectedRaw": "187316401605201"
+    },
+    {
+      "mint": "SV151D5pjygAKA8aJJcKzm4wFnRX5G92Fye94jQJk7g",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "24829",
+      "heldRaw": "0",
+      "collectedRaw": "24829"
+    },
+    {
+      "mint": "Pre8AREmFPtoJFT8mQSXQLh56cwJmM7CFDRuoGBZiUP",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "582528",
+      "heldRaw": "0",
+      "collectedRaw": "582528"
+    },
+    {
+      "mint": "7ssJZGFT3twGqeYA1kvpoMWwZYvMZvrMEbjRaWgg46BL",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "9927755786842",
+      "heldRaw": "0",
+      "collectedRaw": "9927755786842"
+    },
+    {
+      "mint": "AWJ54kUTVtGAfGVw3Wup58NBsFA4dGToZCKSZLrJAwH7",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "48612036665301",
+      "heldRaw": "0",
+      "collectedRaw": "48612036665301"
+    },
+    {
+      "mint": "27G8MtK7VtTcCHkpASjSDdkWWYfoqT6ggEuKidVJidD4",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "475519",
+      "heldRaw": "0",
+      "collectedRaw": "475519"
+    },
+    {
+      "mint": "purpFPo5voy6fEu8jxSCwVdMs1zyYEYAH6FBQvTYCZK",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "18749999999",
+      "heldRaw": "0",
+      "collectedRaw": "18749999999"
+    },
+    {
+      "mint": "9BfyNWNyatdXLQ7f3ydX8azXQSnbvqGcmMEwWCLoSED",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "42928711",
+      "heldRaw": "0",
+      "collectedRaw": "42928711"
+    },
+    {
+      "mint": "rP3TyGLTJyjMw86YPU6VSPKSKq32fgZUfywuLfGTb1G",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "7072352939252",
+      "heldRaw": "0",
+      "collectedRaw": "7072352939252"
+    },
+    {
+      "mint": "EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm",
+      "symbol": null,
+      "decimals": 6,
+      "sweptRaw": "2408434",
+      "heldRaw": "149463",
+      "collectedRaw": "2557897"
+    },
+    {
+      "mint": "Lyi47medADEVDd5hxJo1mbxhnBct841sFpcGRyHTuwp",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "1925589205266",
+      "heldRaw": "0",
+      "collectedRaw": "1925589205266"
+    },
+    {
+      "mint": "3sSbDu4q4rfKirh7k1gTNteMJaDQYWUSbgJ5dTXXpump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "23114662891",
+      "heldRaw": "0",
+      "collectedRaw": "23114662891"
+    },
+    {
+      "mint": "XsqE9cRRpzxcGKDXj1BJ7Xmg4GRhZoyY1KpmGSxAWT2",
+      "symbol": null,
+      "decimals": 8,
+      "sweptRaw": "3751",
+      "heldRaw": "360",
+      "collectedRaw": "4111"
+    },
+    {
+      "mint": "7hGgx1VtNTj193fFXXuMEkp1MRV6JbWYgMBhHRYxaxu2",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "3376560395555",
+      "heldRaw": "0",
+      "collectedRaw": "3376560395555"
+    },
+    {
+      "mint": "HGjmGYKw4EL9JZrrA6yWyvB4LoN4XtbLQkWYX3e5E5vP",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "33786261503523",
+      "heldRaw": "0",
+      "collectedRaw": "33786261503523"
+    },
+    {
+      "mint": "14VP7DvCAdBCc5XGNZkPt6zhtPzJrWWS64Koxtxyondo",
+      "symbol": null,
+      "decimals": 9,
+      "sweptRaw": "5506133",
+      "heldRaw": "11175",
+      "collectedRaw": "5517308"
+    },
+    {
+      "mint": "72QvBVwpxqmheEPfaCwWSWqEFsUy3rhWt6JhQBMNTwD1",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "8877806550",
+      "heldRaw": "0",
+      "collectedRaw": "8877806550"
+    },
+    {
+      "mint": "DeSWVDmFkvevJQ5Li7zHX6JAwLF3WR9gXb9He8aSpump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "1154518965",
+      "heldRaw": "0",
+      "collectedRaw": "1154518965"
+    },
+    {
+      "mint": "6ars8ZWUb6a4jrnHgZL54ZntwNBpEfyUyQSLwX5KU9s7",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "4869038685",
+      "heldRaw": "0",
+      "collectedRaw": "4869038685"
+    },
+    {
+      "mint": "nosXBVoaCTtYdLvKY6Csb4AC8JCdQKKAaWYtx2ZMoo7",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "877192",
+      "heldRaw": "0",
+      "collectedRaw": "877192"
+    },
+    {
+      "mint": "FdUvPUJqFzD4rmuwC7b28cWruKKcXLzch3XrAqegD1tx",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "196362736273537",
+      "heldRaw": "0",
+      "collectedRaw": "196362736273537"
+    },
+    {
+      "mint": "DxtssVdyYe4wWE5f5zEgx2NqtDFbVL3ABGY62WCycHWg",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "34824993445",
+      "heldRaw": "0",
+      "collectedRaw": "34824993445"
+    },
+    {
+      "mint": "Xs7ZdzSHLU9ftNJsii5fCeJhoRWSC32SQGzGQtePxNu",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "631083",
+      "heldRaw": "0",
+      "collectedRaw": "631083"
+    },
+    {
+      "mint": "7XdCaKpqLmKE2K7yr9xaeWB1H2CVZ1oGwxB6hmd9pump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "514141241",
+      "heldRaw": "0",
+      "collectedRaw": "514141241"
+    },
+    {
+      "mint": "CGEDT9QZDvvH5GmVkWJH2BXiMJqMJySC9ihWyr7Spump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "2353697356",
+      "heldRaw": "0",
+      "collectedRaw": "2353697356"
+    },
+    {
+      "mint": "AzeNfRi7DX5HndH7dUgCxMD5sQPV7FPFH1cwDkoqpump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "2092766286",
+      "heldRaw": "0",
+      "collectedRaw": "2092766286"
+    },
+    {
+      "mint": "METAwkXcqyXKy1AtsSgJ8JiUHwGCafnZL38n3vYmeta",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "2306150",
+      "heldRaw": "0",
+      "collectedRaw": "2306150"
+    },
+    {
+      "mint": "5YMkXAYccHSGnHn9nob9xEvv6Pvka9DZWH7nTbotTu9E",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "59998",
+      "heldRaw": "0",
+      "collectedRaw": "59998"
+    },
+    {
+      "mint": "4N4DnNo3qpPks9aQCkcWkzoir8tnvT6diS4TnnZibonk",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "13358061523057",
+      "heldRaw": "0",
+      "collectedRaw": "13358061523057"
+    },
+    {
+      "mint": "F7pB3ZdfBnyFw2LRHydWEn9BmhEa5XihXLjhySFRpump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "17822871808",
+      "heldRaw": "0",
+      "collectedRaw": "17822871808"
+    },
+    {
+      "mint": "Xs3eBt7uRfJX8QUs4suhyU8p2M6DoUDrJyWBa8LLZsg",
+      "symbol": null,
+      "decimals": 8,
+      "sweptRaw": "2203975",
+      "heldRaw": "589",
+      "collectedRaw": "2204564"
+    },
+    {
+      "mint": "AymATz4TCL9sWNEEV9Kvyz45CHVhDZ6kUgjTJPzLpU9P",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "26341",
+      "heldRaw": "0",
+      "collectedRaw": "26341"
+    },
+    {
+      "mint": "DL1kysrP6mRmQ4f3TiNyN3AxNLZMkdAR7VUBwZnhpump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "6174511018",
+      "heldRaw": "0",
+      "collectedRaw": "6174511018"
+    },
+    {
+      "mint": "HooDYv5RewLRiMLnEVq3VJqdqxhuE6c5eYvqejMC3e9A",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "3132",
+      "heldRaw": "0",
+      "collectedRaw": "3132"
+    },
+    {
+      "mint": "3idEDTcUJ4dSGXQtchP6UfpYHNuRPANm6q73tFEDPU7v",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "75108968494292",
+      "heldRaw": "0",
+      "collectedRaw": "75108968494292"
+    },
+    {
+      "mint": "uKBanBA3CLAoctJr6GHT6WbvWKX1uaGsveD9SjHpump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "1249999374",
+      "heldRaw": "0",
+      "collectedRaw": "1249999374"
+    },
+    {
+      "mint": "4BTVAptSHkq6gCZTDNPVBUitCz1eYuJkp7BYu3heXnmm",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "1634608029",
+      "heldRaw": "0",
+      "collectedRaw": "1634608029"
+    },
+    {
+      "mint": "5mPVUc7pDVZnJx28vrZFwYQcsMqqWsoW3QWdNTmZpump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "1967446574",
+      "heldRaw": "0",
+      "collectedRaw": "1967446574"
+    },
+    {
+      "mint": "GPRR2u6NS5yBQHWGauoJ9HXgjrTH8dDsrBfTV5zAYvDH",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "1370777",
+      "heldRaw": "0",
+      "collectedRaw": "1370777"
+    },
+    {
+      "mint": "4aQtS5J2gasnpe57GC4PtKUS8hficzmv8vHUeYNz3554",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "41282783300",
+      "heldRaw": "0",
+      "collectedRaw": "41282783300"
+    },
+    {
+      "mint": "BKXtSJWJk8s6DGEv71a3HohqHMhzn1iXLAzxMm6ZXjmy",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "119612160",
+      "heldRaw": "0",
+      "collectedRaw": "119612160"
+    },
+    {
+      "mint": "EUw8NZrBAu2YqXpFtXh6ghzxKCgXrhF4mS1Jy2pZkSyG",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "3149380421",
+      "heldRaw": "0",
+      "collectedRaw": "3149380421"
+    },
+    {
+      "mint": "7aGdbu4MmedPASNYq2ySUeP7aaQHJaLUs8bSuNYWytS5",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "944356970",
+      "heldRaw": "0",
+      "collectedRaw": "944356970"
+    },
+    {
+      "mint": "FnLox4hs8zB3YefUyBdwFtTmZm7cMaNSHr5utV4Yswrm",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "712889249",
+      "heldRaw": "0",
+      "collectedRaw": "712889249"
+    },
+    {
+      "mint": "FSwc3NbQtR1AK3LrVW11EZW7dmvimneEbYiVxGzy4eAW",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "593548261",
+      "heldRaw": "0",
+      "collectedRaw": "593548261"
+    },
+    {
+      "mint": "AQ9pKadi9jA1vTofHFPrsgXjUU8C2pF8FpFpg2oMpump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "5072824968",
+      "heldRaw": "0",
+      "collectedRaw": "5072824968"
+    },
+    {
+      "mint": "DLvpmv8R4oTbC1DixU5yHLbBcmnvfTckGF3XFzLTpump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "473308914",
+      "heldRaw": "0",
+      "collectedRaw": "473308914"
+    },
+    {
+      "mint": "EysagjPWhigmXPUp1GFNCQ97eMqgDuPitZv54j7spump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "71088325",
+      "heldRaw": "0",
+      "collectedRaw": "71088325"
+    },
+    {
+      "mint": "6QzDWAmH63qDW6Lrap5BYMpjZuwgC7KkYMxCb3Japump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "896316120",
+      "heldRaw": "0",
+      "collectedRaw": "896316120"
+    },
+    {
+      "mint": "rndrizKT3MK1iimdxRdWabcF7Zg7AR5T4nud4EkHBof",
+      "symbol": null,
+      "decimals": 8,
+      "sweptRaw": "152685050",
+      "heldRaw": "2398",
+      "collectedRaw": "152687448"
+    },
+    {
+      "mint": "METAewgxyPbgwsseH8T16a39CQ5VyVxZi9zXiDPY18m",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "96515921",
+      "heldRaw": "0",
+      "collectedRaw": "96515921"
+    },
+    {
+      "mint": "ApZuxdpzMrbEYTGEzeY9afh5pj9d6qPRJCTgQYiipbKg",
+      "symbol": null,
+      "decimals": 9,
+      "sweptRaw": "738039390549",
+      "heldRaw": "1259819201",
+      "collectedRaw": "739299209750"
+    },
+    {
+      "mint": "KMNo3nJsBXfcpJTVhZcXLW7RmTwTt4GVFE7suUBo9sS",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "690449219",
+      "heldRaw": "0",
+      "collectedRaw": "690449219"
+    },
+    {
+      "mint": "XsueG8BtpquVJX9LVLLEGuViXUungE6WmK5YZ3p3bd1",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "28095423",
+      "heldRaw": "0",
+      "collectedRaw": "28095423"
+    },
+    {
+      "mint": "HE7CfFVm6H3MeSNLWNsYPVcRpnsJVf22HHa2Fj62pump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "2619269896",
+      "heldRaw": "0",
+      "collectedRaw": "2619269896"
+    },
+    {
+      "mint": "CUkdVsicsMtawshzo1Z8LDxbQrsDBfrMoTxzYcY7pump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "4035475753",
+      "heldRaw": "0",
+      "collectedRaw": "4035475753"
+    },
+    {
+      "mint": "7Xku577gjmgGteYeckb1MH2EELz8cW7KQtuwKcKfpump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "2114107473",
+      "heldRaw": "0",
+      "collectedRaw": "2114107473"
+    },
+    {
+      "mint": "huXmfhozXTVZeanhEeqfEDdQjZrnt63nYVc1qM8pump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "10797846737",
+      "heldRaw": "0",
+      "collectedRaw": "10797846737"
+    },
+    {
+      "mint": "FoH1L4hLoz16g1cfG79r4NcTAqP77y8jVoqAQa9gpump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "359699093",
+      "heldRaw": "0",
+      "collectedRaw": "359699093"
+    },
+    {
+      "mint": "3vSD9xyKCfRBpP3uDEUJaPyWGNWZDFkv4C4qHbjLpump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "946175058",
+      "heldRaw": "0",
+      "collectedRaw": "946175058"
+    },
+    {
+      "mint": "J9iJwxEmxASX5ZZdP2TALY6B1WBqtREyM77QVNzppump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "1495486709",
+      "heldRaw": "0",
+      "collectedRaw": "1495486709"
+    },
+    {
+      "mint": "J33WbCWN2m1EpoNUP9Ch6cWoV5j6BFJervDfgPk3pump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "3819028110",
+      "heldRaw": "0",
+      "collectedRaw": "3819028110"
+    },
+    {
+      "mint": "85bq8HiHFs9czQNXRsDLCVuyshXtVjERW8jDn958pump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "3128772886",
+      "heldRaw": "0",
+      "collectedRaw": "3128772886"
+    },
+    {
+      "mint": "Hf1TiBWuMdrohY4DcrRSbLYXbpw8sEKBKUb3f9fjpump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "21549437375",
+      "heldRaw": "0",
+      "collectedRaw": "21549437375"
+    },
+    {
+      "mint": "CTPoyCwkjMvoJwU4xvZZqoD8tiYk6yDchySiN5gGpump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "115967325",
+      "heldRaw": "0",
+      "collectedRaw": "115967325"
+    },
+    {
+      "mint": "3cMeyogu2sPzyQP8vwLLHQHcUt6tFWNsTZv8Mhywpump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "8620244510",
+      "heldRaw": "0",
+      "collectedRaw": "8620244510"
+    },
+    {
+      "mint": "24GWZn5HerwLTVoZuC3H7Kxg6jLFMvroA1hTU4uWpump",
+      "symbol": null,
+      "decimals": 6,
+      "sweptRaw": "390160420",
+      "heldRaw": "278750883",
+      "collectedRaw": "668911303"
+    },
+    {
+      "mint": "2NffKvfZTcFj2tyoY1Ev84PkqxA7DZnstyv6EwELpump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "913517780",
+      "heldRaw": "0",
+      "collectedRaw": "913517780"
+    },
+    {
+      "mint": "CRJDgvxzZKCmCKbe7RjBkBWEhAneLFpncWAGuUrwpump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "21192091301",
+      "heldRaw": "0",
+      "collectedRaw": "21192091301"
+    },
+    {
+      "mint": "AVBN6kXdaw27ySuvMevKYzNTL8d39b7sGQFDCmsvpump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "249655630",
+      "heldRaw": "0",
+      "collectedRaw": "249655630"
+    },
+    {
+      "mint": "3gjBts3YV6AtXr5WPY9PviakFgosPrVT74hVeUEGov1B",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "9657043449",
+      "heldRaw": "0",
+      "collectedRaw": "9657043449"
+    },
+    {
+      "mint": "7n8kRipxAQBfpGQtcGA2AbkM2HASSVCzqZ5F3QEopump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "425224710",
+      "heldRaw": "0",
+      "collectedRaw": "425224710"
+    },
+    {
+      "mint": "HBoNJ5v8g71s2boRivrHnfSB5MVPLDHHyVjruPfhGkvL",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "1523616",
+      "heldRaw": "0",
+      "collectedRaw": "1523616"
+    },
+    {
+      "mint": "PAYmo6moDF3Ro3X6bU2jwe2UdBnBhv8YjLgL1j4DxGu",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "62112288674",
+      "heldRaw": "0",
+      "collectedRaw": "62112288674"
+    },
+    {
+      "mint": "HZ1JovNiVvGrGNiiYvEozEVgZ58xaU3RKwX8eACQBCt3",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "35231077",
+      "heldRaw": "0",
+      "collectedRaw": "35231077"
+    },
+    {
+      "mint": "7nLukVng5teXze14rum9v57juXLjUp7JJnCveko1pump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "12115466",
+      "heldRaw": "0",
+      "collectedRaw": "12115466"
+    },
+    {
+      "mint": "avaxGHCq3T7hoxd73oY2KY9hJSTaeMibXvHy5KNzh5D",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "767073335",
+      "heldRaw": "0",
+      "collectedRaw": "767073335"
+    },
+    {
+      "mint": "CREDBHvVqREBCAxMihzr8D1nepHMr2gmQoZWpmgGmeta",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "8921733",
+      "heldRaw": "0",
+      "collectedRaw": "8921733"
+    },
+    {
+      "mint": "2c1KjiyQow66QfsnCtoyuqfo3AuxgpBMEoAq5oiiXqdu",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "1302163479",
+      "heldRaw": "0",
+      "collectedRaw": "1302163479"
+    },
+    {
+      "mint": "Xsnuv4omNoHozR6EEW5mXkw8Nrny5rB3jVfLqi6gKMH",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "25625",
+      "heldRaw": "0",
+      "collectedRaw": "25625"
+    },
+    {
+      "mint": "GUmbtfjSZkybSFgPibBcvwExEBdXwewJHR5PkTjzpump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "449109185",
+      "heldRaw": "0",
+      "collectedRaw": "449109185"
+    },
+    {
+      "mint": "Ab1sTFNv2tV5DX1XpriwNehXgiJhdq2RQ5LtD5BXpump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "103471399",
+      "heldRaw": "0",
+      "collectedRaw": "103471399"
+    },
+    {
+      "mint": "4kKgb1AyKo3xpbspPk6PkRxaaUtiYw3FLPbSpbZxpump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "2431686499",
+      "heldRaw": "0",
+      "collectedRaw": "2431686499"
+    },
+    {
+      "mint": "BNRm5RqFTF2zWADwTmVVLWeGXJATptNVpBKQU9Z2pump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "10382548550",
+      "heldRaw": "0",
+      "collectedRaw": "10382548550"
+    },
+    {
+      "mint": "TTWofwAge91oFhZs7kpQdyrVRkmevgM88xijGvQFbKo",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "3290",
+      "heldRaw": "0",
+      "collectedRaw": "3290"
+    },
+    {
+      "mint": "Ge87EtsjwRQbHaqQmKRno69RFTwh9bfSsm99XNxTpump",
+      "symbol": null,
+      "decimals": 6,
+      "sweptRaw": "7578392339",
+      "heldRaw": "2463596",
+      "collectedRaw": "7580855935"
+    },
+    {
+      "mint": "E3i7sTY5QYEBh3itepnomZQt7Eh5kzmHFk1vkm2pump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "249999999",
+      "heldRaw": "0",
+      "collectedRaw": "249999999"
+    },
+    {
+      "mint": "6Hebn672FvMSq61mo4HYq86QgLHgBUm6y8A9bXGppump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "1388066686",
+      "heldRaw": "0",
+      "collectedRaw": "1388066686"
+    },
+    {
+      "mint": "51mxznNWNBHh6iZWwNHBokoaxHYS2Amds1hhLGXkpump",
+      "symbol": null,
+      "decimals": 6,
+      "sweptRaw": "1409138652",
+      "heldRaw": "1665246710",
+      "collectedRaw": "3074385362"
+    },
+    {
+      "mint": "Hos282xmdMJHwMjhni91fNqdjDsgWjgSckxuGc1Bpump",
+      "symbol": null,
+      "decimals": 6,
+      "sweptRaw": "375000000",
+      "heldRaw": "2500000",
+      "collectedRaw": "377500000"
+    },
+    {
+      "mint": "ARXwZkNAtzPfdcoqQiduJn8EPv9fKiDfGn2KyggyDrFs",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "17981726064",
+      "heldRaw": "0",
+      "collectedRaw": "17981726064"
+    },
+    {
+      "mint": "5yC9BM8KUsJTPbWPLfA2N8qH1s9V8DQ3Vcw1G6Jdpump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "265340760",
+      "heldRaw": "0",
+      "collectedRaw": "265340760"
+    },
+    {
+      "mint": "2AF7CqwieUjUPALL7icuZtL3X7wENdjUjGBMmfV2pump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "97440288",
+      "heldRaw": "0",
+      "collectedRaw": "97440288"
+    },
+    {
+      "mint": "nWnDYs4dR57Cek8nsK1W8iWEqKiKZE1hW1CLvP3pump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "5217128292",
+      "heldRaw": "0",
+      "collectedRaw": "5217128292"
+    },
+    {
+      "mint": "5bmgcnMMN8KeKQsj63uyYun1b8AvcUP8eu7WBr7kpump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "10897251933",
+      "heldRaw": "0",
+      "collectedRaw": "10897251933"
+    },
+    {
+      "mint": "4HxV2vqATQEjn1hYw3eR43x9b3w1Z5ZoNoV5byTbpump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "1137562850",
+      "heldRaw": "0",
+      "collectedRaw": "1137562850"
+    },
+    {
+      "mint": "7M3gDRgozcumFsiTeXwjB8cYxpg7Q9R7rH7rkw2Fpump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "22418037228",
+      "heldRaw": "0",
+      "collectedRaw": "22418037228"
+    },
+    {
+      "mint": "CvjSaRcTmcrfutekYzrBEEdTWx1RmRTWDToqtXmCpump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "1257619418",
+      "heldRaw": "0",
+      "collectedRaw": "1257619418"
+    },
+    {
+      "mint": "JBwbg2Guqd7GEV9YGk76DsHFzaWK1wGrWydigcnUpump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "13748486766",
+      "heldRaw": "0",
+      "collectedRaw": "13748486766"
+    },
+    {
+      "mint": "9BEcn9aPEmhSPbPQeFGjidRiEKki46fVQDyPpSQXPA2D",
+      "symbol": null,
+      "decimals": 6,
+      "sweptRaw": "232560",
+      "heldRaw": "4636",
+      "collectedRaw": "237196"
+    },
+    {
+      "mint": "Grass7B4RdKfBCjTKgSqnXkqjwiGvQyFbuSCUJr3XXjs",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "45281415402",
+      "heldRaw": "0",
+      "collectedRaw": "45281415402"
+    },
+    {
+      "mint": "5mH155ePpNWJb2GktpftLJbcTvoxFaUrv7XkZPDtpump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "42485606",
+      "heldRaw": "0",
+      "collectedRaw": "42485606"
+    },
+    {
+      "mint": "227nfRHJah7CrKdnom1vrwsJD7mr4RyQ3j1QYbeQnjB9",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "2500",
+      "heldRaw": "0",
+      "collectedRaw": "2500"
+    },
+    {
+      "mint": "FraL7qvcGGSy93vs7xRwJPdyu214iCa6CsuV1Pn4pump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "122643412",
+      "heldRaw": "0",
+      "collectedRaw": "122643412"
+    },
+    {
+      "mint": "HzwqbKZw8HxMN6bF2yFZNrht3c2iXXzpKcFu7uBEDKtr",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "488383",
+      "heldRaw": "0",
+      "collectedRaw": "488383"
+    },
+    {
+      "mint": "3NQcporBGYhuBRF7fX4hiNvDUcgQZSca85bFS65Fpump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "66515017",
+      "heldRaw": "0",
+      "collectedRaw": "66515017"
+    },
+    {
+      "mint": "vRseBFqTy9QLmmo5qGiwo74AVpdqqMTnxPqWoWMpump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "1657458",
+      "heldRaw": "0",
+      "collectedRaw": "1657458"
+    },
+    {
+      "mint": "XsDoVfqeBukxuZHWhdvWHBhgEHjGNst4MLodqsJHzoB",
+      "symbol": null,
+      "decimals": 8,
+      "sweptRaw": "967845",
+      "heldRaw": "471",
+      "collectedRaw": "968316"
+    },
+    {
+      "mint": "CASHx9KJUStyftLFWGvEVf59SGeG9sh5FfcnZMVPCASH",
+      "symbol": null,
+      "decimals": 6,
+      "sweptRaw": "771122",
+      "heldRaw": "48579",
+      "collectedRaw": "819701"
+    },
+    {
+      "mint": "KeGv7bsfR4MheC1CkmnAVceoApjrkvBhHYjWb67ondo",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "74387",
+      "heldRaw": "0",
+      "collectedRaw": "74387"
+    },
+    {
+      "mint": "CrJPSvj625TnPdWS42aG5ybMcHeFvnNqq5AExVespump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "385216223",
+      "heldRaw": "0",
+      "collectedRaw": "385216223"
+    },
+    {
+      "mint": "DVAnFnEUhxRpwLDoCt5wTsPSLDpFAWeRcGRD1QE7hjL6",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "1208143",
+      "heldRaw": "0",
+      "collectedRaw": "1208143"
+    },
+    {
+      "mint": "jupSoLaHXQiZZTSfEWMTRRgpnyFm8f6sZdosWBjx93v",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "19140522",
+      "heldRaw": "0",
+      "collectedRaw": "19140522"
+    },
+    {
+      "mint": "Ce2gx9KGXJ6C9Mp5b5x1sn9Mg87JwEbrQby4Zqo3pump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "147128458",
+      "heldRaw": "0",
+      "collectedRaw": "147128458"
+    },
+    {
+      "mint": "DriFtupJYLTosbwoN8koMbEYSx54aFAVLddWsbksjwg7",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "300133849",
+      "heldRaw": "0",
+      "collectedRaw": "300133849"
+    },
+    {
+      "mint": "5K25cLuBGbBJUYEFZ5tcapU4JVLj9jaY3C1JN8ULpump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "42374284970",
+      "heldRaw": "0",
+      "collectedRaw": "42374284970"
+    },
+    {
+      "mint": "4LfjGRB9LrjFk3VS1cG42WYYtE5hXEQrPjBWeVsnpump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "1401980820",
+      "heldRaw": "0",
+      "collectedRaw": "1401980820"
+    },
+    {
+      "mint": "Zvcvqs2d3T6BZspW3LfjCxkBnx2PdSWbAyp5x63pump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "2506079473",
+      "heldRaw": "0",
+      "collectedRaw": "2506079473"
+    },
+    {
+      "mint": "6T6APFk43FoZjNXSsBRhMYyVinsntzTGAUpZeP8hpump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "25827419618",
+      "heldRaw": "0",
+      "collectedRaw": "25827419618"
+    },
+    {
+      "mint": "8e85rpYjjP9W8ZCXcXAv6W11roSSRJaUNm3ZCKEGNXqq",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "621189",
+      "heldRaw": "0",
+      "collectedRaw": "621189"
+    },
+    {
+      "mint": "7MQSupJTpY31HGChEHUAsS1pQhLSrHS5CCsB9bnaN3eS",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "2331170797",
+      "heldRaw": "0",
+      "collectedRaw": "2331170797"
+    },
+    {
+      "mint": "7fDdLy2rmQKsPCkqUXEd1mN7yDfEzArc4VrctWmfkJBK",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "5618226290",
+      "heldRaw": "0",
+      "collectedRaw": "5618226290"
+    },
+    {
+      "mint": "Hz2Gfw5PrNoDW8Fb9zT2D8h6VBhuN5UsToNp6MRSbonk",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "3198925986",
+      "heldRaw": "0",
+      "collectedRaw": "3198925986"
+    },
+    {
+      "mint": "CTMV7yXV1mpucM7svPEtmVFBB8g6hqHGVPczmbYrj9Jb",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "71121523493541",
+      "heldRaw": "0",
+      "collectedRaw": "71121523493541"
+    },
+    {
+      "mint": "9UuLsJ3jf8ViBNeRcwXD53re5G3ypgfKK3s2EiMMpump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "14306530694",
+      "heldRaw": "0",
+      "collectedRaw": "14306530694"
+    },
+    {
+      "mint": "A9DFFiuCTx4PtrgMLgHew18xvcfGNWc6SaHDep95pump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "114317637",
+      "heldRaw": "0",
+      "collectedRaw": "114317637"
+    },
+    {
+      "mint": "6p6xgHyF7AeE6TZkSmFsko444wqoP15icUSqi2jfGiPN",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "35858",
+      "heldRaw": "0",
+      "collectedRaw": "35858"
+    },
+    {
+      "mint": "3mAk9t55CSLpc1rwk9RqFzmVKmVVYaLWRLk93QoEpump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "11004618357",
+      "heldRaw": "0",
+      "collectedRaw": "11004618357"
+    },
+    {
+      "mint": "ySdyQ2BzYRP7HHLiHrqe6RLPDLbRuGvpH2auX8apump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "298584887",
+      "heldRaw": "0",
+      "collectedRaw": "298584887"
+    },
+    {
+      "mint": "6FrrzDk5mQARGc1TDYoyVnSyRdds1t4PbtohCD6p3tgG",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "1967371",
+      "heldRaw": "0",
+      "collectedRaw": "1967371"
+    },
+    {
+      "mint": "Cu8tfXWfxGACkJhStSbapidA4yFUvzcZV2WEvHE4AjnH",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "30680397287",
+      "heldRaw": "0",
+      "collectedRaw": "30680397287"
+    },
+    {
+      "mint": "8FU95xFJhUUkyyCLU13HSzDLs7oC4QZdXQHL6SCeab36",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "4283073",
+      "heldRaw": "0",
+      "collectedRaw": "4283073"
+    },
+    {
+      "mint": "8pKqKbzDvihFMgVFWKFD5d2zYr4JpMhbFp3xcGDQpump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "26473137290",
+      "heldRaw": "0",
+      "collectedRaw": "26473137290"
+    },
+    {
+      "mint": "2UhgCt25pWc6xgPrS2yFXVCVRfZhdVeqsF5nrH3Ppump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "1363804159",
+      "heldRaw": "0",
+      "collectedRaw": "1363804159"
+    },
+    {
+      "mint": "EjD5Y9NVhXmtEqU7wYvAyZvDWZFQeEuHXFatJmTbpump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "208932920",
+      "heldRaw": "0",
+      "collectedRaw": "208932920"
+    },
+    {
+      "mint": "EUB1eZBt4m3X4FbperWnKGJdvLsuLMu2YmJix5yjpump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "2003598662",
+      "heldRaw": "0",
+      "collectedRaw": "2003598662"
+    },
+    {
+      "mint": "DXs2kE8kPQQV4z5zYPauqdpWXDdTFti77KQXmnhrpump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "6939103367",
+      "heldRaw": "0",
+      "collectedRaw": "6939103367"
+    },
+    {
+      "mint": "4uCFh4r9R285DMsv5Vgd8tf1iaUvHzKvWmDFbxnpCA11",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "11797141871",
+      "heldRaw": "0",
+      "collectedRaw": "11797141871"
+    },
+    {
+      "mint": "5rNUTV6P7ULZ8M2p83Crmdr6hJc5wFJX6Njcd8CbAYRA",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "19930726668",
+      "heldRaw": "0",
+      "collectedRaw": "19930726668"
+    },
+    {
+      "mint": "Xs6B6zawENwAbWVi7w92rjazLuAr5Az59qgWKcNb45x",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "18111",
+      "heldRaw": "0",
+      "collectedRaw": "18111"
+    },
+    {
+      "mint": "9sfCHMLWSVy6MD6zr7pR1gD3qbT7C6K1E3dMf2ZBpump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "8942173701",
+      "heldRaw": "0",
+      "collectedRaw": "8942173701"
+    },
+    {
+      "mint": "6UpQcMAb5xMzxc7ZfPaVMgx3KqsvKZdT5U718BzD5We2",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "6000",
+      "heldRaw": "0",
+      "collectedRaw": "6000"
+    },
+    {
+      "mint": "nx1KrSqcK98kgDuPvfoVr8WHFAdPKPQEd5BBy4ireta",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "14680523746",
+      "heldRaw": "0",
+      "collectedRaw": "14680523746"
+    },
+    {
+      "mint": "GZAjK6CANvr2tEqhZgLWa8yfqZGYDCwA1p9AabJwpump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "12196866024",
+      "heldRaw": "0",
+      "collectedRaw": "12196866024"
+    },
+    {
+      "mint": "ARW3iLiJL7hQ2Kb5HP57hPFeA8m5i6nfUxnQKLMbpump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "78977260696",
+      "heldRaw": "0",
+      "collectedRaw": "78977260696"
+    },
+    {
+      "mint": "4T4WTEV7vCa1WeaKoHiqus4v9J8GfkuHYPDUas8wpMZx",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "3724371870357",
+      "heldRaw": "0",
+      "collectedRaw": "3724371870357"
+    },
+    {
+      "mint": "EpVHyKK8oxcLmp2C2NhAos1oDxgBNriw3wSLSozYpump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "25153013",
+      "heldRaw": "0",
+      "collectedRaw": "25153013"
+    },
+    {
+      "mint": "PresTj4Yc2bAR197Er7wz4UUKSfqt6FryBEdAriBoQB",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "12224219",
+      "heldRaw": "0",
+      "collectedRaw": "12224219"
+    },
+    {
+      "mint": "wToADZqKALX4JJSycHgSBXgNUx3aDuVxCn7p6ARzoeK",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "9435635526",
+      "heldRaw": "0",
+      "collectedRaw": "9435635526"
+    },
+    {
+      "mint": "XsbEhLAtcf6HdfpFZ5xEMdqW8nfAvcsP5bdudRLJzJp",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "215666",
+      "heldRaw": "0",
+      "collectedRaw": "215666"
+    },
+    {
+      "mint": "Hr66MMmcwwt6YNPUAVuSyjhrhFSnjCNxuPuAJ1Ubpump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "2553279805",
+      "heldRaw": "0",
+      "collectedRaw": "2553279805"
+    },
+    {
+      "mint": "BzraS6GsaVSQ6iPHazVMspt3g1rwU6vjGW8aKvgWkp1h",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "10319683493707",
+      "heldRaw": "0",
+      "collectedRaw": "10319683493707"
+    },
+    {
+      "mint": "FLkv7CGoimbDe74PJuXGsRCx63PYMPvyR1Vm4RT8JnKU",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "234825",
+      "heldRaw": "0",
+      "collectedRaw": "234825"
+    },
+    {
+      "mint": "FzmyN4oCJu5tkzL4F1Jr72LzYnh1qdwx4MKsMuaf4TiX",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "239472",
+      "heldRaw": "0",
+      "collectedRaw": "239472"
+    },
+    {
+      "mint": "EN2nnxrg8uUi6x2sJkzNPd2eT6rB9rdSoQNNaENA4RZA",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "8368233881",
+      "heldRaw": "0",
+      "collectedRaw": "8368233881"
+    },
+    {
+      "mint": "MNDEFzGvMt87ueuHvVU9VcTqsAP5b3fTGPsHuuPA5ey",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "169984647337",
+      "heldRaw": "0",
+      "collectedRaw": "169984647337"
+    },
+    {
+      "mint": "GGDbhzambPp4WiNQK2aXena27DqszYtq5gPhG61PU6SH",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "17022886169600",
+      "heldRaw": "0",
+      "collectedRaw": "17022886169600"
+    },
+    {
+      "mint": "F7qnY1kG69g5cjA7s4kj5icKjj5N2Xwk4fSCnSMMnPo8",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "16990125147",
+      "heldRaw": "0",
+      "collectedRaw": "16990125147"
+    },
+    {
+      "mint": "TNSRxcUxoT9xBG3de7PiJyTDYu7kskLqcpddxnEJAS6",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "604016832272",
+      "heldRaw": "0",
+      "collectedRaw": "604016832272"
+    },
+    {
+      "mint": "Cu7xsyk4pSXgHqmV7wMcTWLxtdVWCUUAeAEK2y2Q6Coj",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "12168200406393",
+      "heldRaw": "0",
+      "collectedRaw": "12168200406393"
+    },
+    {
+      "mint": "AENK1YJ9978xp19xQLKat6eNmndf7Jg2FxFfKiwvpump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "8204501002",
+      "heldRaw": "0",
+      "collectedRaw": "8204501002"
+    },
+    {
+      "mint": "9CcoWrWhbfhK54opzHEuv3u281b3eKyDcafAtS6apump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "35643645287",
+      "heldRaw": "0",
+      "collectedRaw": "35643645287"
+    },
+    {
+      "mint": "FuFwp8DaheiM4xBHGNJsXpPDPcZwP33BGdhC49LF1nPj",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "7002113643",
+      "heldRaw": "0",
+      "collectedRaw": "7002113643"
+    },
+    {
+      "mint": "FRBrpR2K5g77VjbSjKFS2V4huAddxVmhD7g2oobcLmmM",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "735014048715",
+      "heldRaw": "0",
+      "collectedRaw": "735014048715"
+    },
+    {
+      "mint": "6oGuFDbEeaSzTcvrmmd2MqfNYwHKXFoN7regcR22pump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "885649561",
+      "heldRaw": "0",
+      "collectedRaw": "885649561"
+    },
+    {
+      "mint": "coSXVnzqBcmrCvHCZ5iGr6ZNj8aMeiDBaqq8qiQFPcS",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "80996089857954",
+      "heldRaw": "0",
+      "collectedRaw": "80996089857954"
+    },
+    {
+      "mint": "3c32HTEvDVQC71irgNwQ6HX69Kw387V1aWBn76ugpump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "3435537073",
+      "heldRaw": "0",
+      "collectedRaw": "3435537073"
+    },
+    {
+      "mint": "Cg1hswfyVfnFaKHSEVyNdFWEj1bmnZoA8ZnWLVbApump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "11937359854",
+      "heldRaw": "0",
+      "collectedRaw": "11937359854"
+    },
+    {
+      "mint": "oreoU2P8bN6jkk3jbaiVxYnG1dCXcYxwhwyK9jSybcp",
+      "symbol": null,
+      "decimals": 11,
+      "sweptRaw": "1860485769",
+      "heldRaw": "5921778",
+      "collectedRaw": "1866407547"
+    },
+    {
+      "mint": "RL8tAMvvDKgwoKqurGjF7boQmE312nGUKBbB177wPeE",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "3293344745057",
+      "heldRaw": "0",
+      "collectedRaw": "3293344745057"
+    },
+    {
+      "mint": "8fkAyLEyxSyW6yazqSHMpV2TjUzP4o9MHqMfNAQdcfPy",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "229856369004145",
+      "heldRaw": "0",
+      "collectedRaw": "229856369004145"
+    },
+    {
+      "mint": "2Q3RhyE3u9qWf4ZNMebsWBkUJjCuQiYT62b15zu2LtCD",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "55620849148045",
+      "heldRaw": "0",
+      "collectedRaw": "55620849148045"
+    },
+    {
+      "mint": "EQWTYq65sVZ9FGBEKJxGmeAcdnNb1HwutfmnezJKNsyq",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "529432735103",
+      "heldRaw": "0",
+      "collectedRaw": "529432735103"
+    },
+    {
+      "mint": "C4MpJfdHhLeTQQHPQhgHSRPaR2EG5jcL8p78P9Atpump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "1028344092",
+      "heldRaw": "0",
+      "collectedRaw": "1028344092"
+    },
+    {
+      "mint": "EPiFidLvqHyhQxDUMTQ8gwReSPsbVd9dmBnfwyTurJiz",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "87094932145295",
+      "heldRaw": "0",
+      "collectedRaw": "87094932145295"
+    },
+    {
+      "mint": "CdVTj8UZ91eeRC8qxVm8Yu6qheNc2rrkV5TKRtcjpump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "105027514244",
+      "heldRaw": "0",
+      "collectedRaw": "105027514244"
+    },
+    {
+      "mint": "9GyRGm8GGmRZyyQ2hEnazDvCSV8mXiMAHmjKwVHMvVpo",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "3458866013221",
+      "heldRaw": "0",
+      "collectedRaw": "3458866013221"
+    },
+    {
+      "mint": "3fKCrmipjjmQXVx421ahZ6sLkrXTtsZ6RvwjGXK1FuvK",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "10706184877224",
+      "heldRaw": "0",
+      "collectedRaw": "10706184877224"
+    },
+    {
+      "mint": "XsoBhf2ufR8fTyNSjqfU71DYGaE6Z3SUGAidpzriAA4",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "19999",
+      "heldRaw": "0",
+      "collectedRaw": "19999"
+    },
+    {
+      "mint": "SKHYhSjuRWHgikq8eRKbtBbpABgJSkd7ytQV14i9EQ3",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "725",
+      "heldRaw": "0",
+      "collectedRaw": "725"
+    },
+    {
+      "mint": "3DrBHMJ1rnWp7mMRNmNbWbp4zNiHkM483GqXSzRPpump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "12896059575",
+      "heldRaw": "0",
+      "collectedRaw": "12896059575"
+    },
+    {
+      "mint": "XsvNBAYkrDRNhA7wPHQfX3ZUXZyZLdnCQDfHZ56bzpg",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "161062",
+      "heldRaw": "0",
+      "collectedRaw": "161062"
+    },
+    {
+      "mint": "9gP2kCy3wA1ctvYWQk75guqXuHfrEomqydHLtcTCqiLa",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "1064763",
+      "heldRaw": "0",
+      "collectedRaw": "1064763"
+    },
+    {
+      "mint": "Xsc9qvGR1efVDFGLrVsmkzv3qi45LTBjeUKSPmx9qEh",
+      "symbol": null,
+      "decimals": 8,
+      "sweptRaw": "108130",
+      "heldRaw": "1199",
+      "collectedRaw": "109329"
+    },
+    {
+      "mint": "XshPgPdXFRWB8tP1j82rebb2Q9rPgGX37RuqzohmArM",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "95730",
+      "heldRaw": "0",
+      "collectedRaw": "95730"
+    },
+    {
+      "mint": "SLXdx4BUt2v9uJQNzWqSfzTJ9UKLUDsvxHFMEEdrfgq",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "5804671",
+      "heldRaw": "0",
+      "collectedRaw": "5804671"
+    },
+    {
+      "mint": "SNDKbwMUQvZhnLnxLduradgLHG5KrPuKwpnrkkGRhfH",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "49",
+      "heldRaw": "0",
+      "collectedRaw": "49"
+    },
+    {
+      "mint": "9oxGicd5KXNcthYM6yD23X9zcznQVnHjrAEN38fFpump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "66340590",
+      "heldRaw": "0",
+      "collectedRaw": "66340590"
+    },
+    {
+      "mint": "CLoUDKc4Ane7HeQcPpE3YHnznRxhMimJ4MyaUqyHFzAu",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "167119565217",
+      "heldRaw": "0",
+      "collectedRaw": "167119565217"
+    },
+    {
+      "mint": "JuprjznTrTSp2UFa3ZBUFgwdAmtZCq4MQCwysN55USD",
+      "symbol": null,
+      "decimals": 6,
+      "sweptRaw": "199397",
+      "heldRaw": "614",
+      "collectedRaw": "200011"
+    },
+    {
+      "mint": "F5hqdbykXuksp8P78CAZenSvpPShAYKrP2U2MiZMdgFN",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "900000000",
+      "heldRaw": "0",
+      "collectedRaw": "900000000"
+    },
+    {
+      "mint": "XspzcW1PRtgf6Wj92HCiZdjzKCyFekVD8P5Ueh3dRMX",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "2056",
+      "heldRaw": "0",
+      "collectedRaw": "2056"
+    },
+    {
+      "mint": "3taE4SdY29sa3fnwyWqfshudJ95gMb9LoFTy5Uuppump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "3570205153",
+      "heldRaw": "0",
+      "collectedRaw": "3570205153"
+    },
+    {
+      "mint": "F62ro9sK47fjKRyygw5sGXcdrRGJQFExWqt1jVzBL8ph",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "10152604",
+      "heldRaw": "0",
+      "collectedRaw": "10152604"
+    },
+    {
+      "mint": "JCKwsT8UAbygnFkZ7u3amDUM7BXRtwUhCsHQv2khpump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "35652371",
+      "heldRaw": "0",
+      "collectedRaw": "35652371"
+    },
+    {
+      "mint": "5Y8NV33Vv7WbnLfq3zBcKSdYPrk7g2KoiQoe7M2tcxp5",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "88548016",
+      "heldRaw": "0",
+      "collectedRaw": "88548016"
+    },
+    {
+      "mint": "Ggec8Zysy299FA3kuFPrNwCEcUANrsbaBUvmvGscpump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "8578049980",
+      "heldRaw": "0",
+      "collectedRaw": "8578049980"
+    },
+    {
+      "mint": "WTLwm2eufW5HFQneMSnMhVnLnuydsoY7ZGkhKFjpump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "9659238182",
+      "heldRaw": "0",
+      "collectedRaw": "9659238182"
+    },
+    {
+      "mint": "6NwarBvDkXhByqVp2Qkq5i9XbtA2B3Bwe8SWGu9vpump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "455950562",
+      "heldRaw": "0",
+      "collectedRaw": "455950562"
+    },
+    {
+      "mint": "GMicALFcY7DMVEPURYRuU5F2ZWf7tXFqMxdxaxwypump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "6221272362",
+      "heldRaw": "0",
+      "collectedRaw": "6221272362"
+    },
+    {
+      "mint": "FUAfBo2jgks6gB4Z4LfZkqSZgzNucisEHqnNebaRxM1P",
+      "symbol": null,
+      "decimals": 6,
+      "sweptRaw": "198120",
+      "heldRaw": "53284",
+      "collectedRaw": "251404"
+    },
+    {
+      "mint": "42cXQvAAr7hcPBPWAS4ocVtDyeJ4Fa6gRR2uG4gppump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "1224614",
+      "heldRaw": "0",
+      "collectedRaw": "1224614"
+    },
+    {
+      "mint": "3BgwJ8b7b9hHX4sgfZ2KJhv9496CoVfsMK2YePevsBRw",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "17415682",
+      "heldRaw": "0",
+      "collectedRaw": "17415682"
+    },
+    {
+      "mint": "Fvvj98QtaA3RjVgeQn79NokiMaLgBRje1Q9bXetwpump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "5577797993",
+      "heldRaw": "0",
+      "collectedRaw": "5577797993"
+    },
+    {
+      "mint": "hf34pZHnV4entu9bdp4pFEmeKpivEUeSUhASgWopump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "207619633",
+      "heldRaw": "0",
+      "collectedRaw": "207619633"
+    },
+    {
+      "mint": "284RyLpovTDVM6QKyaXKWTma6q7zscLDgYrwUtxZ9pve",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "24805861654210",
+      "heldRaw": "0",
+      "collectedRaw": "24805861654210"
+    },
+    {
+      "mint": "89RAitwPJBEfLK4Gcg5iv7AjFABHWNvoD5rkvRkvpump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "2981877070",
+      "heldRaw": "0",
+      "collectedRaw": "2981877070"
+    },
+    {
+      "mint": "23LGuH8WeZYVXRUSvqHcxzAZpSZT1PzTG8yYJfXPpump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "23991333352",
+      "heldRaw": "0",
+      "collectedRaw": "23991333352"
+    },
+    {
+      "mint": "HeC2xWqGT9gPfdvaMuqxPo2bUQ1XgY5wRtnrwTEHpump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "2863305805",
+      "heldRaw": "0",
+      "collectedRaw": "2863305805"
+    },
+    {
+      "mint": "Cm6fNnMk7NfzStP9CZpsQA2v3jjzbcYGAxdJySmHpump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "63714646",
+      "heldRaw": "0",
+      "collectedRaw": "63714646"
+    },
+    {
+      "mint": "CFPkPq1eYPR8GLzEo59wUbbMioX4bshaTQiSGzTSpump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "11239616238",
+      "heldRaw": "0",
+      "collectedRaw": "11239616238"
+    },
+    {
+      "mint": "7F85i7PjD8etYPhzphcnmbd3J38voA13y1qm48vhpump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "26236172743",
+      "heldRaw": "0",
+      "collectedRaw": "26236172743"
+    },
+    {
+      "mint": "EdsnLAcssEYSgB4osXgZCu5r2ZQWtoZymVDrUbYKpump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "228057928",
+      "heldRaw": "0",
+      "collectedRaw": "228057928"
+    },
+    {
+      "mint": "PRVT6TB7uss3FrUd2D9xs2zqDBsa3GbMJMwCQsgmeta",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "125000",
+      "heldRaw": "0",
+      "collectedRaw": "125000"
+    },
+    {
+      "mint": "4UeLCRqARmfb6e6KQijtiktqqXUxbfk6jZng7DhuBAGS",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "74503668220",
+      "heldRaw": "0",
+      "collectedRaw": "74503668220"
+    },
+    {
+      "mint": "8wxkvAfEns76yBzu4MnbV7VnXWjg3iDPA9uwAQ6cpump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "1041666666",
+      "heldRaw": "0",
+      "collectedRaw": "1041666666"
+    },
+    {
+      "mint": "EV169nnxWHQGvDFiz999BUt8XDpcRLmwqkciytRQGFg2",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "11040790050",
+      "heldRaw": "0",
+      "collectedRaw": "11040790050"
+    },
+    {
+      "mint": "XkeTXo1125vz5H9svJpGiw4JvLbN8VmMu9cmMvspump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "5002320",
+      "heldRaw": "0",
+      "collectedRaw": "5002320"
+    },
+    {
+      "mint": "DKNGQFNGQmoBdXSRGKJ8tTu7uPDasw5JDcfMmWniNfow",
+      "symbol": null,
+      "decimals": 6,
+      "sweptRaw": "6694",
+      "heldRaw": "154",
+      "collectedRaw": "6848"
+    },
+    {
+      "mint": "5dvXTZ5qwgafnHtwu3Ls3QrWx1U4LQsFeCuJgkk4QEC6",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "16638688",
+      "heldRaw": "0",
+      "collectedRaw": "16638688"
+    },
+    {
+      "mint": "8JQXg7t2CQS7QyjqS27dE2HcRyRpn8tVZyxEC7htbXNQ",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "94890949",
+      "heldRaw": "0",
+      "collectedRaw": "94890949"
+    },
+    {
+      "mint": "HoK7vodcoVYQepStM1dDVyX5iMp2q5narY9bammuGPpe",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "47863815",
+      "heldRaw": "0",
+      "collectedRaw": "47863815"
+    },
+    {
+      "mint": "6UGNg119LV6YjSCQ5K6Z6jsLLLetpMJ1vPdhiU8qpump",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "2425700162",
+      "heldRaw": "0",
+      "collectedRaw": "2425700162"
+    },
+    {
+      "mint": "hntyVP6YFm1Hg25TN9WGLqM12b8TQmcknKrdu1oxWux",
+      "symbol": null,
+      "decimals": null,
+      "sweptRaw": "1522689999",
+      "heldRaw": "0",
+      "collectedRaw": "1522689999"
+    },
+    {
+      "mint": "jtojtomepa8beP8AuQc6eXt5FriJwfFMwQx2v2f9mCL",
+      "symbol": "JTO",
+      "decimals": 9,
+      "sweptRaw": "0",
+      "heldRaw": "52920243",
+      "collectedRaw": "52920243"
+    },
+    {
+      "mint": "ukHH6c7mMyiWCf1b9pnWe25TSpkDDt3H5pQZgZ74J82",
+      "symbol": null,
+      "decimals": 6,
+      "sweptRaw": "0",
+      "heldRaw": "2505986",
+      "collectedRaw": "2505986"
+    },
+    {
+      "mint": "DkPQvrx7CDYrL4HfHijz6GqZLYm7Pd4rm1kTiumLFwhS",
+      "symbol": null,
+      "decimals": 9,
+      "sweptRaw": "0",
+      "heldRaw": "305258202482",
+      "collectedRaw": "305258202482"
+    },
+    {
+      "mint": "EiQFPuw5zgXQpLk5XSqvMtKTWjf5xiLRZdHftseDpump",
+      "symbol": null,
+      "decimals": 6,
+      "sweptRaw": "0",
+      "heldRaw": "13875",
+      "collectedRaw": "13875"
+    },
+    {
+      "mint": "G1jonmoSEbMJSwEg1AmgDAJq2utmuBSZct8oqttBf9rT",
+      "symbol": null,
+      "decimals": 6,
+      "sweptRaw": "0",
+      "heldRaw": "270654535",
+      "collectedRaw": "270654535"
+    },
+    {
+      "mint": "9JKxJ57PDn4mfo4KPkVUiLQvt7bFFr9JostHLRpkckej",
+      "symbol": null,
+      "decimals": 6,
+      "sweptRaw": "0",
+      "heldRaw": "457264491",
+      "collectedRaw": "457264491"
+    },
+    {
+      "mint": "CFNRDaxFcvRwRSNnA5cHrCCr6AHhk9dNkHWpRUjNupFL",
+      "symbol": null,
+      "decimals": 9,
+      "sweptRaw": "0",
+      "heldRaw": "500630295110",
+      "collectedRaw": "500630295110"
+    },
+    {
+      "mint": "7vSG4GX8qz5V36noSde5Z9xV8xAXAGqivDyaNytPVDJf",
+      "symbol": null,
+      "decimals": 6,
+      "sweptRaw": "0",
+      "heldRaw": "124013569",
+      "collectedRaw": "124013569"
+    },
+    {
+      "mint": "8RVBk8vxLiUHueLUW1f4izFVqN3nWippLhkohKg6EGkS",
+      "symbol": null,
+      "decimals": 6,
+      "sweptRaw": "0",
+      "heldRaw": "326447167",
+      "collectedRaw": "326447167"
+    },
+    {
+      "mint": "HunmXDXMNQYVoDnUL6PNnSYEtFaTZA2WzGh1HJTW7aoV",
+      "symbol": null,
+      "decimals": 6,
+      "sweptRaw": "0",
+      "heldRaw": "1987454326",
+      "collectedRaw": "1987454326"
+    },
+    {
+      "mint": "BtaXqF4wbC2aC87HqtmUPtRvbciDUHsecbq9KAB1Utex",
+      "symbol": null,
+      "decimals": 6,
+      "sweptRaw": "0",
+      "heldRaw": "20637300634",
+      "collectedRaw": "20637300634"
+    },
+    {
+      "mint": "DdPrHYqM8Ueovnk9kAnAgoGhswkuaTqmxcoZzU3Zpump",
+      "symbol": null,
+      "decimals": 6,
+      "sweptRaw": "0",
+      "heldRaw": "291933179",
+      "collectedRaw": "291933179"
+    },
+    {
+      "mint": "CaWZeUM4FvX9dPkjGc2xHS6tSN3qJfTWyvaG77aM5o7h",
+      "symbol": null,
+      "decimals": 9,
+      "sweptRaw": "0",
+      "heldRaw": "1282049199706",
+      "collectedRaw": "1282049199706"
+    },
+    {
+      "mint": "HcRLc9VDgjLeK154xDawfb1dmVJ98DoSqcwTHGqiDeJR",
+      "symbol": null,
+      "decimals": 9,
+      "sweptRaw": "0",
+      "heldRaw": "680238173142",
+      "collectedRaw": "680238173142"
+    },
+    {
+      "mint": "ZesMGYmokFiEuDvNzWeMhB7jxF6eUW8c512vwSKSTNK",
+      "symbol": null,
+      "decimals": 6,
+      "sweptRaw": "0",
+      "heldRaw": "1582964479",
+      "collectedRaw": "1582964479"
+    },
+    {
+      "mint": "3nqHijNUExsnjNBb15WJsJ2xisyMVGN6FK4aUgZk1Rwj",
+      "symbol": null,
+      "decimals": 6,
+      "sweptRaw": "0",
+      "heldRaw": "644618652",
+      "collectedRaw": "644618652"
+    },
+    {
+      "mint": "8RAFGyzajpYX96ppL7MXEL5DwjBSnbAqjBTfhUXDhVYj",
+      "symbol": null,
+      "decimals": 6,
+      "sweptRaw": "0",
+      "heldRaw": "2961711892",
+      "collectedRaw": "2961711892"
+    },
+    {
+      "mint": "7oAmDHFooAGvtWa9LEEQ4v8JNZH9Ax8betoS36aspump",
+      "symbol": null,
+      "decimals": 6,
+      "sweptRaw": "0",
+      "heldRaw": "756965560",
+      "collectedRaw": "756965560"
+    },
+    {
+      "mint": "GLRyB95LzCyyY8TVfwZVDyrVcZuSJPJJoaPTnyWs89mv",
+      "symbol": null,
+      "decimals": 6,
+      "sweptRaw": "0",
+      "heldRaw": "49398828",
+      "collectedRaw": "49398828"
+    },
+    {
+      "mint": "9ZrGHKCdX2Bf5GWiGb9wSGGdBTMoZQqdEyzChapwE2Cx",
+      "symbol": null,
+      "decimals": 6,
+      "sweptRaw": "0",
+      "heldRaw": "3660199628",
+      "collectedRaw": "3660199628"
+    },
+    {
+      "mint": "DHLqUh8wJjJCnfdZpjFkeKhdic9nTpMxzD1Vkx8DG17U",
+      "symbol": null,
+      "decimals": 6,
+      "sweptRaw": "0",
+      "heldRaw": "1950528321",
+      "collectedRaw": "1950528321"
+    },
+    {
+      "mint": "Fhxcx7cHmhDkfwziHyCwN8vQRvEFRK3zezokaE8gL5q7",
+      "symbol": null,
+      "decimals": 6,
+      "sweptRaw": "0",
+      "heldRaw": "2837727132",
+      "collectedRaw": "2837727132"
+    },
+    {
+      "mint": "CUFwEHj6MTc7BTXP25cqCAuR11qHrGK31nV9LN5Kmb3",
+      "symbol": null,
+      "decimals": 6,
+      "sweptRaw": "0",
+      "heldRaw": "188643160",
+      "collectedRaw": "188643160"
+    },
+    {
+      "mint": "AaEhFTX4naHSWSXz9TVe5QgLbtSLT8ZqYJGZzDDcoroh",
+      "symbol": null,
+      "decimals": 6,
+      "sweptRaw": "0",
+      "heldRaw": "6148442",
+      "collectedRaw": "6148442"
+    },
+    {
+      "mint": "C2c2PkG77MD5s384AHoJc2DKwt84Qwaj2vKU3orH1mLY",
+      "symbol": null,
+      "decimals": 9,
+      "sweptRaw": "0",
+      "heldRaw": "65060253659033",
+      "collectedRaw": "65060253659033"
+    },
+    {
+      "mint": "BkLNvmwp6Ly2XduXe837LY7HVp2oviJTyMp5YQJBmFKd",
+      "symbol": null,
+      "decimals": 9,
+      "sweptRaw": "0",
+      "heldRaw": "98830286861028",
+      "collectedRaw": "98830286861028"
+    },
+    {
+      "mint": "oPAiAikWTaFj9RYoRFD35ccfwhnMcB3ThgBZRHSkjTZ",
+      "symbol": null,
+      "decimals": 9,
+      "sweptRaw": "0",
+      "heldRaw": "5932530",
+      "collectedRaw": "5932530"
+    },
+    {
+      "mint": "778BKhFmez298d52TceSTDBEA6tHiUPGJt7FrDGbSTNK",
+      "symbol": null,
+      "decimals": 6,
+      "sweptRaw": "0",
+      "heldRaw": "17911509154",
+      "collectedRaw": "17911509154"
+    },
+    {
+      "mint": "FvCmqaEVQQUA1cxsvCv7qFcMT9zAjrcyuyzE24X5STNK",
+      "symbol": null,
+      "decimals": 6,
+      "sweptRaw": "0",
+      "heldRaw": "13944443235",
+      "collectedRaw": "13944443235"
+    },
+    {
+      "mint": "MEW1gQWJ3nEXg2qgERiKu7FAFj79PHvQVREQUzScPP5",
+      "symbol": null,
+      "decimals": 5,
+      "sweptRaw": "0",
+      "heldRaw": "2",
+      "collectedRaw": "2"
+    },
+    {
+      "mint": "D3WreYVjPP5RXD9RZAPka8bwSqhyvCc4agawcSZxpump",
+      "symbol": null,
+      "decimals": 6,
+      "sweptRaw": "0",
+      "heldRaw": "46870036",
+      "collectedRaw": "46870036"
+    },
+    {
+      "mint": "2pouN3by7twkiZGy5aEKYUpf78ALDpKRTNu2WsQkpkqt",
+      "symbol": null,
+      "decimals": 6,
+      "sweptRaw": "0",
+      "heldRaw": "2121149929",
+      "collectedRaw": "2121149929"
+    },
+    {
+      "mint": "SNAPcESrvnH8yUdgeMF6xm1hym9b6hW6s8YeqeHdZFz",
+      "symbol": null,
+      "decimals": 6,
+      "sweptRaw": "0",
+      "heldRaw": "920",
+      "collectedRaw": "920"
+    },
+    {
+      "mint": "8S9vEayyYjqssSpgLG8e65jazyFHTAqV9ispNGERDJuw",
+      "symbol": null,
+      "decimals": 6,
+      "sweptRaw": "0",
+      "heldRaw": "225400",
+      "collectedRaw": "225400"
+    },
+    {
+      "mint": "946Wic8i1knHNtFAfvfVq1Fyu62wbChVNCNh9vtmLJtR",
+      "symbol": null,
+      "decimals": 6,
+      "sweptRaw": "0",
+      "heldRaw": "506608",
+      "collectedRaw": "506608"
+    },
+    {
+      "mint": "5oVNBeEEQvYi1cX3ir8Dx5n1P7pdxydbGF2X4TxVusJm",
+      "symbol": null,
+      "decimals": 9,
+      "sweptRaw": "0",
+      "heldRaw": "3308",
+      "collectedRaw": "3308"
+    },
+    {
+      "mint": "476MWyHnzcUc2jAnBxdqVBFZpArT3VGGwPsUHjnjA3GC",
+      "symbol": null,
+      "decimals": 6,
+      "sweptRaw": "0",
+      "heldRaw": "1063498966",
+      "collectedRaw": "1063498966"
+    },
+    {
+      "mint": "4Ee7xRodjp7kBGTZsHj9FE87UQWJuPke7ENzzGWBbFCc",
+      "symbol": null,
+      "decimals": 9,
+      "sweptRaw": "0",
+      "heldRaw": "2522037253994",
+      "collectedRaw": "2522037253994"
+    },
+    {
+      "mint": "2vjkizBL53JaATBq5naBNDpewMTJYDu5Thj2HrTeyrwt",
+      "symbol": null,
+      "decimals": 9,
+      "sweptRaw": "0",
+      "heldRaw": "47430625555342",
+      "collectedRaw": "47430625555342"
+    },
+    {
+      "mint": "7zW2s4GE5i4y3MCCmFSEh7n2CB7S8aRDfvJpYYAtsQ1H",
+      "symbol": null,
+      "decimals": 6,
+      "sweptRaw": "0",
+      "heldRaw": "279966768",
+      "collectedRaw": "279966768"
+    },
+    {
+      "mint": "DUZN7M6ezXez9UVrou4N8UEGRkwnbWmXqqZgEKiZCrnN",
+      "symbol": null,
+      "decimals": 9,
+      "sweptRaw": "0",
+      "heldRaw": "1119178079817",
+      "collectedRaw": "1119178079817"
+    },
+    {
+      "mint": "Fkyg2JGZqMrYw8gavFZFfpgao9qGib57WRE4ZP6JPBzj",
+      "symbol": null,
+      "decimals": 9,
+      "sweptRaw": "0",
+      "heldRaw": "104073331533241",
+      "collectedRaw": "104073331533241"
+    },
+    {
+      "mint": "BiXeVcrZYg5YsqpqsVWowbQDPZuuLFMAGT572tA8jP4X",
+      "symbol": null,
+      "decimals": 9,
+      "sweptRaw": "0",
+      "heldRaw": "12945416551008",
+      "collectedRaw": "12945416551008"
+    },
+    {
+      "mint": "3sFcGx8GVizbCoMeGqT4Z1Mmob1ZQ5QsbrBYCoydixHk",
+      "symbol": null,
+      "decimals": 9,
+      "sweptRaw": "0",
+      "heldRaw": "10820135933902",
+      "collectedRaw": "10820135933902"
+    },
+    {
+      "mint": "5W6q71QsmYJZ9oPQTjdnyDLtNHrbhht2eqd2TQvDTBpf",
+      "symbol": null,
+      "decimals": 6,
+      "sweptRaw": "0",
+      "heldRaw": "20430197212",
+      "collectedRaw": "20430197212"
+    },
+    {
+      "mint": "HzeMky3Qw4jw5pzgm6n6NxqvbynFkwE4NZwMdByAQZqa",
+      "symbol": null,
+      "decimals": 9,
+      "sweptRaw": "0",
+      "heldRaw": "5725507016306",
+      "collectedRaw": "5725507016306"
+    },
+    {
+      "mint": "HyZLwid1NYTyjRaKQJKmxnhATBPff67aTdy1gnwQuEAz",
+      "symbol": null,
+      "decimals": 9,
+      "sweptRaw": "0",
+      "heldRaw": "28918526598924",
+      "collectedRaw": "28918526598924"
+    },
+    {
+      "mint": "FFT4bgyrvzyB5TKAziLkAzBj8mboduzJeDdZ27TU4FHm",
+      "symbol": null,
+      "decimals": 9,
+      "sweptRaw": "0",
+      "heldRaw": "61972043232301",
+      "collectedRaw": "61972043232301"
+    },
+    {
+      "mint": "9PSxYDFLPbSVx2PKjYRMumW14xtxViQU3Qmi7M8NQ32W",
+      "symbol": null,
+      "decimals": 9,
+      "sweptRaw": "0",
+      "heldRaw": "8215663951693",
+      "collectedRaw": "8215663951693"
+    },
+    {
+      "mint": "DP1Eyr86PpGVvpahzrAMkLxXmxcbzJCiZfZxxbwfYGAe",
+      "symbol": null,
+      "decimals": 6,
+      "sweptRaw": "0",
+      "heldRaw": "6508240628",
+      "collectedRaw": "6508240628"
+    },
+    {
+      "mint": "B2or5WpZMW1MYzKqyicAzXTpgb6Rp4Bsc9vkRxn5LiDN",
+      "symbol": null,
+      "decimals": 9,
+      "sweptRaw": "0",
+      "heldRaw": "3486108382551",
+      "collectedRaw": "3486108382551"
+    },
+    {
+      "mint": "HYH6YQjX2Y9B1qLkQUYXeqbxVTsCA11nYzXAC8pcxVud",
+      "symbol": null,
+      "decimals": 6,
+      "sweptRaw": "0",
+      "heldRaw": "4025530420",
+      "collectedRaw": "4025530420"
+    },
+    {
+      "mint": "CreiuhfwdWCN5mJbMJtA9bBpYQrQF2tCBuZwSPWfpump",
+      "symbol": null,
+      "decimals": 6,
+      "sweptRaw": "0",
+      "heldRaw": "785486",
+      "collectedRaw": "785486"
+    },
+    {
+      "mint": "4FmtvrR3tgtcUT4qkGSKJx386u6CfFno3QE7KCesXoZV",
+      "symbol": null,
+      "decimals": 6,
+      "sweptRaw": "0",
+      "heldRaw": "1374251774",
+      "collectedRaw": "1374251774"
+    },
+    {
+      "mint": "9XqW82GbV8TSuFGLS5qZjpMmL8F2BZ2AaWyC68px37hc",
+      "symbol": null,
+      "decimals": 6,
+      "sweptRaw": "0",
+      "heldRaw": "181876883",
+      "collectedRaw": "181876883"
+    },
+    {
+      "mint": "5yop3pmknfB8m21CVTY4HXUcx83agV1KXtgbg2Svkyuc",
+      "symbol": null,
+      "decimals": 6,
+      "sweptRaw": "0",
+      "heldRaw": "2276",
+      "collectedRaw": "2276"
+    },
+    {
+      "mint": "FiypJMqSzBdVXRhPJkSDVLWCx6MJNyUm4T24cEJzLUmV",
+      "symbol": null,
+      "decimals": 6,
+      "sweptRaw": "0",
+      "heldRaw": "2190",
+      "collectedRaw": "2190"
+    },
+    {
+      "mint": "BeEiJwoZQZs6nQeVhc2zyzCHoRBANKBt5WiBsF8LB51G",
+      "symbol": null,
+      "decimals": 6,
+      "sweptRaw": "0",
+      "heldRaw": "31352179",
+      "collectedRaw": "31352179"
+    },
+    {
+      "mint": "K6MhWgw1BFGQvTRAQem2wTp8etpoK5cWn9w1TznruN9",
+      "symbol": null,
+      "decimals": 9,
+      "sweptRaw": "0",
+      "heldRaw": "73954378120786",
+      "collectedRaw": "73954378120786"
+    },
+    {
+      "mint": "DDoDYLQnxo8ppZBiZM5X981aUFmdM2Vi8RP3dSm4pump",
+      "symbol": null,
+      "decimals": 6,
+      "sweptRaw": "0",
+      "heldRaw": "8379394171",
+      "collectedRaw": "8379394171"
+    },
+    {
+      "mint": "uniHfuPhEQSrtpzXpJZDCSq53yaejKKpNhFUiKoHKHV",
+      "symbol": null,
+      "decimals": 8,
+      "sweptRaw": "0",
+      "heldRaw": "230748",
+      "collectedRaw": "230748"
+    },
+    {
+      "mint": "8FFA8eArFAc1cd7h3wY2BxM8RsAhmATANdgcFwLdrSDX",
+      "symbol": null,
+      "decimals": 6,
+      "sweptRaw": "0",
+      "heldRaw": "43872163",
+      "collectedRaw": "43872163"
+    },
+    {
+      "mint": "AGi2s9zPRPHs3zEDPhPTroumTEXK5ufymYSfEFndCSSW",
+      "symbol": null,
+      "decimals": 6,
+      "sweptRaw": "0",
+      "heldRaw": "7275000000",
+      "collectedRaw": "7275000000"
+    },
+    {
+      "mint": "9TPDSL2gJhMgnzQGfbfJBZnQzmiK6fMGhmK55NZZSQSL",
+      "symbol": null,
+      "decimals": 9,
+      "sweptRaw": "0",
+      "heldRaw": "506991203447",
+      "collectedRaw": "506991203447"
+    },
+    {
+      "mint": "8RNUw4N655VSrZKuhGdywhbSMDTrheguFPfxbpE2NZHQ",
+      "symbol": null,
+      "decimals": 9,
+      "sweptRaw": "0",
+      "heldRaw": "83789785666791",
+      "collectedRaw": "83789785666791"
+    },
+    {
+      "mint": "GKeUT73KRsvWVYNfQPdghxdHTKKGUAESf3t8BZmfXvih",
+      "symbol": null,
+      "decimals": 6,
+      "sweptRaw": "0",
+      "heldRaw": "759740354",
+      "collectedRaw": "759740354"
+    },
+    {
+      "mint": "8VsFryV6n8tNfU49L1GmaDp9LU1ubz6DbgjqKBMF3G3G",
+      "symbol": null,
+      "decimals": 6,
+      "sweptRaw": "0",
+      "heldRaw": "656857008",
+      "collectedRaw": "656857008"
+    },
+    {
+      "mint": "G4vqe8KAcRGTb7Kc55n9sz43aR4ugTPdSeUnAXZhpump",
+      "symbol": null,
+      "decimals": 6,
+      "sweptRaw": "0",
+      "heldRaw": "104773747068",
+      "collectedRaw": "104773747068"
+    },
+    {
+      "mint": "GaZb3DE2U3Jcjx7ddAVwobsBKnCaDoJWLbzTvJYhpump",
+      "symbol": null,
+      "decimals": 6,
+      "sweptRaw": "0",
+      "heldRaw": "990126",
+      "collectedRaw": "990126"
+    },
+    {
+      "mint": "dog1viwbb2vWDpER5FrJ4YFG6gq6XuyFohUe9TXN65u",
+      "symbol": null,
+      "decimals": 5,
+      "sweptRaw": "0",
+      "heldRaw": "5",
+      "collectedRaw": "5"
+    },
+    {
+      "mint": "u24BzZQ7QSQDC3HMUE7dig9fWSUqkZbQuvLsw811Hue",
+      "symbol": null,
+      "decimals": 6,
+      "sweptRaw": "0",
+      "heldRaw": "68304672866",
+      "collectedRaw": "68304672866"
+    },
+    {
+      "mint": "3iQL8BFS2vE7mww4ehAqQHAsbmRNCrPxizWAT2Zfyr9y",
+      "symbol": null,
+      "decimals": 9,
+      "sweptRaw": "0",
+      "heldRaw": "6518165",
+      "collectedRaw": "6518165"
+    },
+    {
+      "mint": "Bb7yeJNz1CBsXetysWwHjkk9ospkNExiVTVVKXXWAgDd",
+      "symbol": null,
+      "decimals": 6,
+      "sweptRaw": "0",
+      "heldRaw": "4908605",
+      "collectedRaw": "4908605"
+    },
+    {
+      "mint": "PrqsV8SUtYXnZfzqS7jcVG1ExaUNJULuS7fN4XSpump",
+      "symbol": null,
+      "decimals": 6,
+      "sweptRaw": "0",
+      "heldRaw": "834931030",
+      "collectedRaw": "834931030"
+    },
+    {
+      "mint": "HhqF5NowD4qThZBNDbgYAFvChEpAexSk1Qmu1nCzpump",
+      "symbol": null,
+      "decimals": 6,
+      "sweptRaw": "0",
+      "heldRaw": "54350025",
+      "collectedRaw": "54350025"
+    },
+    {
+      "mint": "3anzRVkaLmsrF84pTPS6co9EvJFio2X3zf3nHVTmpump",
+      "symbol": null,
+      "decimals": 6,
+      "sweptRaw": "0",
+      "heldRaw": "152278018",
+      "collectedRaw": "152278018"
+    },
+    {
+      "mint": "4toCAAcJ8TvrV7kGqkugoLNodr4CZFXpN3Mi6ETZpump",
+      "symbol": null,
+      "decimals": 6,
+      "sweptRaw": "0",
+      "heldRaw": "694388326",
+      "collectedRaw": "694388326"
+    },
+    {
+      "mint": "3eXeRzfva2Mvh2V1M8jSgSYnpg11EPKBaqULR5L3pump",
+      "symbol": null,
+      "decimals": 6,
+      "sweptRaw": "0",
+      "heldRaw": "497726021",
+      "collectedRaw": "497726021"
+    },
+    {
+      "mint": "2mGS6WWuDy1xNQuCo7irzH3iT4SsSeSaA3oJ5NLqpump",
+      "symbol": null,
+      "decimals": 6,
+      "sweptRaw": "0",
+      "heldRaw": "267379280",
+      "collectedRaw": "267379280"
+    },
+    {
+      "mint": "AFbX8oGjGpmVFywbVouvhQSRmiW2aR1mohfahi4Y2AdB",
+      "symbol": null,
+      "decimals": 9,
+      "sweptRaw": "0",
+      "heldRaw": "10203800000",
+      "collectedRaw": "10203800000"
+    },
+    {
+      "mint": "6ghHENQf93fipqeQxWMDyqKPGA3TykfwJRp54J3LBuC9",
+      "symbol": null,
+      "decimals": 6,
+      "sweptRaw": "0",
+      "heldRaw": "11197769",
+      "collectedRaw": "11197769"
+    },
+    {
+      "mint": "Cwo8S7E1Gbz7vFAysTENW9h8rKepQc9sdRprtmHUR6Nf",
+      "symbol": null,
+      "decimals": 6,
+      "sweptRaw": "0",
+      "heldRaw": "274245240",
+      "collectedRaw": "274245240"
+    },
+    {
+      "mint": "LULUmT9VMttkfAJE236LXJcYJ2tTP7nunrSWR5G1BdS",
+      "symbol": null,
+      "decimals": 6,
+      "sweptRaw": "0",
+      "heldRaw": "10",
+      "collectedRaw": "10"
+    },
+    {
+      "mint": "GC87Z47XsT6GnrRQjXwRkHLg4qSUXrtk7dzyBpSnpump",
+      "symbol": null,
+      "decimals": 6,
+      "sweptRaw": "0",
+      "heldRaw": "329563908",
+      "collectedRaw": "329563908"
+    },
+    {
+      "mint": "E4Ap4icMLwKot8rkkTbq5JkS5kZxt5XCE3yfxbzYBjHx",
+      "symbol": null,
+      "decimals": 9,
+      "sweptRaw": "0",
+      "heldRaw": "44666634579",
+      "collectedRaw": "44666634579"
+    },
+    {
+      "mint": "3a5mDJPMjrX6g9EchRtwnTBz7ccL7Qg9kcFK2GKfpump",
+      "symbol": null,
+      "decimals": 6,
+      "sweptRaw": "0",
+      "heldRaw": "41387500",
+      "collectedRaw": "41387500"
+    },
+    {
+      "mint": "zBTCug3er3tLyffELcvDNrKkCymbPWysGcWihESYfLg",
+      "symbol": null,
+      "decimals": 8,
+      "sweptRaw": "0",
+      "heldRaw": "2",
+      "collectedRaw": "2"
+    },
+    {
+      "mint": "J4afsNkuv8JoZVdEd53Gmj9LAawhNsFfo8jY6GRjpump",
+      "symbol": null,
+      "decimals": 6,
+      "sweptRaw": "0",
+      "heldRaw": "66476717",
+      "collectedRaw": "66476717"
+    },
+    {
+      "mint": "VXjDEv3EeJgg5J88uNasoMwaryCtdfKw5YNkAoJBpwU",
+      "symbol": null,
+      "decimals": 6,
+      "sweptRaw": "0",
+      "heldRaw": "58113401",
+      "collectedRaw": "58113401"
+    },
+    {
+      "mint": "J1FL9Zkp9cLQwnLeFKndnAgPBU6dsLh6J7sbVJ4bZtWq",
+      "symbol": null,
+      "decimals": 6,
+      "sweptRaw": "0",
+      "heldRaw": "1016",
+      "collectedRaw": "1016"
+    },
+    {
+      "mint": "6CsmCtDAhRcbp3G4KiinKC2JjLJ9BpR7isqcgZefqLym",
+      "symbol": null,
+      "decimals": 6,
+      "sweptRaw": "0",
+      "heldRaw": "83373380",
+      "collectedRaw": "83373380"
+    },
+    {
+      "mint": "7ZqzGzTNg5tjK1CHTBdGFHyKjBtXdfvAobuGgdt4pump",
+      "symbol": null,
+      "decimals": 6,
+      "sweptRaw": "0",
+      "heldRaw": "34175023",
+      "collectedRaw": "34175023"
+    },
+    {
+      "mint": "9yzErCcHKpEkHAwV61yfQ4Fi24yR8s8TiPsy4gJkF1Tq",
+      "symbol": null,
+      "decimals": 9,
+      "sweptRaw": "0",
+      "heldRaw": "12072722661",
+      "collectedRaw": "12072722661"
+    },
+    {
+      "mint": "4MMQY9bwkxxTtsK3W227Q5ABT6yFY8Pmn9Ze7wmAXKY8",
+      "symbol": null,
+      "decimals": 6,
+      "sweptRaw": "0",
+      "heldRaw": "15816149",
+      "collectedRaw": "15816149"
+    },
+    {
+      "mint": "6fbgUAM323YmfyA9cE3wozr7UKHhgquW4qBCgGhxHLDt",
+      "symbol": null,
+      "decimals": 6,
+      "sweptRaw": "0",
+      "heldRaw": "187730727",
+      "collectedRaw": "187730727"
+    },
+    {
+      "mint": "ED5nyyWEzpPPiWimP8vYm7sD7TD3LAt3Q3gRTWHzPJBY",
+      "symbol": null,
+      "decimals": 6,
+      "sweptRaw": "0",
+      "heldRaw": "384270",
+      "collectedRaw": "384270"
+    }
+  ],
+  "notEstablished": [
+    "The USD value of non-stablecoin fees: this project holds no price series.",
+    "What a fee-holding account represents (per trader, per market): the program's IDL is not public here.",
+    "Fees routed somewhere other than the JTX program's own fee-holding accounts."
+  ]
+}

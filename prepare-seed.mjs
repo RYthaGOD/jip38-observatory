@@ -15,7 +15,7 @@
 // overwrites a file the volume already has — once the volume holds readings,
 // the volume is the record.
 
-import { cpSync, existsSync, readdirSync } from "node:fs";
+import { cpSync, copyFileSync, existsSync, readdirSync } from "node:fs";
 
 const FROM = "data";
 const TO = "data-seed";
@@ -36,6 +36,15 @@ cpSync(FROM, TO, {
     return src === FROM || WANTED.has(name);
   },
 });
+
+// The committed buyback and fee summaries live at the repository root, because
+// data/ is gitignored apart from the two files above. They seed the volume too,
+// so a fresh deploy serves /sweeps.json and /fees.json before its first cycle —
+// and server.mjs keeps whichever copy is newer, so they never roll a live one back.
+for (const name of ["SWEEPS.json", "FEES.json"]) {
+  const from = existsSync(`${FROM}/${name}`) ? `${FROM}/${name}` : name;
+  if (existsSync(from)) copyFileSync(from, `${TO}/${name}`);
+}
 
 const seeded = existsSync(TO) ? readdirSync(TO) : [];
 console.log(`prepare-seed: ${TO}/ holds ${seeded.length} file(s): ${seeded.join(", ") || "(none)"}`);

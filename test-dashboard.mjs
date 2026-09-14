@@ -176,6 +176,52 @@ t("ratio and burned figure must agree about availability", () => {
   assert.match(r.out, /disagree about whether a figure is available/);
 });
 
+section("the live cycle's figures are checked before they are embedded");
+// A minimal, valid tracking block of the shape snapshot.mjs writes.
+const tracking = () => ({
+  ledger: { burnsSinceActivation: 0, burnedSinceActivationRaw: "0", burns: [], stale: false, complete: true },
+  buyback: { jto: { acquiredRaw: "100", toTreasuryRaw: "80", toOthersRaw: "20" } },
+  fees: { complete: true, stablecoins: [{ symbol: "USDC", sweptRaw: "10", heldRaw: "2", collectedRaw: "12" }] },
+  problems: [],
+});
+t("a snapshot with a sound tracking block builds", () => {
+  const r = build((s) => { s.tracking = tracking(); });
+  assert.ok(r.ok, r.out);
+});
+t("a snapshot with no live cycle at all still builds", () => {
+  const r = build((s) => { s.tracking = { ledger: null, buyback: null, fees: null, problems: [] }; });
+  assert.ok(r.ok, r.out);
+});
+t("a ledger burn beside a CURRENT assessment is rejected — a zero published through a burn", () => {
+  const r = build((s) => {
+    s.tracking = tracking();
+    s.tracking.ledger.burnsSinceActivation = 1;
+    s.tracking.ledger.burnedSinceActivationRaw = "5000000000";
+  });
+  assert.ok(!r.ok, "the page would have published a current zero while the ledger recorded a burn");
+  assert.match(r.out, /publish a zero through a burn/);
+});
+t("burned JTO with no burn recorded is rejected", () => {
+  const r = build((s) => { s.tracking = tracking(); s.tracking.ledger.burnedSinceActivationRaw = "1"; });
+  assert.ok(!r.ok);
+  assert.match(r.out, /no burn recorded/);
+});
+t("buyback JTO that does not add up is rejected", () => {
+  const r = build((s) => { s.tracking = tracking(); s.tracking.buyback.jto.toOthersRaw = "21"; });
+  assert.ok(!r.ok);
+  assert.match(r.out, /does not add up/);
+});
+t("a fee figure that is not swept plus held is rejected", () => {
+  const r = build((s) => { s.tracking = tracking(); s.tracking.fees.stablecoins[0].collectedRaw = "13"; });
+  assert.ok(!r.ok);
+  assert.match(r.out, /does not add up/);
+});
+t("a float where a base-unit amount belongs is rejected", () => {
+  const r = build((s) => { s.tracking = tracking(); s.tracking.buyback.jto.acquiredRaw = "100.0"; });
+  assert.ok(!r.ok);
+  assert.match(r.out, /base-unit string/);
+});
+
 section("a failed build leaves the previous release standing — finding 7");
 t("the previous output survives a rejected snapshot", () => {
   const outPath = join(tmp, "keep.html");

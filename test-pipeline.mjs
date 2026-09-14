@@ -164,7 +164,8 @@ function txWith({ type = "transfer", info = {}, mint, balanceMint, err = null, s
 
 // Run the tracker once. `sigs` throws to simulate a failed page; `txs` is the
 // batchSettled outcome list. Returns the checkpoint it wrote plus its output.
-async function runTracker({ sigs = () => [{ signature: "sig1", err: null }], txs, argv = [], resumeState = null } = {}) {
+async function runTracker({ sigs = () => [{ signature: "sig1", err: null }], txs, argv = [], resumeState = null,
+  treasuryAccounts = () => ({ value: [{ pubkey: "seed" }] }) } = {}) {
   const logs = [];
   let state = null, events = null;
   const supply = { value: { amount: "999999999000000000", decimals: 9, uiAmountString: "999999999" } };
@@ -173,6 +174,7 @@ async function runTracker({ sigs = () => [{ signature: "sig1", err: null }], txs
       if (method === "getTokenSupply") return supply;
       if (method === "getAccountInfo") return { value: {} };
       if (method === "getSignaturesForAddress") return sigs(params);
+      if (method === "getTokenAccountsByOwner") return treasuryAccounts(params);
       throw new Error(`unscripted ${method}`);
     },
     batchSettled: async (_m, list) => txs(list),
@@ -195,12 +197,17 @@ async function runTracker({ sigs = () => [{ signature: "sig1", err: null }], txs
     }),
     writeFileSync: (p, d) => { events = d; },
     atomicWrite: (p, d) => { state = JSON.parse(d); },
-    GENESIS_RAW, DECIMALS, units, decimalRaw, integer, safeError,
+    GENESIS_RAW, DECIMALS, TREASURY, units, decimalRaw, integer, safeError,
     console: { log: (...v) => logs.push(v.join(" ")), error: (...v) => logs.push(v.join(" ")) },
     setTimeout, BigInt, Number, String, Object, Array, Set, Map, JSON, Date, RegExp, Math,
   });
   return { state, events, out: logs.join("\n"), account: state?.accounts?.seed };
 }
+
+// An account enumerated in full up to a cursor, as a monitoring cycle finds it.
+const enumerated = (over = {}) => ({
+  seed: { done: true, tx: 5, head: "old-sig", paginationComplete: true, coveredAt: "2026-09-01T00:00:00Z", ...over },
+});
 
 section("track: an unread page is never end-of-history — finding 9");
 await t("a failed signature page leaves the account incomplete, not done", async () => {
@@ -282,6 +289,91 @@ await t("a FAILED poll is not reported as 'no new activity'", async () => {
   assert.ok(r.account.pollFailed, "a failed poll left the account looking freshly confirmed");
   assert.match(r.out, /could NOT be polled/);
   assert.ok(!/is COMPLETE/.test(r.out), "completeness was claimed despite an unknown cutoff");
+});
+
+section("track: monitoring continues from the cursor, and never retires what it watches");
+await t("a reopened account is continued from its cursor, not listed from the start", async () => {
+  // Listing from the start re-read a history that only grows, every cycle.
+  const pages = [];
+  const r = await runTracker({
+    argv: ["--resume", "--poll"],
+    resumeState: enumerated(),
+    sigs: (params) => { pages.push(params[1]); return [{ signature: "new-sig", err: null }]; },
+    txs: () => [{ ok: true, result: txWith({ sig: "new-sig", info: { amount: "1000000000000" }, balanceMint: MINT }) }],
+  });
+  assert.ok(pages.length >= 2, "expected a poll and a continuation");
+  assert.ok(pages.every((p) => p.until === "old-sig"), `a page was listed without the cursor: ${JSON.stringify(pages)}`);
+  assert.equal(r.account.done, true);
+  assert.equal(r.account.head, "new-sig", "the cursor did not advance");
+  assert.equal(r.account.tx, 6, "the transaction count restarted instead of accumulating");
+  assert.equal(r.state.events.length, 1);
+});
+await t("more new activity than --max-tx leaves a watched account INCOMPLETE, never retired", async () => {
+  // Marking it high-volume would have stopped watching the treasury account on
+  // the day its history crossed the bound.
+  const many = Array.from({ length: 1000 }, (_, i) => ({ signature: `s${i}`, err: null }));
+  const r = await runTracker({
+    argv: ["--resume", "--poll", "--max-tx", "5"],
+    resumeState: enumerated(),
+    sigs: () => many,
+    txs: () => [],
+  });
+  assert.equal(r.account.skipped, undefined, "a watched account was retired as high-volume");
+  assert.equal(r.account.done, false);
+  assert.match(r.account.incomplete ?? "", /raise --max-tx/);
+  assert.equal(r.account.head, "old-sig", "the cursor moved past transactions that were never read");
+});
+await t("a transaction a previous run could not read is retried on continuation", async () => {
+  // A continuation starts after the cursor, so an older unresolved signature
+  // would never be listed again unless it is handed over explicitly.
+  const asked = [];
+  const r = await runTracker({
+    argv: ["--resume", "--poll"],
+    resumeState: enumerated({ done: false, unresolvedSigs: ["lost-sig"], incomplete: "1 transaction(s) could not be resolved" }),
+    sigs: () => [],
+    txs: (list) => {
+      asked.push(...list.map((p) => p[0]));
+      return list.map(() => ({ ok: true, result: txWith({ sig: "lost-sig", info: { amount: "1000000000000" }, balanceMint: MINT }) }));
+    },
+  });
+  assert.deepEqual(asked, ["lost-sig"], "the unresolved signature was not retried");
+  assert.equal(r.account.done, true);
+  assert.equal(r.account.unresolvedSigs, undefined, "a read that succeeded is still counted as unresolved");
+  assert.equal(r.state.events.length, 1);
+});
+await t("a successful poll clears an earlier poll failure and records when", async () => {
+  const r = await runTracker({
+    argv: ["--resume", "--poll"],
+    resumeState: enumerated({ pollFailed: "RPC request failed" }),
+    sigs: () => [],
+    txs: () => [],
+  });
+  assert.equal(r.account.pollFailed, undefined, "one transient failure would block completeness forever");
+  assert.ok(r.account.checkedAt, "the confirmation time was not recorded");
+});
+await t("a treasury JTO account the ledger has never seen is queued and enumerated", async () => {
+  const r = await runTracker({
+    argv: ["--resume", "--poll", "--max-accounts", "5"],
+    resumeState: enumerated(),
+    treasuryAccounts: () => ({ value: [{ pubkey: "seed" }, { pubkey: "second-treasury-account" }] }),
+    sigs: () => [],
+    txs: () => [],
+  });
+  assert.ok(r.state.accounts["second-treasury-account"], "the unwatched treasury account was not added");
+  assert.equal(r.state.accounts["second-treasury-account"].done, true, "the discovered account was not enumerated");
+  assert.equal(r.state.treasuryDiscovery.added, 1);
+});
+await t("a FAILED treasury discovery is recorded and blocks the completeness claim", async () => {
+  const r = await runTracker({
+    argv: ["--resume", "--poll"],
+    resumeState: enumerated(),
+    treasuryAccounts: () => { throw new Error("RPC request failed"); },
+    sigs: () => [],
+    txs: () => [],
+  });
+  assert.ok(r.state.treasuryDiscovery.failed, "a failed discovery was not recorded");
+  assert.match(r.out, /could NOT be listed/);
+  assert.ok(!/is COMPLETE/.test(r.out), "completeness was claimed without knowing every treasury account");
 });
 
 section("track: only identified JTO enters the ledger — finding 10");
@@ -543,6 +635,106 @@ await t("the shipped ASSESSMENT.json is well-formed and its anchor is real", () 
   assert.ok(anchorSupply > 0n && anchorTreasury > 0n);
   assert.ok(anchorSupply <= GENESIS_RAW, "the anchor supply exceeds genesis");
   assert.equal(raw(ASSESSMENT.burnedRaw), 0n, "the shipped assessment is no longer zero — update these tests deliberately");
+});
+
+// --- snapshot.mjs: what the live cycle established ---------------------------
+//
+// The summaries the snapshot embeds from the live cycle's outputs. The ledger
+// block is the one that matters most: it is what turns a burn the ledger has
+// recorded into a review on the public page.
+
+const liveSrc = snapSrc.slice(snapSrc.indexOf("function readOptional"), snapSrc.indexOf("// Does the recorded assessment"));
+assert.ok(liveSrc.includes("function ledgerBlock") && liveSrc.includes("function feesBlock"), "could not slice the live-cycle summaries out of snapshot.mjs");
+const live = vm.runInNewContext(`${liveSrc};({ ledgerBlock, buybackBlock, feesBlock })`, {
+  requireThat, raw, units, existsSync: () => false, readJsonFile: () => null,
+  Date, Number, Math, Object, String, BigInt, JSON, Set, Array,
+});
+
+const ACTIVATION_SEC = Date.parse("2026-07-13T00:00:00Z") / 1000;
+const hoursAgo = (h) => new Date(Date.now() - h * 3_600_000).toISOString();
+const ledgerState = (over = {}) => ({
+  polledAt: hoursAgo(1),
+  treasuryDiscovery: { at: hoursAgo(1), accounts: 1, added: 0 },
+  accounts: {
+    "treasury-jto": { done: true, head: "h", coveredAt: hoursAgo(30), checkedAt: hoursAgo(1) },
+    "venue": { done: true, skipped: "high-volume (>=60000 tx) — not enumerated", label: "jtx-fee-program" },
+  },
+  events: [
+    { t: ACTIVATION_SEC - 86400, kind: "BURN", raw: "7000000000", from: "old", who: "x", sig: "before-activation" },
+    { t: ACTIVATION_SEC + 3600, kind: "TRANSFER", raw: "5000000000", from: "a", to: "b", sig: "t1" },
+  ],
+  ...over,
+});
+const ledgerOpts = { activationSec: ACTIVATION_SEC, treasuryTokenAccounts: ["treasury-jto"] };
+
+section("snapshot: the live ledger reaches the page — burns, staleness, coverage");
+await t("a quiet, current ledger reports no burn since activation and is complete", () => {
+  const b = live.ledgerBlock(ledgerState(), ledgerOpts);
+  assert.equal(b.burnsSinceActivation, 0, "a burn before activation was counted as a JIP-38 burn");
+  assert.equal(b.burnedSinceActivationRaw, "0");
+  assert.equal(b.stale, false);
+  assert.equal(b.complete, true);
+  assert.deepEqual([...b.treasuryTokenAccountsNotWatched], []);
+  // The last successful poll, not the original enumeration, is what is current.
+  assert.ok(Date.parse(b.currentThrough.newest) > Date.now() - 2 * 3_600_000,
+    `coverage was dated from the original enumeration, not the last poll: ${b.currentThrough.newest}`);
+});
+await t("a burn after activation is counted exactly and carried with its transaction", () => {
+  const st = ledgerState();
+  st.events.push({ t: ACTIVATION_SEC + 7200, kind: "BURN", raw: "123456789012345678", from: "treasury-jto", who: "dao", sig: "the-burn" });
+  const b = live.ledgerBlock(st, ledgerOpts);
+  assert.equal(b.burnsSinceActivation, 1);
+  assert.equal(b.burnedSinceActivationRaw, "123456789012345678");
+  assert.equal(b.burnedSinceActivation, "123456789.012345678");
+  assert.equal(b.burns[0].signature, "the-burn");
+  assert.equal(b.burns[0].account, "treasury-jto");
+});
+await t("a ledger not polled within a day is stale; one never polled is stale", () => {
+  assert.equal(live.ledgerBlock(ledgerState({ polledAt: hoursAgo(30) }), ledgerOpts).stale, true);
+  assert.equal(live.ledgerBlock(ledgerState({ polledAt: undefined }), ledgerOpts).stale, true);
+});
+await t("a treasury JTO account the ledger does not enumerate is named", () => {
+  const b = live.ledgerBlock(ledgerState(), { ...ledgerOpts, treasuryTokenAccounts: ["treasury-jto", "venue", "brand-new"] });
+  // A skipped account is recorded, not watched: it cannot count as coverage.
+  assert.deepEqual([...b.treasuryTokenAccountsNotWatched], ["venue", "brand-new"]);
+});
+await t("unresolved reads, failed polls and failed discovery each make the ledger incomplete", () => {
+  const withIncomplete = ledgerState();
+  withIncomplete.accounts["treasury-jto"] = { done: false, incomplete: "2 transaction(s) could not be resolved", unresolvedSigs: ["a", "b"] };
+  const b1 = live.ledgerBlock(withIncomplete, ledgerOpts);
+  assert.equal(b1.complete, false);
+  assert.equal(b1.unresolvedTransactions, 2);
+  const withPollFailure = ledgerState();
+  withPollFailure.accounts["treasury-jto"].pollFailed = "RPC request failed";
+  assert.equal(live.ledgerBlock(withPollFailure, ledgerOpts).complete, false);
+  assert.equal(live.ledgerBlock(ledgerState({ treasuryDiscovery: { failed: "RPC request failed" } }), ledgerOpts).complete, false);
+});
+await t("something that is not a ledger is rejected, not summarised as empty", () => {
+  assert.throws(() => live.ledgerBlock({ accounts: {} }, ledgerOpts), /not a track.mjs checkpoint/);
+  const bad = ledgerState();
+  bad.events.push({ t: ACTIVATION_SEC + 1, kind: "BURN", raw: "12.5", sig: "x" });
+  assert.throws(() => live.ledgerBlock(bad, ledgerOpts), /base-unit/);
+});
+
+section("snapshot: the buyback and fee summaries stay exact and consistent");
+await t("the committed SWEEPS.json summarises, and its parts add up", () => {
+  const b = live.buybackBlock(JSON.parse(readFileSync("SWEEPS.json", "utf8")));
+  assert.equal(BigInt(b.jto.toTreasuryRaw) + BigInt(b.jto.toOthersRaw), BigInt(b.jto.acquiredRaw));
+  assert.ok(b.sweeps > 0 && b.lastSweep, "no sweeps summarised");
+  assert.equal(b.detail, "/sweeps.json");
+});
+await t("a sweeps summary whose parts do not add up is refused", () => {
+  const s = JSON.parse(readFileSync("SWEEPS.json", "utf8"));
+  s.jto.toOthersRaw = (BigInt(s.jto.toOthersRaw) + 1n).toString();
+  assert.throws(() => live.buybackBlock(s), /does not add up/);
+});
+await t("the committed FEES.json summarises per token, exactly, never summed across tokens", () => {
+  const f = live.feesBlock(JSON.parse(readFileSync("FEES.json", "utf8")));
+  const usdc = f.stablecoins.find((c) => c.symbol === "USDC");
+  assert.ok(usdc, "USDC missing from the fee summary");
+  assert.equal(usdc.collected, units(BigInt(usdc.collectedRaw), 6));
+  assert.equal(BigInt(usdc.sweptRaw) + BigInt(usdc.heldRaw), BigInt(usdc.collectedRaw));
+  assert.equal(typeof f.complete, "boolean");
 });
 
 // --- sweeps.mjs --------------------------------------------------------------

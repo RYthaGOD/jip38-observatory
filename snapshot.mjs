@@ -168,6 +168,43 @@ async function main() {
     assessment.reasons.push("the claimed fee total is zero, so there is no denominator to measure execution against");
   }
 
+  // --- what the live cycle has established ----------------------------------
+  //
+  // The ledger, the sweeps and the fee measurement are produced by the live
+  // cycle in server.mjs and read here. Each is optional — a fresh volume may not
+  // have them yet — and each says how current it is, so the page never presents
+  // a stale figure as a live one.
+  //
+  // An input that exists but cannot be read is NOT treated as absent. It is
+  // recorded as a problem and alerted on below, because a ledger that silently
+  // stops being read is a burn detector that silently stops detecting.
+  const activationSec = Date.parse(`${ACTIVATION}T00:00:00Z`) / 1000;
+  const tracking = { ledger: null, buyback: null, fees: null, problems: [] };
+  const track = (name, paths, what, summarise) => {
+    try {
+      const found = readOptional(paths, what);
+      if (found) tracking[name] = { file: found.path, ...summarise(found.value) };
+    } catch (err) {
+      tracking.problems.push({ part: name, message: `${what} could not be read: ${safeError(err)}` });
+    }
+  };
+  track("ledger", ["data/track-state.json"], "the enumerated ledger",
+    (st) => ledgerBlock(st, { activationSec, treasuryTokenAccounts: treasuryList.map((a) => a.pubkey) }));
+  track("buyback", ["data/SWEEPS.json", "SWEEPS.json"], "the decoded fee sweeps", buybackBlock);
+  track("fees", ["data/FEES.json", "FEES.json"], "the on-chain fee measurement", feesBlock);
+  const ledger = tracking.ledger;
+
+  // LIVE BURN DETECTION. The whole finding is that nothing has been burned. If
+  // the enumerated ledger ever records a burn instruction since activation, the
+  // standing zero must stop being published as a figure the same cycle — not
+  // after someone next reads a log. It is a trigger for review rather than an
+  // automatic new number, because attributing a burn to JIP-38 is still a
+  // judgement the assessment exists to record.
+  if (ledger && ledger.burnsSinceActivation > 0) {
+    assessment.state = "review-required";
+    assessment.reasons.push(`the live ledger records ${ledger.burnsSinceActivation} burn instruction(s) since activation, destroying ${ledger.burnedSinceActivation} JTO — they must be attributed before a burn figure can be published`);
+  }
+
   const registry = existsSync("REGISTRY.tsv")
     ? parseRegistry(readFileSync("REGISTRY.tsv", "utf8")).map((e) => ({
         role: e.role, address: e.address, confidence: e.confidence, since: e.since,
@@ -266,6 +303,11 @@ async function main() {
       `The dates of the ${units(destroyedRaw)} JTO destroyed before activation.`,
     ],
 
+    // What the live tracking cycle has established, each part dated. Summaries
+    // only: the full decoded records are served beside the page as /sweeps.json
+    // and /fees.json.
+    tracking,
+
     registry,
     history: [],
     alerts: [],
@@ -308,7 +350,28 @@ async function main() {
     raise(`claim-changed-${claimFile.capturedAt}`,
       `claimed platform fees changed: $${prev.claim.platformFeesUsd} -> $${claimFile.platformFeesUsd}`);
   }
-  for (const reason of assessment.reasons) raise(`assessment-${assessment.state}-${reason.slice(0, 24)}`, reason);
+  // Keyed on the reason with its figures removed. Keyed on the text itself, an
+  // expired assessment raised a fresh alert every day its age went up by one.
+  for (const reason of assessment.reasons) {
+    raise(`assessment-${assessment.state}-${reason.replace(/[0-9][0-9.,]*/g, "#").slice(0, 60)}`, reason);
+  }
+
+  // One alert per burn, keyed on its transaction, so a second burn is raised
+  // even while the first is still unreviewed.
+  for (const b of ledger?.burns ?? []) {
+    raise(`ledger-burn-${b.signature}`,
+      `BURN RECORDED: ${b.jto} JTO burned at ${b.at} from ${b.account ?? "an unidentified account"} (transaction ${b.signature}).`);
+  }
+  // A detector that has stopped is reported, not trusted.
+  if (ledger?.stale) {
+    raise(`ledger-stale-${ledger.polledAt ?? "never"}`,
+      `The live ledger has not been polled for new activity ${ledger.polledAt ? `since ${ledger.polledAt}` : "at all"} — burns after that moment would not yet be detected.`);
+  }
+  for (const acct of ledger?.treasuryTokenAccountsNotWatched ?? []) {
+    raise(`ledger-unwatched-${acct}`,
+      `The DAO treasury holds JTO account ${acct}, which the live ledger has not enumerated — a burn from it would not be detected.`);
+  }
+  for (const p of tracking.problems) raise(`tracking-${p.part}-unreadable`, p.message);
   snap.alerts = alerts;
 
   // --- write, atomically, keeping the last valid release --------------------
@@ -348,6 +411,17 @@ async function main() {
   console.log(`  committed   $${committedUsd.toLocaleString(undefined, { maximumFractionDigits: 2 })}`);
   console.log(`  assessment  ${assessment.state.toUpperCase()} (assessed ${assessment.assessedAt})`);
   for (const r of assessment.reasons) console.log(`              - ${r}`);
+  console.log(`  ledger      ${ledger
+    ? `${ledger.accounts.enumerated}/${ledger.accounts.known} accounts watched, polled ${ledger.polledAt ?? "never"}` +
+      `${ledger.stale ? " — STALE" : ""}; ${ledger.burnsSinceActivation} burn(s) since activation`
+    : "not present on this machine"}`);
+  console.log(`  buyback     ${tracking.buyback
+    ? `${tracking.buyback.sweeps} sweeps, ${tracking.buyback.jto.toTreasury} JTO to the treasury, through ${tracking.buyback.lastSweep}`
+    : "not present"}`);
+  console.log(`  fees        ${tracking.fees
+    ? `${tracking.fees.complete ? "complete" : "NOT complete"}, held side read ${tracking.fees.heldReadAt}`
+    : "not present"}`);
+  for (const p of tracking.problems) console.log(`  PROBLEM     ${p.message}`);
   console.log(`  execution   ${snap.execution.ratio === null
     ? "UNKNOWN — the assessment needs review before a ratio can be published"
     : `${(snap.execution.ratio * 100).toFixed(1)}% against a promised ${PROMISED_RATIO * 100}%`}`);
@@ -361,6 +435,151 @@ async function main() {
 
 // A declaration, not a const: main() runs at module top level, above this point.
 function daysBetween(a, b) { return Math.floor((b - a) / 86400000); }
+
+// The first of `paths` that exists, parsed — or null when none does. A file
+// that exists and cannot be parsed throws: that is a problem, not an absence.
+function readOptional(paths, what) {
+  for (const path of paths) if (existsSync(path)) return { path, value: readJsonFile(path, what) };
+  return null;
+}
+
+// --- the live cycle's outputs, summarised for the snapshot ---------------------
+//
+// Pure functions of what the cycle wrote, so they can be tested without a chain.
+// Each keeps exact base-unit strings alongside display strings, and each says
+// when its part was last brought up to date.
+
+function digits(v, what) {
+  requireThat(typeof v === "string" && /^(0|[1-9][0-9]*)$/.test(v), `${what} is not a base-unit string`);
+  return v;
+}
+
+// The enumerated ledger (track.mjs): how much of it is current, and whether it
+// has recorded a burn since activation.
+function ledgerBlock(st, { activationSec, treasuryTokenAccounts = [], nowMs = Date.now(), staleAfterHours = 24 }) {
+  requireThat(st && Array.isArray(st.events) && st.accounts && typeof st.accounts === "object",
+    "not a track.mjs checkpoint: no events or accounts");
+  const accounts = Object.entries(st.accounts);
+  const enumerated = accounts.filter(([, a]) => a.done && !a.skipped && !a.incomplete);
+  const incomplete = accounts.filter(([, a]) => a.incomplete);
+  const pollFailures = accounts.filter(([, a]) => a.pollFailed).length;
+  const discoveryFailed = Boolean(st.treasuryDiscovery?.failed);
+
+  // When each watched account was last confirmed complete: its last enumeration
+  // or its last successful poll, whichever is later.
+  const current = enumerated
+    .map(([, a]) => [a.coveredAt, a.checkedAt].filter(Boolean).sort().at(-1))
+    .filter(Boolean).sort();
+
+  const burns = st.events
+    .filter((e) => e?.kind === "BURN" && Number(e.t) >= activationSec)
+    .sort((a, b) => a.t - b.t);
+  const burnedRaw = burns.reduce((sum, e) => sum + raw(digits(String(e.raw), "a ledger burn amount")), 0n);
+
+  const polledMs = Date.parse(st.polledAt ?? "");
+  const ageHours = Number.isFinite(polledMs) ? Math.round(((nowMs - polledMs) / 3_600_000) * 10) / 10 : null;
+  const watched = new Set(enumerated.map(([address]) => address));
+
+  return {
+    source: "chain",
+    producedBy: "track.mjs",
+    polledAt: st.polledAt ?? null,
+    ageHours,
+    staleAfterHours,
+    stale: ageHours === null || ageHours > staleAfterHours,
+    accounts: {
+      known: accounts.length,
+      enumerated: enumerated.length,
+      notEnumerated: accounts.filter(([, a]) => a.skipped).map(([address, a]) => ({ address, label: a.label ?? null, reason: a.skipped })),
+      incomplete: incomplete.length,
+    },
+    currentThrough: { oldest: current[0] ?? null, newest: current.at(-1) ?? null },
+    unresolvedTransactions: incomplete.reduce((sum, [, a]) => sum + (a.unresolvedSigs?.length ?? 0), 0),
+    pollFailures,
+    treasuryDiscovery: st.treasuryDiscovery ?? null,
+    complete: incomplete.length === 0 && pollFailures === 0 && !discoveryFailed,
+    treasuryTokenAccountsNotWatched: treasuryTokenAccounts.filter((a) => !watched.has(a)),
+    events: st.events.length,
+    burnsSinceActivation: burns.length,
+    burnedSinceActivationRaw: burnedRaw.toString(),
+    burnedSinceActivation: units(burnedRaw),
+    // The most recent, in full, so each can be checked on an explorer.
+    burns: burns.slice(-25).map((e) => ({
+      at: new Date(e.t * 1000).toISOString(),
+      raw: String(e.raw),
+      jto: units(raw(String(e.raw))),
+      account: e.from || null,
+      authority: e.who || null,
+      signature: e.sig,
+    })),
+  };
+}
+
+// The decoded fee sweeps (sweeps.mjs --summary): the buyback leg.
+function buybackBlock(s) {
+  requireThat(s && s.jto && s.transactions && s.window, "not a sweeps.mjs summary");
+  const jto = {
+    acquiredRaw: digits(s.jto.acquiredRaw, "jto.acquiredRaw"),
+    toTreasuryRaw: digits(s.jto.toTreasuryRaw, "jto.toTreasuryRaw"),
+    toOthersRaw: digits(s.jto.toOthersRaw, "jto.toOthersRaw"),
+  };
+  requireThat(BigInt(jto.toTreasuryRaw) + BigInt(jto.toOthersRaw) === BigInt(jto.acquiredRaw),
+    "sweeps summary does not add up: to treasury + to others != acquired");
+  return {
+    source: "chain",
+    producedBy: "sweeps.mjs",
+    generatedAt: s.generatedAt ?? null,
+    resolvedAt: s.resolvedAt ?? null,
+    firstSweep: s.window.firstSweep ?? null,
+    lastSweep: s.window.lastSweep ?? null,
+    sweeps: s.transactions.sweeps,
+    inflows: s.transactions.inflows,
+    unresolved: s.transactions.unresolved,
+    jto: {
+      ...jto,
+      acquired: units(raw(jto.acquiredRaw)),
+      toTreasury: units(raw(jto.toTreasuryRaw)),
+      toOthers: units(raw(jto.toOthersRaw)),
+      treasurySharePpm: s.jto.treasurySharePpm ?? null,
+    },
+    keeper: s.signers?.[0] ?? null,
+    otherRecipients: (s.otherRecipients ?? []).slice(0, 5),
+    splitPatterns: (s.splitPatterns ?? []).slice(0, 5),
+    reconciliation: s.reconciliation ?? null,
+    notEstablished: s.notEstablished ?? [],
+    detail: "/sweeps.json",
+  };
+}
+
+// The on-chain fee measurement (fees.mjs --summary): fees swept plus still held.
+function feesBlock(f) {
+  requireThat(f && Array.isArray(f.stablecoins) && Array.isArray(f.tokens), "not a fees.mjs summary");
+  return {
+    source: "chain",
+    producedBy: "fees.mjs",
+    generatedAt: f.generatedAt ?? null,
+    sweptThrough: f.sweptThrough ?? null,
+    heldReadAt: f.heldReadAt ?? null,
+    gapHours: f.gapHours ?? null,
+    complete: f.complete === true,
+    feeHoldingAccounts: f.feeHoldingAccounts ?? null,
+    everSwept: f.everSwept ?? null,
+    unresolvedBalanceReads: f.unresolvedBalanceReads ?? null,
+    // Per token, exact. Never summed across tokens: this project holds no prices.
+    stablecoins: f.stablecoins.map((c) => ({
+      symbol: c.symbol,
+      mint: c.mint,
+      decimals: c.decimals,
+      sweptRaw: digits(c.sweptRaw, `${c.symbol} sweptRaw`),
+      heldRaw: digits(c.heldRaw, `${c.symbol} heldRaw`),
+      collectedRaw: digits(c.collectedRaw, `${c.symbol} collectedRaw`),
+      collected: units(raw(c.collectedRaw), c.decimals),
+    })),
+    otherTokens: f.tokens.length - f.stablecoins.length,
+    notEstablished: f.notEstablished ?? [],
+    detail: "/fees.json",
+  };
+}
 
 // Does the recorded assessment still stand against what the chain says now?
 //

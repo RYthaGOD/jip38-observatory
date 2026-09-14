@@ -160,4 +160,44 @@ function validate(snap) {
     requireThat(!Number.isNaN(Date.parse(h.t)), `history[${i}].t is not a valid date`);
     fin(h.treasury, `history[${i}].treasury`);
   });
+
+  // What the live cycle established. Optional as a whole — a snapshot taken
+  // where the cycle never ran has none — but each part present must be sound,
+  // and the one that can raise a burn must be internally consistent.
+  if (snap.tracking !== undefined) {
+    const tr = obj(snap.tracking, "tracking");
+    const baseUnits = (v, what) => {
+      requireThat(typeof v === "string" && /^(0|[1-9][0-9]*)$/.test(v), `${what} is not a base-unit string`);
+      return BigInt(v);
+    };
+    arr(tr.problems, "tracking.problems").forEach((p, i) => { obj(p, `tracking.problems[${i}]`); str(p.message, `tracking.problems[${i}].message`); });
+
+    if (tr.ledger !== null) {
+      const l = obj(tr.ledger, "tracking.ledger");
+      requireThat(Number.isInteger(l.burnsSinceActivation) && l.burnsSinceActivation >= 0,
+        "tracking.ledger.burnsSinceActivation is not a count");
+      const burned = baseUnits(l.burnedSinceActivationRaw, "tracking.ledger.burnedSinceActivationRaw");
+      arr(l.burns, "tracking.ledger.burns");
+      requireThat(l.burnsSinceActivation > 0 || burned === 0n,
+        "tracking.ledger reports JTO burned with no burn recorded");
+      // A recorded burn must never coexist with a published zero.
+      requireThat(l.burnsSinceActivation === 0 || as.state !== "current",
+        "tracking.ledger records a burn since activation while the assessment is still current — the page would publish a zero through a burn");
+      requireThat(typeof l.stale === "boolean" && typeof l.complete === "boolean", "tracking.ledger.stale/complete must be booleans");
+    }
+    if (tr.buyback !== null) {
+      const b = obj(tr.buyback, "tracking.buyback");
+      const j = obj(b.jto, "tracking.buyback.jto");
+      requireThat(baseUnits(j.toTreasuryRaw, "tracking.buyback.jto.toTreasuryRaw") + baseUnits(j.toOthersRaw, "tracking.buyback.jto.toOthersRaw") ===
+        baseUnits(j.acquiredRaw, "tracking.buyback.jto.acquiredRaw"), "tracking.buyback JTO does not add up");
+    }
+    if (tr.fees !== null) {
+      const f = obj(tr.fees, "tracking.fees");
+      requireThat(typeof f.complete === "boolean", "tracking.fees.complete must be a boolean");
+      arr(f.stablecoins, "tracking.fees.stablecoins").forEach((c, i) => {
+        requireThat(baseUnits(c.sweptRaw, `tracking.fees.stablecoins[${i}].sweptRaw`) + baseUnits(c.heldRaw, `tracking.fees.stablecoins[${i}].heldRaw`) ===
+          baseUnits(c.collectedRaw, `tracking.fees.stablecoins[${i}].collectedRaw`), `tracking.fees.stablecoins[${i}] does not add up`);
+      });
+    }
+  }
 }

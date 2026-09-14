@@ -99,8 +99,34 @@ fi
 
 # --- deploy -----------------------------------------------------------------
 
+say "staging the upload: the committed tree, plus the live cycle's state"
+#
+# Staged from `git archive HEAD` rather than uploading the working directory, so
+# what is deployed is exactly what is committed: no uncommitted edit, no .env,
+# nothing untracked rides along by accident.
+#
+# The ledger and the decoded sweeps are hours of RPC work and are not committed
+# (tens of megabytes, rewritten every cycle). They go in bootstrap/, compressed,
+# and server.mjs unpacks each onto the volume only if the volume has none — so
+# shipping them again on a later deploy is harmless: the volume's own, newer
+# copies are never replaced.
+[ -z "$(git status --porcelain --untracked-files=no)" ] \
+  || echo "  NOTE: there are uncommitted changes; they will NOT be deployed"
+STAGE="$(mktemp -d)"
+trap 'rm -rf "$STAGE"' EXIT
+git archive HEAD | tar -x -C "$STAGE"
+mkdir -p "$STAGE/bootstrap"
+for f in track-state sweeps-state; do
+  if [ -f "data/$f.json" ]; then
+    gzip -9 -c "data/$f.json" > "$STAGE/bootstrap/$f.json.gz"
+    echo "  bootstrap/$f.json.gz  $(du -h "$STAGE/bootstrap/$f.json.gz" | cut -f1)"
+  else
+    echo "  (no data/$f.json here — the live cycle skips ledger, sweeps and fees until the volume has one)"
+  fi
+done
+
 say "uploading"
-railway up --service "$SERVICE" --detach
+railway up "$STAGE" --path-as-root --service "$SERVICE" --detach
 
 say "public domain"
 railway domain --service "$SERVICE" 2>/dev/null || echo "  (a domain already exists)"
@@ -112,11 +138,13 @@ $(printf '\033[1m==> done\033[0m')
 Check it:
     railway logs --service $SERVICE
     curl https://<your-domain>/healthz
+    curl https://<your-domain>/cycle.json     # a couple of minutes after boot
 
 /healthz reports whether the server actually has a page to serve, so a deploy
 that built nothing shows up there rather than as a blank page.
 
-The refresh runs inside the serving process every $REFRESH_MINUTES minutes. A run that
-fails leaves the previously built page untouched and still being served — stale
-and honest beats broken.
+The live cycle (ledger, sweeps, fees when due, refresh) runs inside the serving
+process every $REFRESH_MINUTES minutes, the first shortly after boot, and records each
+step at /cycle.json. A step that fails leaves the previously built page untouched
+and still being served — stale and honest beats broken.
 EOF

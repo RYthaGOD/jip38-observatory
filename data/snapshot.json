@@ -1,26 +1,26 @@
 {
   "schemaVersion": 3,
-  "generatedAt": "2026-09-13T09:30:11.743Z",
+  "generatedAt": "2026-09-14T14:26:16.667Z",
   "activation": "2026-07-13",
-  "daysSinceActivation": 62,
+  "daysSinceActivation": 63,
   "chain": {
     "source": "chain",
-    "observedAt": "2026-09-13T09:30:11.743Z",
+    "observedAt": "2026-09-14T14:26:16.667Z",
     "commitment": "finalized",
     "endpoint": "https://mainnet.helius-rpc.com",
     "slotRange": {
-      "from": 446669014,
-      "to": 446669017
+      "from": 446998960,
+      "to": 446998962
     },
-    "slotRangeNote": "reads span slots 446669014–446669017; measurements are not simultaneous",
-    "blockTimeIso": "2026-09-13T09:30:00.000Z",
+    "slotRangeNote": "reads span slots 446998960–446998962; measurements are not simultaneous",
+    "blockTimeIso": "2026-09-14T14:26:05.000Z",
     "supply": {
       "mintedEverRaw": "1000000000000000000",
-      "currentRaw": "986522682447803552",
-      "destroyedRaw": "13477317552196448",
+      "currentRaw": "986522649238498380",
+      "destroyedRaw": "13477350761501620",
       "mintedEver": "1000000000.000000000",
-      "current": "986522682.447803552",
-      "destroyed": "13477317.552196448",
+      "current": "986522649.238498380",
+      "destroyed": "13477350.761501620",
       "decimals": 9,
       "mintAuthority": null,
       "freezeAuthority": null,
@@ -30,8 +30,8 @@
     "treasury": {
       "owner": "5eosrve6LktMZgVNszYzebgmmC7BjLK8NoWyRQtcmGTF",
       "tokenAccount": "2Ch9AWnbAaummLkWTTtNgTAvrFq8YMATUaaN77TB2Y6C",
-      "jtoRaw": "209755258163526053",
-      "jto": "209755258.163526053",
+      "jtoRaw": "209756166793929469",
+      "jto": "209756166.793929469",
       "accounts": 2
     },
     "feeProgram": {
@@ -51,7 +51,7 @@
     "tradingVolumeUsd": 124236023.65,
     "fills": 266827,
     "dataBegins": "2026-07-24",
-    "ageDays": 3,
+    "ageDays": 4,
     "stale": false,
     "note": "Figures move through the day, so they are captured and hashed: what was claimed on a date cannot be revised without record. Obtained via a rendering fetch — the public URL is a client-rendered shell and yields no figures over plain HTTP.",
     "limitations": [
@@ -97,7 +97,7 @@
       "slot": 446629007,
       "observedAt": "2026-09-13T06:00:11.246Z"
     },
-    "ageDays": 0,
+    "ageDays": 1,
     "validForDays": 14
   },
   "execution": {
@@ -113,8 +113,195 @@
     "That JTX fees are being swept into JTO — the buyback step is an operator claim, not yet traced on chain.",
     "The 80/20 split.",
     "The $198,908.37 fee total, and the ~10 days of activity missing from the dashboard's start.",
-    "The dates of the 13477317.552196448 JTO destroyed before activation."
+    "The dates of the 13477350.761501620 JTO destroyed before activation."
   ],
+  "tracking": {
+    "ledger": {
+      "file": "data/track-state.json",
+      "source": "chain",
+      "producedBy": "track.mjs",
+      "polledAt": "2026-09-14T14:23:59.449Z",
+      "ageHours": 0,
+      "staleAfterHours": 24,
+      "stale": false,
+      "accounts": {
+        "known": 81,
+        "enumerated": 78,
+        "notEnumerated": [
+          {
+            "address": "JTXJTXfr1wVRMEzqiPhXUr69zJtfGuLh5qEiXG772Zj",
+            "label": "jtx-fee-program",
+            "reason": "high-volume (>=60000 tx) — not enumerated"
+          },
+          {
+            "address": "5eosrve6LktMZgVNszYzebgmmC7BjLK8NoWyRQtcmGTF",
+            "label": "dao-treasury",
+            "reason": "high-volume (>=60000 tx) — not enumerated"
+          },
+          {
+            "address": "8Xm3tkQH581s3MoRHWUNYA5jKbgPATW4tJAAxgwDC6T6",
+            "label": "found via AtNgME7r",
+            "reason": "high-volume (>=60000 tx) — not enumerated"
+          }
+        ],
+        "incomplete": 0
+      },
+      "currentThrough": {
+        "oldest": "2026-09-14T14:23:48.324Z",
+        "newest": "2026-09-14T14:24:08.645Z"
+      },
+      "unresolvedTransactions": 0,
+      "pollFailures": 0,
+      "treasuryDiscovery": {
+        "at": "2026-09-14T14:23:47.942Z",
+        "accounts": 2,
+        "added": 1
+      },
+      "complete": true,
+      "treasuryTokenAccountsNotWatched": [],
+      "events": 65109,
+      "burnsSinceActivation": 0,
+      "burnedSinceActivationRaw": "0",
+      "burnedSinceActivation": "0.000000000",
+      "burns": []
+    },
+    "buyback": {
+      "file": "SWEEPS.json",
+      "source": "chain",
+      "producedBy": "sweeps.mjs",
+      "generatedAt": "2026-09-14T14:25:47.557Z",
+      "resolvedAt": "2026-09-14T14:25:44.931Z",
+      "firstSweep": "2026-07-14T09:21:07.000Z",
+      "lastSweep": "2026-09-14T14:11:06.000Z",
+      "sweeps": 17290,
+      "inflows": 17293,
+      "unresolved": 0,
+      "jto": {
+        "acquiredRaw": "434049921551336",
+        "toTreasuryRaw": "334115015525035",
+        "toOthersRaw": "99934906026301",
+        "acquired": "434049.921551336",
+        "toTreasury": "334115.015525035",
+        "toOthers": "99934.906026301",
+        "treasurySharePpm": 769761
+      },
+      "keeper": {
+        "address": "23zyeKyn8wpF8VyWSGHTGvTVEGi5SPyziGSs9pGKr5ta",
+        "count": 17290
+      },
+      "otherRecipients": [
+        {
+          "owner": "8DBak2z28Wsf6baVqTBWjZvdn2t9KncKzNQWGmZQsuFs",
+          "raw": "83439446275854",
+          "sharePpm": 192234
+        },
+        {
+          "owner": "DTA5YXD9Ckrjyj7jSMEsgbaEmWZTGth13u1TkxWJJDMd",
+          "raw": "16406152154052",
+          "sharePpm": 37797
+        },
+        {
+          "owner": "BBBATax9kikSHQp8UTcyQL3tfU3BmQD9yid5qhC7QEAA",
+          "raw": "89307596395",
+          "sharePpm": 205
+        }
+      ],
+      "splitPatterns": [
+        {
+          "sweeps": 6706,
+          "basisPoints": {
+            "treasury": 8000,
+            "8DBak2z28Wsf6baVqTBWjZvdn2t9KncKzNQWGmZQsuFs": 1999
+          }
+        },
+        {
+          "sweeps": 5630,
+          "basisPoints": {
+            "treasury": 6400,
+            "DTA5YXD9Ckrjyj7jSMEsgbaEmWZTGth13u1TkxWJJDMd": 1999,
+            "8DBak2z28Wsf6baVqTBWjZvdn2t9KncKzNQWGmZQsuFs": 1599
+          }
+        },
+        {
+          "sweeps": 1611,
+          "basisPoints": {
+            "treasury": 8000,
+            "8DBak2z28Wsf6baVqTBWjZvdn2t9KncKzNQWGmZQsuFs": 2000
+          }
+        },
+        {
+          "sweeps": 1358,
+          "basisPoints": {
+            "treasury": 6400,
+            "DTA5YXD9Ckrjyj7jSMEsgbaEmWZTGth13u1TkxWJJDMd": 1999,
+            "8DBak2z28Wsf6baVqTBWjZvdn2t9KncKzNQWGmZQsuFs": 1600
+          }
+        },
+        {
+          "sweeps": 1336,
+          "basisPoints": {
+            "treasury": 6400,
+            "DTA5YXD9Ckrjyj7jSMEsgbaEmWZTGth13u1TkxWJJDMd": 2000,
+            "8DBak2z28Wsf6baVqTBWjZvdn2t9KncKzNQWGmZQsuFs": 1599
+          }
+        }
+      ],
+      "reconciliation": {
+        "against": "track.mjs inbound total for the same account, parsed independently",
+        "ledgerInboundRaw": "334115662704809",
+        "attributedRaw": "334115662704809",
+        "differenceRaw": "0",
+        "exact": true
+      },
+      "notEstablished": [
+        "The USD value of the JTO acquired: sweeps spend several tokens and this record holds no price series.",
+        "Total fees collected: tokens routed through a sweep include intermediate swap hops, so outflows are not a fee total.",
+        "Who controls the recipient accounts. They are recorded by address and on-chain account type only."
+      ],
+      "detail": "/sweeps.json"
+    },
+    "fees": {
+      "file": "FEES.json",
+      "source": "chain",
+      "producedBy": "fees.mjs",
+      "generatedAt": "2026-09-14T10:09:32.807Z",
+      "sweptThrough": "2026-09-14T09:25:54.000Z",
+      "heldReadAt": "2026-09-14T10:09:32.693Z",
+      "gapHours": 0.73,
+      "complete": true,
+      "feeHoldingAccounts": 3622,
+      "everSwept": 2042,
+      "unresolvedBalanceReads": 0,
+      "stablecoins": [
+        {
+          "symbol": "USDC",
+          "mint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+          "decimals": 6,
+          "sweptRaw": "138934538478",
+          "heldRaw": "3713696",
+          "collectedRaw": "138938252174",
+          "collected": "138938.252174"
+        },
+        {
+          "symbol": "USDT",
+          "mint": "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB",
+          "decimals": 6,
+          "sweptRaw": "3379572562",
+          "heldRaw": "42892",
+          "collectedRaw": "3379615454",
+          "collected": "3379.615454"
+        }
+      ],
+      "otherTokens": 410,
+      "notEstablished": [
+        "The USD value of non-stablecoin fees: this project holds no price series.",
+        "What a fee-holding account represents (per trader, per market): the program's IDL is not public here.",
+        "Fees routed somewhere other than the JTX program's own fee-holding accounts."
+      ],
+      "detail": "/fees.json"
+    },
+    "problems": []
+  },
   "registry": [
     {
       "role": "jto-mint",
@@ -285,6 +472,11 @@
       "t": "2026-09-13T09:30:11.743Z",
       "treasury": 209755258.16352606,
       "supply": 986522682.4478035
+    },
+    {
+      "t": "2026-09-14T14:26:16.667Z",
+      "treasury": 209756166.79392946,
+      "supply": 986522649.2384983
     }
   ],
   "alerts": []
