@@ -49,14 +49,19 @@ if (!existsSync("dist/dashboard.html")) {
 // hundred would pick a port already in use, fail to bind, fail the suite, fail
 // the refresh, and report a deployment failure for no reason at all.
 //
-// The ephemeral range is used instead, and the live PORT is excluded outright
-// along with the four offsets this suite takes from its own base.
+// And clear of the OS ephemeral range. The first fix moved to 30000-50000, which
+// overlaps the range the OS hands to OUTBOUND connections — 49152+ on Windows,
+// 32768+ on Linux. A long chain read holding thousands of sockets can therefore
+// be sitting on the very port this suite tries to listen on. That surfaced as a
+// one-off crash while sweeps.mjs was running beside it. 20000-31899 sits below
+// both ranges, and the live PORT is still excluded along with the offsets this
+// suite takes from its own base.
 const LIVE_PORT = Number(process.env.PORT ?? 0);
+const OFFSETS = 8; // this suite binds base+1 .. base+6 for isolated cases
 function pickPort() {
   for (;;) {
-    const p = 30000 + Math.floor(Math.random() * 20000);
-    // This suite also binds p+1 .. p+4 for its isolated cases.
-    if (!LIVE_PORT || LIVE_PORT < p - 4 || LIVE_PORT > p + 4) return p;
+    const p = 20000 + Math.floor(Math.random() * 11900);
+    if (!LIVE_PORT || LIVE_PORT < p - OFFSETS || LIVE_PORT > p + OFFSETS) return p;
   }
 }
 const PORT = pickPort();
@@ -90,7 +95,19 @@ function waitForPort(port, timeoutMs = 10000) {
     }, 100);
   });
 }
-await waitForPort(PORT);
+// If the server cannot start, say so plainly and exit non-zero, rather than
+// dying on an unhandled rejection that check.mjs can only report as a failed
+// suite with zero failing checks — which is exactly how the port collision
+// above first showed up.
+try {
+  await waitForPort(PORT);
+} catch (err) {
+  console.log(`  FAIL  the server under test did not start on :${PORT}\n        ${String(err.message).split("\n")[0]}`);
+  console.log(serverLog.split("\n").filter((l) => /EADDRINUSE|Error/.test(l)).slice(0, 3).map((l) => `        ${l}`).join("\n"));
+  child.kill();
+  console.log("\n0 passed, 1 failed");
+  process.exit(1);
+}
 
 const get = (path, init) => fetch(BASE + path, { redirect: "manual", ...init });
 

@@ -545,6 +545,107 @@ await t("the shipped ASSESSMENT.json is well-formed and its anchor is real", () 
   assert.equal(raw(ASSESSMENT.burnedRaw), 0n, "the shipped assessment is no longer zero — update these tests deliberately");
 });
 
+// --- sweeps.mjs --------------------------------------------------------------
+//
+// The decoder behind the buyback finding. Sliced out so it runs on synthetic
+// transactions: the properties that matter are exact splits and never
+// attributing another program's log to the JTX program.
+
+const sweepsSrc = readFileSync("sweeps.mjs", "utf8");
+const decodeSweep = vm.runInNewContext(
+  `${sweepsSrc.slice(sweepsSrc.indexOf("function netChanges"), sweepsSrc.indexOf("// --- resolve"))};decode`,
+  { MINT, TREASURY, JTX_PROGRAM: "JTXJTXfr1wVRMEzqiPhXUr69zJtfGuLh5qEiXG772Zj", BigInt, Map, Set },
+);
+const JTX = "JTXJTXfr1wVRMEzqiPhXUr69zJtfGuLh5qEiXG772Zj";
+const USDC = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v";
+
+// A sweep: the vault spends USDC, a pool gives up JTO, JTO lands with the
+// treasury and with a second recipient.
+function sweepTx({ treasury = "80000000000", other = "20000000000", logs, err = null } = {}) {
+  const bal = (owner, mint, amount, i) => ({ accountIndex: i, owner, mint, uiTokenAmount: { amount, decimals: mint === USDC ? 6 : 9 } });
+  const acquired = (BigInt(treasury) + BigInt(other)).toString();
+  return {
+    blockTime: 1_756_000_000,
+    meta: {
+      err,
+      logMessages: logs ?? [
+        `Program ${JTX} invoke [1]`,
+        "Program log: ix: FeeSweepPrepare",
+        `Program ${JTX} success`,
+      ],
+      preTokenBalances: [
+        bal(TREASURY, MINT, "1000000000000", 0),
+        bal("dev-wallet", MINT, "0", 1),
+        bal("pool", MINT, "500000000000", 2),
+        bal("vault", USDC, "29348070600", 3),
+      ],
+      postTokenBalances: [
+        bal(TREASURY, MINT, (1000000000000n + BigInt(treasury)).toString(), 0),
+        bal("dev-wallet", MINT, other, 1),
+        bal("pool", MINT, (500000000000n - BigInt(acquired)).toString(), 2),
+        bal("vault", USDC, "0", 3),
+      ],
+    },
+    transaction: {
+      message: {
+        accountKeys: [{ pubkey: "keeper", signer: true }, { pubkey: "x", signer: false }],
+        instructions: [{ programId: JTX }],
+      },
+    },
+  };
+}
+
+section("sweeps: the buyback decoder is exact and scoped");
+await t("the treasury's share and the JTO acquired are exact base units", () => {
+  const r = decodeSweep(sweepTx({ treasury: "51974800320", other: "12993700080" }));
+  assert.equal(r.treasuryRaw, "51974800320");
+  assert.equal(r.acquiredRaw, "64968500400");
+  // 80.000% exactly, in integers — no float anywhere near it.
+  assert.equal(BigInt(r.treasuryRaw) * 10n, BigInt(r.acquiredRaw) * 8n);
+});
+await t("the pool that GAVE UP JTO is not counted as acquiring it", () => {
+  const r = decodeSweep(sweepTx());
+  assert.equal(r.acquiredRaw, "100000000000", "a negative delta leaked into JTO acquired");
+});
+await t("other recipients exclude the treasury and include only gains", () => {
+  const r = decodeSweep(sweepTx());
+  assert.equal(r.recipients.length, 1);
+  assert.equal(r.recipients[0].owner, "dev-wallet");
+});
+await t("fee tokens spent are recorded by mint", () => {
+  const r = decodeSweep(sweepTx());
+  assert.equal(r.spent.length, 1);
+  assert.equal(r.spent[0].mint, USDC);
+  assert.equal(r.spent[0].raw, "-29348070600");
+});
+await t("a FeeSweepPrepare log from ANOTHER program is not attributed to JTX", () => {
+  // Log lines are flat. Without scoping to the JTX program's own invoke
+  // window, any program logging `ix: FeeSweepPrepare` would make an unrelated
+  // transaction look like a JTX buyback.
+  const r = decodeSweep(sweepTx({ logs: [
+    "Program SomeOtherProgram111111111111111111111111111 invoke [1]",
+    "Program log: ix: FeeSweepPrepare",
+    "Program SomeOtherProgram111111111111111111111111111 success",
+    `Program ${JTX} invoke [1]`,
+    "Program log: ix: SomethingElse",
+    `Program ${JTX} success`,
+  ] }));
+  assert.ok(!r.jtxIx.includes("FeeSweepPrepare"), "another program's log was read as the JTX instruction");
+  assert.ok(r.jtxIx.includes("SomethingElse"));
+});
+await t("logs after the JTX program returns are not attributed to it", () => {
+  const r = decodeSweep(sweepTx({ logs: [
+    `Program ${JTX} invoke [1]`,
+    `Program ${JTX} success`,
+    "Program log: ix: FeeSweepPrepare",
+  ] }));
+  assert.equal(r.jtxIx.length, 0);
+});
+await t("a failed transaction is flagged", () => {
+  assert.equal(decodeSweep(sweepTx({ err: { InstructionError: [1, "Custom"] } })).failed, true);
+  assert.equal(decodeSweep(sweepTx()).failed, false);
+});
+
 section("credential redaction reaches the verifier — finding 18");
 await t("a verifier failure note cannot carry the endpoint", () => {
   // Assembled rather than written out: a key-shaped literal in a tracked file
