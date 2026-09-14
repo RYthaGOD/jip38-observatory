@@ -51,9 +51,12 @@ const LIMIT = arg("--limit", null);
 
 const track = readJsonFile(TRACK, "the enumerated ledger from track.mjs");
 const inflows = track.events.filter((e) => e.to === TREASURY_TOKEN_ACCOUNT && e.t >= ACTIVATION);
-const ledgerInboundRaw = inflows.reduce((s, e) => s + BigInt(e.raw), 0n);
 const allSigs = [...new Set(inflows.map((e) => e.sig))];
 const sigs = LIMIT ? allSigs.slice(0, integer(LIMIT, "--limit")) : allSigs;
+// The ledger side of the reconciliation covers exactly the transactions being
+// resolved, so a --limit trial compares like with like.
+const sigSet = new Set(sigs);
+const ledgerInboundRaw = inflows.filter((e) => sigSet.has(e.sig)).reduce((s, e) => s + BigInt(e.raw), 0n);
 
 const state = existsSync(STATE)
   ? readJsonFile(STATE, "the sweep checkpoint")
@@ -208,9 +211,13 @@ for (const [o, raw] of [...recips].sort((a, b) => (b[1] > a[1] ? 1 : -1)).slice(
   console.log(`  ${units(raw).padStart(24)} JTO  ${share.padStart(8)}%  ${o}`);
 }
 
+// NOT a fee total. `spent` is every non-JTO outflow in the transaction, and a
+// multi-hop route (USDC -> wSOL -> JTO) records the intermediate pool's wSOL
+// outflow as well as the vault's USDC. It shows which tokens the sweeps route
+// through; it must not be read, or published, as fees collected.
 const spent = new Map();
 for (const r of sweeps) for (const x of r.spent) spent.set(x.mint, (spent.get(x.mint) ?? 0n) + BigInt(x.raw));
-console.log(`\nfee tokens spent (largest net outflows by mint; decimals vary by token)`);
+console.log(`\ntokens routed through (gross non-JTO outflows INCLUDING swap hops — not a fee total)`);
 for (const [m, raw] of [...spent].sort((a, b) => (a[1] < b[1] ? -1 : 1)).slice(0, 6)) console.log(`  ${(-raw).toString().padStart(24)} base units  ${m}`);
 
 // --- the cross-check --------------------------------------------------------
@@ -223,3 +230,73 @@ const diff = allTreasuryRaw - ledgerInboundRaw;
 console.log(`  difference                          ${units(diff < 0n ? -diff : diff)}${diff === 0n ? "  — EXACT" : ""}`);
 if (missing) console.log("  (unresolved transactions make this comparison incomplete)");
 console.log("-".repeat(72));
+
+// --- the committed record ----------------------------------------------------
+//
+// The checkpoint holds every decoded transaction and stays out of git. What is
+// committed is this summary, reviewed like CLAIM.json and ASSESSMENT.json: dated,
+// exact, and carrying its own reconciliation so a reader can see whether the
+// figures were complete when they were written.
+const SUMMARY = arg("--summary", null);
+if (SUMMARY) {
+  const firstSweep = sweeps.length ? Math.min(...sweeps.map((r) => r.t)) : null;
+  const lastSweep = sweeps.length ? Math.max(...sweeps.map((r) => r.t)) : null;
+  const ppm = (part, whole) => (whole > 0n ? Number((part * 1_000_000n) / whole) : null);
+  let exact80 = 0, notExact = 0;
+  for (const r of sweeps) {
+    if (BigInt(r.acquiredRaw) === 0n) continue;
+    // 80.00% within one basis point, in integers.
+    const bps = (BigInt(r.treasuryRaw) * 10_000n) / BigInt(r.acquiredRaw);
+    if (bps >= 7999n && bps <= 8001n) exact80++; else notExact++;
+  }
+  const summary = {
+    _comment: [
+      "JTX fee sweeps that paid JTO into the DAO treasury's JTO account, since JIP-38 activation.",
+      "Produced by sweeps.mjs from every inflow transaction track.mjs recorded for that account.",
+      "A sweep is a transaction in which the JTX program itself logs `ix: FeeSweepPrepare`.",
+      "Amounts are exact base units (9 decimals). This is a dated record, not a live figure.",
+    ],
+    generatedAt: new Date().toISOString(),
+    resolvedAt: state.resolvedAt ?? null,
+    program: JTX_PROGRAM,
+    treasury: TREASURY,
+    treasuryTokenAccount: TREASURY_TOKEN_ACCOUNT,
+    window: {
+      activation: new Date(ACTIVATION * 1000).toISOString(),
+      firstSweep: firstSweep ? new Date(firstSweep * 1000).toISOString() : null,
+      lastSweep: lastSweep ? new Date(lastSweep * 1000).toISOString() : null,
+    },
+    transactions: {
+      inflows: sigs.length,
+      resolved: rows.length,
+      unresolved: missing,
+      sweeps: sweeps.length,
+      notSweeps: other.length,
+      failed: rows.filter((r) => r.failed).length,
+    },
+    signers: [...signers].sort((a, b) => b[1] - a[1]).map(([address, count]) => ({ address, count })),
+    jto: {
+      acquiredRaw: acquiredRaw.toString(),
+      toTreasuryRaw: treasurySweepRaw.toString(),
+      toOthersRaw: (acquiredRaw - treasurySweepRaw).toString(),
+      treasurySharePpm: ppm(treasurySweepRaw, acquiredRaw),
+    },
+    perSweepTreasuryShare: { within1bpOf80pct: exact80, other: notExact },
+    otherRecipients: [...recips].sort((a, b) => (b[1] > a[1] ? 1 : -1))
+      .map(([owner, raw]) => ({ owner, raw: raw.toString(), sharePpm: ppm(raw, acquiredRaw) })),
+    reconciliation: {
+      against: "track.mjs inbound total for the same account, parsed independently",
+      ledgerInboundRaw: ledgerInboundRaw.toString(),
+      attributedRaw: allTreasuryRaw.toString(),
+      differenceRaw: (diff < 0n ? -diff : diff).toString(),
+      exact: diff === 0n && missing === 0,
+    },
+    notEstablished: [
+      "The USD value of the JTO acquired: sweeps spend several tokens and this record holds no price series.",
+      "Total fees collected: tokens routed through a sweep include intermediate swap hops, so outflows are not a fee total.",
+      "Who controls the recipient accounts. They are recorded by address and on-chain account type only.",
+    ],
+  };
+  atomicWrite(SUMMARY, `${JSON.stringify(summary, null, 2)}\n`);
+  console.log(`\nwrote ${SUMMARY}`);
+}
