@@ -44,6 +44,20 @@ const STATE = arg("--state", "data/sweeps-state.json");
 const BATCH = integer(arg("--batch", "10"), "--batch", 1, 50);
 const RATE = integer(arg("--rate", "6"), "--rate", 1, 40);
 const REPORT_ONLY = process.argv.includes("--report");
+
+// Refuse a summary path that is the checkpoint path. On a case-insensitive
+// filesystem data/sweeps-state.json and DATA/SWEEPS-STATE.json are one
+// file, and writing the summary there would silently destroy the decoded state
+// it was produced from — which happened in a test before this guard existed.
+{
+  const out = arg("--summary", null);
+  const { resolve } = await import("node:path");
+  if (out && resolve(out).toLowerCase() === resolve(STATE).toLowerCase()) {
+    console.error(`sweeps: --summary ${out} is the checkpoint file itself; choose another path`);
+    process.exit(2);
+  }
+}
+
 // For a trial run on a few transactions before committing the RPC budget.
 const LIMIT = arg("--limit", null);
 

@@ -59,6 +59,20 @@ const RATE = integer(arg("--rate", "10"), "--rate", 1, 40);
 const MAX_GAP_HOURS = integer(arg("--max-gap-hours", "8"), "--max-gap-hours", 1, 720);
 const REPORT_ONLY = process.argv.includes("--report");
 
+// Refuse a summary path that is the checkpoint path. On a case-insensitive
+// filesystem data/fees-state.json and DATA/FEES-STATE.json are one
+// file, and writing the summary there would silently destroy the decoded state
+// it was produced from — which happened in a test before this guard existed.
+{
+  const out = arg("--summary", null);
+  const { resolve } = await import("node:path");
+  if (out && resolve(out).toLowerCase() === resolve(STATE).toLowerCase()) {
+    console.error(`fees: --summary ${out} is the checkpoint file itself; choose another path`);
+    process.exit(2);
+  }
+}
+
+
 const sweepsState = readJsonFile(SWEEPS, "the decoded sweeps from sweeps.mjs");
 const sweeps = Object.values(sweepsState.resolved).filter((r) => r.jtxIx.some((n) => SWEEP_IX.includes(n)));
 requireThat(sweeps.length > 0, `${SWEEPS} holds no sweeps — run sweeps.mjs first`);

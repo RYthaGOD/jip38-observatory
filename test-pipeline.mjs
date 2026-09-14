@@ -646,6 +646,77 @@ await t("a failed transaction is flagged", () => {
   assert.equal(decodeSweep(sweepTx()).failed, false);
 });
 
+// --- fees.mjs -----------------------------------------------------------------
+//
+// Run in --report mode against synthetic checkpoints, so the two rules that
+// decide whether its figure means anything are tested without a chain.
+
+section("fees: only fee accounts count, and misaligned halves are never complete");
+{
+  const { mkdtempSync, writeFileSync: wf, rmSync } = await import("node:fs");
+  const { tmpdir } = await import("node:os");
+  const { join } = await import("node:path");
+  const { spawnSync } = await import("node:child_process");
+  const dir = mkdtempSync(join(tmpdir(), "jip38-fees-"));
+  const USDC = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v";
+  const sweepAt = Date.parse("2026-09-13T04:00:00Z") / 1000;
+
+  // One sweep: a JTX fee account pays 10 USDC, and a DEX pool routes 10 USDC
+  // onward in the same transaction. Summing every outflow would report 20.
+  const sweepsState = { version: 1, resolved: { sig: {
+    t: sweepAt, jtxIx: ["FeeSweepPrepare"], signers: ["keeper"], failed: false, treasuryRaw: "0", acquiredRaw: "0",
+    recipients: [], spent: [
+      { owner: "fee-account", mint: USDC, raw: "-10000000" },
+      { owner: "dex-pool", mint: USDC, raw: "-10000000" },
+    ],
+  } } };
+  // State and summary get unrelated names on purpose: on a case-insensitive
+  // filesystem fees.json and FEES.json are the same file, and the summary would
+  // silently overwrite the checkpoint it was produced from.
+  const run = (readAt) => {
+    const feesState = { version: 1, readAt, programAccounts: 2, feeTypes: ["3|132"], holderCount: 1, everSwept: 1,
+      holderSet: ["fee-account"], slotRange: { from: 1, to: 2 }, unresolved: [],
+      balances: [{ owner: "fee-account", program: "SPL Token", mint: USDC, raw: "2500000", decimals: 6 }] };
+    wf(join(dir, "sweeps.json"), JSON.stringify(sweepsState));
+    wf(join(dir, "fees-state.json"), JSON.stringify(feesState));
+    const r = spawnSync(process.execPath, ["fees.mjs", "--report", "--sweeps", join(dir, "sweeps.json"),
+      "--state", join(dir, "fees-state.json"), "--summary", join(dir, "fees-summary.json")], { encoding: "utf8" });
+    return { out: r.stdout + r.stderr, status: r.status, summary: JSON.parse(readFileSync(join(dir, "fees-summary.json"), "utf8")) };
+  };
+
+  const aligned = run("2026-09-13T05:00:00Z");
+  const usdc = () => aligned.summary.stablecoins.find((s) => s.symbol === "USDC");
+  await t("a DEX pool's outflow in a sweep is not counted as a fee", () => {
+    assert.equal(aligned.status, 0, aligned.out);
+    assert.equal(usdc().sweptRaw, "10000000", "the pool hop was counted as a fee");
+  });
+  await t("collected is swept plus held, exactly", () => {
+    assert.equal(usdc().heldRaw, "2500000");
+    assert.equal(usdc().collectedRaw, "12500000");
+  });
+  await t("halves read an hour apart are reported complete", () => {
+    assert.equal(aligned.summary.complete, true, aligned.out);
+    assert.match(aligned.out, /COMPLETE: every fee-holding account/);
+  });
+  await t("halves read a day apart are NOT complete, and say why", () => {
+    // A fee swept between the two instants is in neither side.
+    const misaligned = run("2026-09-14T05:00:00Z");
+    assert.equal(misaligned.summary.complete, false, "a 25-hour gap was accepted as complete");
+    assert.match(misaligned.out, /in NEITHER side/);
+    assert.equal(misaligned.summary.gapHours, 25);
+  });
+  await t("unresolved balance reads make the held side incomplete", () => {
+    const feesState = JSON.parse(readFileSync(join(dir, "fees-state.json"), "utf8"));
+    feesState.readAt = "2026-09-13T05:00:00Z"; feesState.unresolved = ["some-account"];
+    wf(join(dir, "fees-state.json"), JSON.stringify(feesState));
+    const r = spawnSync(process.execPath, ["fees.mjs", "--report", "--sweeps", join(dir, "sweeps.json"),
+      "--state", join(dir, "fees-state.json")], { encoding: "utf8" });
+    assert.match(r.stdout, /held side is INCOMPLETE/, `status ${r.status}; stderr: ${r.stderr}`);
+    assert.match(r.stdout, /NOT COMPLETE/);
+  });
+  try { rmSync(dir, { recursive: true, force: true }); } catch { /* temp */ }
+}
+
 section("credential redaction reaches the verifier — finding 18");
 await t("a verifier failure note cannot carry the endpoint", () => {
   // Assembled rather than written out: a key-shaped literal in a tracked file
