@@ -157,15 +157,22 @@ if (!REPORT_ONLY) {
 
 const rows = sigs.map((s) => state.resolved[s]).filter(Boolean);
 const missing = sigs.length - rows.length;
-const sweeps = rows.filter((r) => r.jtxIx.includes("FeeSweepPrepare"));
-const other = rows.filter((r) => !r.jtxIx.includes("FeeSweepPrepare"));
+// A sweep is two instructions in the JTX program's own vocabulary, Prepare and
+// Finalize, and JTO reaches the treasury in both. The first version of this
+// report matched Prepare alone and filed 688 Finalize transactions — 8% of those
+// examined at the time — as "not sweeps", which would have understated both the
+// count and the JTO attributed to the buyback.
+const SWEEP_IX = ["FeeSweepPrepare", "FeeSweepFinalize"];
+const isSweep = (r) => r.jtxIx.some((n) => SWEEP_IX.includes(n));
+const sweeps = rows.filter(isSweep);
+const other = rows.filter((r) => !isSweep(r));
 const sum = (list, f) => list.reduce((s, r) => s + BigInt(f(r)), 0n);
 
 console.log("\n" + "=".repeat(72));
 console.log("JTX FEE SWEEPS INTO THE DAO TREASURY'S JTO ACCOUNT, SINCE ACTIVATION");
 console.log("=".repeat(72));
 console.log(`transactions      ${rows.length.toLocaleString()} resolved of ${sigs.length.toLocaleString()}${missing ? `  — ${missing} NOT RESOLVED, figures below are incomplete` : ""}`);
-console.log(`fee sweeps        ${sweeps.length.toLocaleString()} carry the program's own "ix: FeeSweepPrepare" log`);
+console.log(`fee sweeps        ${sweeps.length.toLocaleString()} carry the program's own FeeSweepPrepare or FeeSweepFinalize log`);
 console.log(`not sweeps        ${other.length.toLocaleString()}`);
 if (other.length) {
   const names = new Map();
@@ -231,6 +238,22 @@ console.log(`  difference                          ${units(diff < 0n ? -diff : d
 if (missing) console.log("  (unresolved transactions make this comparison incomplete)");
 console.log("-".repeat(72));
 
+// Count each distinct split, in basis points per recipient, largest first.
+function splitPatterns(list) {
+  const counts = new Map();
+  for (const r of list) {
+    const whole = BigInt(r.acquiredRaw);
+    if (whole === 0n) continue;
+    const bp = (raw) => Number((BigInt(raw) * 10_000n) / whole);
+    const parts = [["treasury", bp(r.treasuryRaw)], ...r.recipients.map((x) => [x.owner, bp(x.raw)])]
+      .sort((a, b) => b[1] - a[1]);
+    const key = JSON.stringify(parts);
+    counts.set(key, (counts.get(key) ?? 0) + 1);
+  }
+  return [...counts].sort((a, b) => b[1] - a[1]).slice(0, 12)
+    .map(([key, sweeps]) => ({ sweeps, basisPoints: Object.fromEntries(JSON.parse(key)) }));
+}
+
 // --- the committed record ----------------------------------------------------
 //
 // The checkpoint holds every decoded transaction and stays out of git. What is
@@ -282,6 +305,10 @@ if (SUMMARY) {
       treasurySharePpm: ppm(treasurySweepRaw, acquiredRaw),
     },
     perSweepTreasuryShare: { within1bpOf80pct: exact80, other: notExact },
+    // Every distinct way a sweep split its JTO, in basis points of the JTO it
+    // acquired. The treasury-to-largest-other ratio is what JIP-38's 80/20 is
+    // about; a third recipient taking a share first is recorded, not judged.
+    splitPatterns: splitPatterns(sweeps),
     otherRecipients: [...recips].sort((a, b) => (b[1] > a[1] ? 1 : -1))
       .map(([owner, raw]) => ({ owner, raw: raw.toString(), sharePpm: ppm(raw, acquiredRaw) })),
     reconciliation: {
