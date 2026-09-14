@@ -234,6 +234,7 @@ node check.mjs       # THE GATE — every offline suite, no key needed
 node verify.mjs      # re-test every REGISTRY.tsv role against chain; exit 1 on any failure
 node track.mjs       # THE MAIN TOOL — crawl accounts, build EVENTS.tsv, reconcile against supply
 node sweeps.mjs      # decode every JTX fee sweep into the treasury, exactly; needs track.mjs first
+node fees.mjs        # fees on chain: swept + still held by the JTX program; needs sweeps.mjs first
 node capture.mjs     # archive the operator's claim alongside the chain state it describes
 node discover.mjs    # identify the mint, measure the window, sample and classify burns
 node rawscan.mjs     # exhaustive raw enumeration — sound, but needs a paid RPC tier
