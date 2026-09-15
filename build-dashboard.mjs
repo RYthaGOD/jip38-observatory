@@ -56,6 +56,11 @@ function main() {
   console.log(`  execution   ${ex.ratio === null
     ? "UNKNOWN — page will show review required"
     : `${(ex.ratio * 100).toFixed(1)}% against ${ex.promisedRatio * 100}%`}`);
+  if (ex.chain) {
+    console.log(`  on chain    ${ex.chain.ratio === null
+      ? "UNKNOWN — page will show review required"
+      : `${ex.chain.burnedJto} of ${ex.chain.boughtForDao} JTO bought back for the DAO burned`}`);
+  }
   console.log(`  registry    ${snap.registry.length} entries`);
   if (snap.alerts.length) console.log(`  ALERTS      ${snap.alerts.length} unreviewed`);
 }
@@ -135,6 +140,28 @@ function validate(snap) {
   if (ex.burnedUsd !== null) nonNegative(ex.burnedUsd, "execution.burnedUsd");
   requireThat((ex.ratio === null) === (ex.burnedJto === null),
     "execution.ratio and execution.burnedJto disagree about whether a figure is available");
+
+  // The chain-only headline: JTO burned against JTO bought back for the DAO.
+  // The same rule as the USD ratio — a number only while the assessment stands.
+  if (ex.chain !== undefined && ex.chain !== null) {
+    const ec = obj(ex.chain, "execution.chain");
+    str(ec.denominator, "execution.chain.denominator");
+    fin(ec.promisedRatio, "execution.chain.promisedRatio");
+    requireThat(typeof ec.boughtForDaoRaw === "string" && /^(0|[1-9][0-9]*)$/.test(ec.boughtForDaoRaw),
+      "execution.chain.boughtForDaoRaw is not a base-unit string");
+    numeric(ec.boughtForDao, "execution.chain.boughtForDao");
+    if (ec.ratio !== null) {
+      requireThat(Number.isFinite(ec.ratio) && ec.ratio >= 0, "execution.chain.ratio must be null or a non-negative number");
+      requireThat(as.state === "current",
+        "execution.chain.ratio is a number while the assessment is not current — a stale zero must never be published as a figure");
+    }
+    if (ec.burnedJto !== null) {
+      numeric(ec.burnedJto, "execution.chain.burnedJto");
+      requireThat(as.state === "current", "execution.chain.burnedJto is published while the assessment is not current");
+    }
+    requireThat(ec.ratio === null || ec.burnedJto !== null,
+      "execution.chain.ratio is published without the burn figure it was computed from");
+  }
 
   // The collections the page iterates. One null entry here is what produced a
   // silent partial render in the browser.

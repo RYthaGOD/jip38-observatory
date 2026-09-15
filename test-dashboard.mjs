@@ -156,6 +156,8 @@ t("review-required with a null ratio builds, and the page shows review required"
     s.execution.ratio = null;
     s.execution.burnedJto = null;
     s.execution.burnedUsd = null;
+    // The chain headline withholds its figure under the same rule.
+    if (s.execution.chain) Object.assign(s.execution.chain, { ratio: null, burnedJto: null, burnedRaw: null });
   });
   assert.ok(r.ok, `an honest unknown failed to build: ${r.out}`);
   assert.match(r.out, /UNKNOWN/);
@@ -220,6 +222,37 @@ t("a float where a base-unit amount belongs is rejected", () => {
   const r = build((s) => { s.tracking = tracking(); s.tracking.buyback.jto.acquiredRaw = "100.0"; });
   assert.ok(!r.ok);
   assert.match(r.out, /base-unit string/);
+});
+
+section("the chain-only headline follows the same rules as the claim-based one");
+const chainExecution = (over = {}) => ({
+  source: "chain", denominator: "JTO bought back for the DAO treasury by JTX fee sweeps since activation",
+  boughtForDaoRaw: "334139000000000", boughtForDao: "334139.000000000", sweeps: 17296, through: "2026-09-14T14:26:30.000Z",
+  promisedRatio: 1, burnedRaw: "0", burnedJto: "0.000000000", ratio: 0, ...over,
+});
+t("a current chain headline builds and says so in the build log", () => {
+  const r = build((s) => { s.execution.chain = chainExecution(); });
+  assert.ok(r.ok, r.out);
+  assert.match(r.out, /0\.000000000 of 334139\.000000000 JTO bought back for the DAO burned/);
+});
+t("a chain ratio beside a non-current assessment is rejected", () => {
+  const r = build((s) => {
+    s.assessment.state = "review-required"; s.assessment.reasons = ["supply fell"];
+    s.execution.ratio = null; s.execution.burnedJto = null; s.execution.burnedUsd = null;
+    s.execution.chain = chainExecution();
+  });
+  assert.ok(!r.ok, "a stale zero was publishable as the chain headline");
+  assert.match(r.out, /stale zero must never be published/);
+});
+t("a chain ratio with no burn figure behind it is rejected", () => {
+  const r = build((s) => { s.execution.chain = chainExecution({ burnedJto: null, burnedRaw: null }); });
+  assert.ok(!r.ok);
+  assert.match(r.out, /without the burn figure/);
+});
+t("a float denominator is rejected", () => {
+  const r = build((s) => { s.execution.chain = chainExecution({ boughtForDaoRaw: "334139.0" }); });
+  assert.ok(!r.ok);
+  assert.match(r.out, /boughtForDaoRaw/);
 });
 
 section("a failed build leaves the previous release standing — finding 7");

@@ -1,26 +1,26 @@
 {
   "schemaVersion": 3,
-  "generatedAt": "2026-09-14T14:26:16.667Z",
+  "generatedAt": "2026-09-15T00:32:58.474Z",
   "activation": "2026-07-13",
-  "daysSinceActivation": 63,
+  "daysSinceActivation": 64,
   "chain": {
     "source": "chain",
-    "observedAt": "2026-09-14T14:26:16.667Z",
+    "observedAt": "2026-09-15T00:32:58.474Z",
     "commitment": "finalized",
     "endpoint": "https://mainnet.helius-rpc.com",
     "slotRange": {
-      "from": 446998960,
-      "to": 446998962
+      "from": 447113989,
+      "to": 447113991
     },
-    "slotRangeNote": "reads span slots 446998960–446998962; measurements are not simultaneous",
-    "blockTimeIso": "2026-09-14T14:26:05.000Z",
+    "slotRangeNote": "reads span slots 447113989–447113991; measurements are not simultaneous",
+    "blockTimeIso": "2026-09-15T00:32:46.000Z",
     "supply": {
       "mintedEverRaw": "1000000000000000000",
-      "currentRaw": "986522649238498380",
-      "destroyedRaw": "13477350761501620",
+      "currentRaw": "986522648095857470",
+      "destroyedRaw": "13477351904142530",
       "mintedEver": "1000000000.000000000",
-      "current": "986522649.238498380",
-      "destroyed": "13477350.761501620",
+      "current": "986522648.095857470",
+      "destroyed": "13477351.904142530",
       "decimals": 9,
       "mintAuthority": null,
       "freezeAuthority": null,
@@ -30,8 +30,8 @@
     "treasury": {
       "owner": "5eosrve6LktMZgVNszYzebgmmC7BjLK8NoWyRQtcmGTF",
       "tokenAccount": "2Ch9AWnbAaummLkWTTtNgTAvrFq8YMATUaaN77TB2Y6C",
-      "jtoRaw": "209756166793929469",
-      "jto": "209756166.793929469",
+      "jtoRaw": "209756546717551659",
+      "jto": "209756546.717551659",
       "accounts": 2
     },
     "feeProgram": {
@@ -51,7 +51,7 @@
     "tradingVolumeUsd": 124236023.65,
     "fills": 266827,
     "dataBegins": "2026-07-24",
-    "ageDays": 4,
+    "ageDays": 5,
     "stale": false,
     "note": "Figures move through the day, so they are captured and hashed: what was claimed on a date cannot be revised without record. Obtained via a rendering fetch — the public URL is a client-rendered shell and yields no figures over plain HTTP.",
     "limitations": [
@@ -107,20 +107,32 @@
     "burnedRaw": "0",
     "burnedJto": "0.000000000",
     "burnedUsd": 0,
-    "ratio": 0
+    "ratio": 0,
+    "chain": {
+      "source": "chain",
+      "denominator": "JTO bought back for the DAO treasury by JTX fee sweeps since activation",
+      "boughtForDaoRaw": "334493114039766",
+      "boughtForDao": "334493.114039766",
+      "sweeps": 17460,
+      "through": "2026-09-15T00:18:53.000Z",
+      "promisedRatio": 1,
+      "burnedRaw": "0",
+      "burnedJto": "0.000000000",
+      "ratio": 0
+    }
   },
   "unverified": [
-    "That JTX fees are being swept into JTO — the buyback step is an operator claim, not yet traced on chain.",
-    "The 80/20 split.",
-    "The $198,908.37 fee total, and the ~10 days of activity missing from the dashboard's start.",
-    "The dates of the 13477350.761501620 JTO destroyed before activation."
+    "Who controls the other recipients of swept JTO: 8DBak2z2… (19.2%) and DTA5YXD9… (3.8%).",
+    "Why about half of all sweeps pay the treasury 64% rather than 80%. Overall it received 76.98%.",
+    "The USD value of fees paid in tokens other than stablecoins.",
+    "The dates of the 13477351.904142530 JTO destroyed before activation."
   ],
   "tracking": {
     "ledger": {
       "file": "data/track-state.json",
       "source": "chain",
       "producedBy": "track.mjs",
-      "polledAt": "2026-09-14T14:23:59.449Z",
+      "polledAt": "2026-09-15T00:30:01.740Z",
       "ageHours": 0,
       "staleAfterHours": 24,
       "stale": false,
@@ -147,19 +159,19 @@
         "incomplete": 0
       },
       "currentThrough": {
-        "oldest": "2026-09-14T14:23:48.324Z",
-        "newest": "2026-09-14T14:24:08.645Z"
+        "oldest": "2026-09-15T00:29:51.652Z",
+        "newest": "2026-09-15T00:30:08.184Z"
       },
       "unresolvedTransactions": 0,
       "pollFailures": 0,
       "treasuryDiscovery": {
-        "at": "2026-09-14T14:23:47.942Z",
+        "at": "2026-09-15T00:29:51.331Z",
         "accounts": 2,
-        "added": 1
+        "added": 0
       },
       "complete": true,
       "treasuryTokenAccountsNotWatched": [],
-      "events": 65109,
+      "events": 65686,
       "burnsSinceActivation": 0,
       "burnedSinceActivationRaw": "0",
       "burnedSinceActivation": "0.000000000",
@@ -169,36 +181,36 @@
       "file": "SWEEPS.json",
       "source": "chain",
       "producedBy": "sweeps.mjs",
-      "generatedAt": "2026-09-14T14:25:47.557Z",
-      "resolvedAt": "2026-09-14T14:25:44.931Z",
+      "generatedAt": "2026-09-15T00:32:26.106Z",
+      "resolvedAt": "2026-09-15T00:32:13.023Z",
       "firstSweep": "2026-07-14T09:21:07.000Z",
-      "lastSweep": "2026-09-14T14:11:06.000Z",
-      "sweeps": 17290,
-      "inflows": 17293,
+      "lastSweep": "2026-09-15T00:18:53.000Z",
+      "sweeps": 17460,
+      "inflows": 17463,
       "unresolved": 0,
       "jto": {
-        "acquiredRaw": "434049921551336",
-        "toTreasuryRaw": "334115015525035",
-        "toOthersRaw": "99934906026301",
-        "acquired": "434049.921551336",
-        "toTreasury": "334115.015525035",
-        "toOthers": "99934.906026301",
-        "treasurySharePpm": 769761
+        "acquiredRaw": "434531323157777",
+        "toTreasuryRaw": "334493114039766",
+        "toOthersRaw": "100038209118011",
+        "acquired": "434531.323157777",
+        "toTreasury": "334493.114039766",
+        "toOthers": "100038.209118011",
+        "treasurySharePpm": 769779
       },
       "keeper": {
         "address": "23zyeKyn8wpF8VyWSGHTGvTVEGi5SPyziGSs9pGKr5ta",
-        "count": 17290
+        "count": 17460
       },
       "otherRecipients": [
         {
           "owner": "8DBak2z28Wsf6baVqTBWjZvdn2t9KncKzNQWGmZQsuFs",
-          "raw": "83439446275854",
-          "sharePpm": 192234
+          "raw": "83533970904462",
+          "sharePpm": 192239
         },
         {
           "owner": "DTA5YXD9Ckrjyj7jSMEsgbaEmWZTGth13u1TkxWJJDMd",
-          "raw": "16406152154052",
-          "sharePpm": 37797
+          "raw": "16414930617154",
+          "sharePpm": 37776
         },
         {
           "owner": "BBBATax9kikSHQp8UTcyQL3tfU3BmQD9yid5qhC7QEAA",
@@ -208,14 +220,14 @@
       ],
       "splitPatterns": [
         {
-          "sweeps": 6706,
+          "sweeps": 6792,
           "basisPoints": {
             "treasury": 8000,
             "8DBak2z28Wsf6baVqTBWjZvdn2t9KncKzNQWGmZQsuFs": 1999
           }
         },
         {
-          "sweeps": 5630,
+          "sweeps": 5658,
           "basisPoints": {
             "treasury": 6400,
             "DTA5YXD9Ckrjyj7jSMEsgbaEmWZTGth13u1TkxWJJDMd": 1999,
@@ -223,14 +235,14 @@
           }
         },
         {
-          "sweeps": 1611,
+          "sweeps": 1637,
           "basisPoints": {
             "treasury": 8000,
             "8DBak2z28Wsf6baVqTBWjZvdn2t9KncKzNQWGmZQsuFs": 2000
           }
         },
         {
-          "sweeps": 1358,
+          "sweeps": 1369,
           "basisPoints": {
             "treasury": 6400,
             "DTA5YXD9Ckrjyj7jSMEsgbaEmWZTGth13u1TkxWJJDMd": 1999,
@@ -238,18 +250,73 @@
           }
         },
         {
-          "sweeps": 1336,
+          "sweeps": 1350,
           "basisPoints": {
             "treasury": 6400,
             "DTA5YXD9Ckrjyj7jSMEsgbaEmWZTGth13u1TkxWJJDMd": 2000,
             "8DBak2z28Wsf6baVqTBWjZvdn2t9KncKzNQWGmZQsuFs": 1599
           }
+        },
+        {
+          "sweeps": 343,
+          "basisPoints": {
+            "treasury": 6400,
+            "DTA5YXD9Ckrjyj7jSMEsgbaEmWZTGth13u1TkxWJJDMd": 2000,
+            "8DBak2z28Wsf6baVqTBWjZvdn2t9KncKzNQWGmZQsuFs": 1600
+          }
+        },
+        {
+          "sweeps": 11,
+          "basisPoints": {
+            "treasury": 6000,
+            "DTA5YXD9Ckrjyj7jSMEsgbaEmWZTGth13u1TkxWJJDMd": 2499,
+            "8DBak2z28Wsf6baVqTBWjZvdn2t9KncKzNQWGmZQsuFs": 1499
+          }
+        },
+        {
+          "sweeps": 10,
+          "basisPoints": {
+            "treasury": 8000,
+            "BBBATax9kikSHQp8UTcyQL3tfU3BmQD9yid5qhC7QEAA": 1999
+          }
+        },
+        {
+          "sweeps": 7,
+          "basisPoints": {
+            "treasury": 7199,
+            "8DBak2z28Wsf6baVqTBWjZvdn2t9KncKzNQWGmZQsuFs": 1799,
+            "DTA5YXD9Ckrjyj7jSMEsgbaEmWZTGth13u1TkxWJJDMd": 1000
+          }
+        },
+        {
+          "sweeps": 7,
+          "basisPoints": {
+            "treasury": 7197,
+            "8DBak2z28Wsf6baVqTBWjZvdn2t9KncKzNQWGmZQsuFs": 1799,
+            "DTA5YXD9Ckrjyj7jSMEsgbaEmWZTGth13u1TkxWJJDMd": 1003
+          }
+        },
+        {
+          "sweeps": 6,
+          "basisPoints": {
+            "treasury": 7198,
+            "8DBak2z28Wsf6baVqTBWjZvdn2t9KncKzNQWGmZQsuFs": 1799,
+            "DTA5YXD9Ckrjyj7jSMEsgbaEmWZTGth13u1TkxWJJDMd": 1002
+          }
+        },
+        {
+          "sweeps": 5,
+          "basisPoints": {
+            "treasury": 6000,
+            "DTA5YXD9Ckrjyj7jSMEsgbaEmWZTGth13u1TkxWJJDMd": 2500,
+            "8DBak2z28Wsf6baVqTBWjZvdn2t9KncKzNQWGmZQsuFs": 1499
+          }
         }
       ],
       "reconciliation": {
         "against": "track.mjs inbound total for the same account, parsed independently",
-        "ledgerInboundRaw": "334115662704809",
-        "attributedRaw": "334115662704809",
+        "ledgerInboundRaw": "334493761219540",
+        "attributedRaw": "334493761219540",
         "differenceRaw": "0",
         "exact": true
       },
@@ -477,6 +544,11 @@
       "t": "2026-09-14T14:26:16.667Z",
       "treasury": 209756166.79392946,
       "supply": 986522649.2384983
+    },
+    {
+      "t": "2026-09-15T00:32:58.474Z",
+      "treasury": 209756546.71755165,
+      "supply": 986522648.0958575
     }
   ],
   "alerts": []

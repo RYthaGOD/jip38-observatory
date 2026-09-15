@@ -645,7 +645,7 @@ await t("the shipped ASSESSMENT.json is well-formed and its anchor is real", () 
 
 const liveSrc = snapSrc.slice(snapSrc.indexOf("function readOptional"), snapSrc.indexOf("// Does the recorded assessment"));
 assert.ok(liveSrc.includes("function ledgerBlock") && liveSrc.includes("function feesBlock"), "could not slice the live-cycle summaries out of snapshot.mjs");
-const live = vm.runInNewContext(`${liveSrc};({ ledgerBlock, buybackBlock, feesBlock })`, {
+const live = vm.runInNewContext(`${liveSrc};({ ledgerBlock, buybackBlock, feesBlock, chainExecution, unverifiedWithBuyback })`, {
   requireThat, raw, units, existsSync: () => false, readJsonFile: () => null,
   Date, Number, Math, Object, String, BigInt, JSON, Set, Array,
 });
@@ -735,6 +735,45 @@ await t("the committed FEES.json summarises per token, exactly, never summed acr
   assert.equal(usdc.collected, units(BigInt(usdc.collectedRaw), 6));
   assert.equal(BigInt(usdc.sweptRaw) + BigInt(usdc.heldRaw), BigInt(usdc.collectedRaw));
   assert.equal(typeof f.complete, "boolean");
+});
+
+section("snapshot: the headline on chain alone — burned JTO against JTO bought back");
+const committedBuyback = () => live.buybackBlock(JSON.parse(readFileSync("SWEEPS.json", "utf8")));
+await t("a current zero assessment publishes 0 of the JTO bought for the DAO, against a 100% target", () => {
+  const b = committedBuyback();
+  const e = live.chainExecution({ state: "current", burnedRaw: "0" }, b);
+  assert.equal(e.ratio, 0);
+  assert.equal(e.burnedJto, "0.000000000");
+  assert.equal(e.boughtForDaoRaw, b.jto.toTreasuryRaw, "the denominator is not the JTO paid to the treasury");
+  assert.equal(e.promisedRatio, 1, "JIP-38 commits all of the DAO's share to buybacks and burns");
+});
+await t("the ratio is exact integer arithmetic on base units", () => {
+  const b = { jto: { toTreasuryRaw: "300000000000000" }, sweeps: 1, lastSweep: null };
+  const e = live.chainExecution({ state: "current", burnedRaw: "100000000000000" }, b);
+  assert.equal(e.ratio, 0.333333);
+});
+await t("no figure is published while the assessment needs review", () => {
+  const e = live.chainExecution({ state: "review-required", burnedRaw: "0" }, committedBuyback());
+  assert.equal(e.ratio, null, "a stale zero was published as the chain headline");
+  assert.equal(e.burnedJto, null);
+  assert.ok(e.boughtForDao, "the traced buyback is still a chain fact and should still be shown");
+});
+await t("without decoded sweeps there is no chain headline, rather than a zero", () => {
+  assert.equal(live.chainExecution({ state: "current", burnedRaw: "0" }, null), null);
+});
+await t("the limits list names the recipients and the 64% sweeps from the data, not from a frozen sentence", () => {
+  const list = live.unverifiedWithBuyback(committedBuyback(), 13477350761501620n);
+  assert.equal(list.length, 4);
+  assert.match(list[0], /8DBak2z2… \(19\.\d%\) and DTA5YXD9… \(3\.\d%\)/);
+  assert.match(list[1], /about half of all sweeps pay the treasury 64% rather than 80%\. Overall it received 76\.\d\d%/);
+  assert.ok(!list.some((v) => /not yet traced/.test(v)), "the retired 'buyback not traced' limit survived");
+  assert.match(list[3], /destroyed before activation/, "the page maps this item by that phrase");
+});
+await t("when the 64% pattern is not about half, the sentence says how many instead", () => {
+  const b = { ...committedBuyback(), sweeps: 100, splitPatterns: [{ sweeps: 10, basisPoints: { treasury: 6400 } }, { sweeps: 90, basisPoints: { treasury: 8000 } }] };
+  assert.match(live.unverifiedWithBuyback(b, 0n)[1], /^Why 10% of sweeps pay the treasury 64%/);
+  const none = { ...b, splitPatterns: [{ sweeps: 100, basisPoints: { treasury: 8000 } }] };
+  assert.match(live.unverifiedWithBuyback(none, 0n)[1], /^Why the treasury received/);
 });
 
 // --- sweeps.mjs --------------------------------------------------------------

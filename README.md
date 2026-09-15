@@ -109,6 +109,16 @@ Written before any findings exist, so that it cannot be tuned to them.
 
 ## Status
 
+**Current finding, 2026-09-14: the buyback is executing; the burn is not.**
+Every JTX fee sweep since activation is decoded from chain and reconciles
+exactly with the treasury ledger, and of the JTO those sweeps bought for the
+DAO, **none has been burned**. The live page's headline is that ratio — JTO
+burned against JTO bought back for the DAO, two chain measurements in the same
+unit — refreshed every cycle. Fees are measured on chain too (swept plus still
+held); the operator's Dune figure is kept as an archived claim. See
+[`FINDINGS.md`](FINDINGS.md) section 10. What follows is the record of how the
+project got there.
+
 **First finding, 2026-09-10: no JTO has been burned under JIP-38 — and as of
 2026-09-13 that is enumerated rather than inferred.** The DAO treasury JTO
 account has had all 16,821 of its transactions resolved and contains no burn

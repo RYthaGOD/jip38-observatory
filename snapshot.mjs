@@ -294,14 +294,21 @@ async function main() {
       burnedJto: assessment.state === "current" ? units(raw(assessment.burnedRaw)) : null,
       burnedUsd: assessment.state === "current" ? assessment.burnedUsd : null,
       ratio: assessment.state === "current" ? assessment.ratio : null,
+      // The headline, on chain alone: JTO burned against the JTO the fee sweeps
+      // bought for the DAO. Two chain measurements in the same unit — no price,
+      // no fee claim, no operator figure. Null when the sweeps have not been
+      // decoded here; the USD ratio above is kept as the archived claim basis.
+      chain: chainExecution(assessment, tracking.buyback),
     },
 
-    unverified: [
-      "That JTX fees are being swept into JTO — the buyback step is an operator claim, not yet traced on chain.",
-      "The 80/20 split.",
-      `The $${claimFile.platformFeesUsd.toLocaleString()} fee total, and the ~10 days of activity missing from the dashboard's start.`,
-      `The dates of the ${units(destroyedRaw)} JTO destroyed before activation.`,
-    ],
+    unverified: tracking.buyback
+      ? unverifiedWithBuyback(tracking.buyback, destroyedRaw)
+      : [
+          "That JTX fees are being swept into JTO — the buyback step is an operator claim, not yet traced on chain.",
+          "The 80/20 split.",
+          `The $${claimFile.platformFeesUsd.toLocaleString()} fee total, and the ~10 days of activity missing from the dashboard's start.`,
+          `The dates of the ${units(destroyedRaw)} JTO destroyed before activation.`,
+        ],
 
     // What the live tracking cycle has established, each part dated. Summaries
     // only: the full decoded records are served beside the page as /sweeps.json
@@ -424,7 +431,13 @@ async function main() {
   for (const p of tracking.problems) console.log(`  PROBLEM     ${p.message}`);
   console.log(`  execution   ${snap.execution.ratio === null
     ? "UNKNOWN — the assessment needs review before a ratio can be published"
-    : `${(snap.execution.ratio * 100).toFixed(1)}% against a promised ${PROMISED_RATIO * 100}%`}`);
+    : `${(snap.execution.ratio * 100).toFixed(1)}% against a promised ${PROMISED_RATIO * 100}% (archived claim basis)`}`);
+  const onChain = snap.execution.chain;
+  if (onChain) {
+    console.log(`  on chain    ${onChain.ratio === null
+      ? "UNKNOWN — the assessment needs review before a ratio can be published"
+      : `${onChain.burnedJto} of ${onChain.boughtForDao} JTO bought back for the DAO burned (${(onChain.ratio * 100).toFixed(1)}%)`}`);
+  }
   if (alerts.length) {
     console.log(`  ALERTS      ${alerts.length} unreviewed:`);
     for (const a of alerts) console.log(`              - [${a.raisedAt.slice(0, 19)}Z] ${a.message}`);
@@ -544,11 +557,64 @@ function buybackBlock(s) {
     },
     keeper: s.signers?.[0] ?? null,
     otherRecipients: (s.otherRecipients ?? []).slice(0, 5),
-    splitPatterns: (s.splitPatterns ?? []).slice(0, 5),
+    splitPatterns: (s.splitPatterns ?? []).slice(0, 20),
     reconciliation: s.reconciliation ?? null,
     notEstablished: s.notEstablished ?? [],
     detail: "/sweeps.json",
   };
+}
+
+// The chain-only execution figure. The burn numerator is the assessment's, so
+// it is published only while the assessment stands — exactly like the USD ratio.
+function chainExecution(assessment, buyback) {
+  if (!buyback) return null;
+  // JIP-38 sends 100% of the DAO's share to buybacks and permanent burns, so of
+  // the JTO bought for the DAO, the share burned should eventually be all of it.
+  const promisedRatio = 1;
+  const boughtRaw = raw(digits(buyback.jto.toTreasuryRaw, "buyback.jto.toTreasuryRaw"));
+  const current = assessment.state === "current";
+  const burnedRaw = current ? raw(assessment.burnedRaw) : null;
+  return {
+    source: "chain",
+    denominator: "JTO bought back for the DAO treasury by JTX fee sweeps since activation",
+    boughtForDaoRaw: boughtRaw.toString(),
+    boughtForDao: units(boughtRaw),
+    sweeps: buyback.sweeps,
+    through: buyback.lastSweep,
+    promisedRatio,
+    burnedRaw: current ? burnedRaw.toString() : null,
+    burnedJto: current ? units(burnedRaw) : null,
+    // Parts per million, in integers, then scaled: never a float division of
+    // two 18-digit amounts.
+    ratio: current && boughtRaw > 0n ? Number((burnedRaw * 1_000_000n) / boughtRaw) / 1_000_000 : null,
+  };
+}
+
+// What the record does not establish, once the buyback is traced. Each is a
+// question chain data cannot answer, stated with the figures that make it one.
+function unverifiedWithBuyback(buyback, destroyedRaw) {
+  const pct = (ppm) => (Number.isFinite(ppm) ? `${(ppm / 10_000).toFixed(1)}%` : "an unmeasured share");
+  const short = (address) => `${address.slice(0, 8)}…`;
+  const others = (buyback.otherRecipients ?? []).filter((r) => r.sharePpm >= 10_000).slice(0, 2);
+  const share = Number.isFinite(buyback.jto.treasurySharePpm)
+    ? `${(buyback.jto.treasurySharePpm / 10_000).toFixed(2)}%` : "an unmeasured share";
+  // How many sweeps paid the treasury about 64%: counted from the split patterns,
+  // so the sentence stays true as sweeps accumulate rather than frozen at today.
+  const at64 = (buyback.splitPatterns ?? [])
+    .filter((p) => p.basisPoints?.treasury >= 6300 && p.basisPoints?.treasury <= 6500)
+    .reduce((sum, p) => sum + p.sweeps, 0);
+  const fraction = buyback.sweeps > 0 ? at64 / buyback.sweeps : 0;
+  const howMany = fraction >= 0.4 && fraction <= 0.6 ? "about half of all sweeps" : `${Math.round(fraction * 100)}% of sweeps`;
+  return [
+    others.length
+      ? `Who controls the other recipients of swept JTO: ${others.map((r) => `${short(r.owner)} (${pct(r.sharePpm)})`).join(" and ")}.`
+      : "Who controls the other recipients of swept JTO.",
+    at64 > 0
+      ? `Why ${howMany} pay the treasury 64% rather than 80%. Overall it received ${share}.`
+      : `Why the treasury received ${share} of the JTO bought rather than 80%.`,
+    "The USD value of fees paid in tokens other than stablecoins.",
+    `The dates of the ${units(destroyedRaw)} JTO destroyed before activation.`,
+  ];
 }
 
 // The on-chain fee measurement (fees.mjs --summary): fees swept plus still held.
